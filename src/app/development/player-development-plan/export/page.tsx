@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import type { DevelopmentPlanV1, FocusArea } from "../ui/lib/engineSchema";
+import type { DevelopmentPlanV1, FocusItemV1 } from "../ui/lib/engineSchema";
 
 const STORAGE_KEY = "ftbll:pdp:v1";
 
@@ -53,7 +53,7 @@ function FocusBlock({
   f,
   accent,
 }: {
-  f: FocusArea;
+  f: FocusItemV1;
   accent: string;
 }) {
   return (
