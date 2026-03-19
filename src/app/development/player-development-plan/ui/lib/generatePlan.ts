@@ -1,6 +1,6 @@
-import type { DevelopmentPlanV1, FocusArea } from "./engineSchema";
+import type { DevelopmentPlanV1, FocusItemV1 } from "./engineSchema";
 
-function pickMax3(focus: FocusArea[]) {
+function pickMax3(focus: FocusItemV1[]) {
   return focus.slice(0, 3);
 }
 
@@ -39,7 +39,7 @@ export function generatePlanV1(input: DevelopmentPlanV1): DevelopmentPlanV1 {
 
   // Default focus suggestions (if empty)
   if (!p.focus.length) {
-    const base: FocusArea[] = [
+    const base: FocusItemV1[] = [
       {
         id: "SCAN_DECIDE_EXECUTE",
         title: "Scan → decide → execute",
