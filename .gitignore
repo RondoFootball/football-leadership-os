@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+knowledge/pdp/sources/*.pdf
+knowledge/raw-pdfs/*.pdf
+pdp-test.pdf
+knowledge/pdp/sources/*.pdf
+knowledge/raw-pdfs/*.pdf
+pdp-test.pdf
