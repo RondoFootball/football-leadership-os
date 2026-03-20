@@ -171,11 +171,15 @@ export function pageAgreementContract(args: {
   <style>
     .pdpS2{
       position:relative;
-      height:var(--page-inner-h);
+      height:100%;
       border-radius:18px;
       overflow:hidden;
       background:#0B0D10;
       color:#fff;
+    }
+
+    .pdpS2 *{
+      box-sizing:border-box;
     }
 
     .pdpS2__wm{
@@ -237,16 +241,15 @@ export function pageAgreementContract(args: {
       padding:18mm 16mm;
       padding-left:26mm;
       height:100%;
-      box-sizing:border-box;
       display:grid;
       grid-template-rows:auto minmax(0,1fr) auto;
-      gap:22px;
+      gap:18px;
     }
 
     .pdpS2__top{
       display:flex;
       flex-direction:column;
-      gap:16px;
+      gap:14px;
       padding-top:.5mm;
     }
 
@@ -260,7 +263,7 @@ export function pageAgreementContract(args: {
     .pdpS2__hero{
       display:flex;
       flex-direction:column;
-      gap:22px;
+      gap:18px;
     }
 
     .pdpS2__title{
@@ -274,30 +277,29 @@ export function pageAgreementContract(args: {
     }
 
     .pdpS2__focus{
-      font-size:23pt;
-      line-height:1.18;
+      font-size:22.2pt;
+      line-height:1.16;
       letter-spacing:-0.022em;
       font-weight:780;
       color:rgba(255,255,255,.97);
       max-width:19ch;
       text-wrap:balance;
       overflow-wrap:anywhere;
-      min-height:16mm;
+      min-height:14mm;
     }
 
     .pdpS2__middle{
       min-height:0;
       display:grid;
-      grid-template-rows:minmax(50mm, auto) minmax(30mm, 1fr);
-      gap:22px;
+      grid-template-rows:minmax(42mm, auto) minmax(28mm, 1fr);
+      gap:18px;
       align-content:start;
-      padding-top:6px;
+      padding-top:2px;
     }
 
     .pdpS2__contentCard{
       border:1px solid rgba(255,255,255,.10);
       border-radius:18px;
-      box-sizing:border-box;
       padding:14px 16px;
       min-height:0;
       overflow:hidden;
@@ -325,8 +327,8 @@ export function pageAgreementContract(args: {
     }
 
     .pdpS2__targetText{
-      font-size:17.2pt;
-      line-height:1.50;
+      font-size:16.6pt;
+      line-height:1.44;
       color:rgba(255,255,255,.80);
       font-weight:520;
       text-wrap:balance;
@@ -347,7 +349,7 @@ export function pageAgreementContract(args: {
       margin:0;
       display:flex;
       flex-direction:column;
-      gap:12px;
+      gap:10px;
     }
 
     .pdpS2__momentItem{
@@ -363,13 +365,13 @@ export function pageAgreementContract(args: {
       border-radius:999px;
       background:var(--accent-mix, var(--accent));
       box-shadow:0 0 0 1px color-mix(in srgb, var(--accent-mix, var(--accent)) 18%, transparent);
-      margin-top:10px;
+      margin-top:9px;
       flex:0 0 auto;
     }
 
     .pdpS2__momentText{
-      font-size:14.2pt;
-      line-height:1.44;
+      font-size:13.8pt;
+      line-height:1.38;
       color:rgba(255,255,255,.78);
       font-weight:500;
       display:-webkit-box;
@@ -392,7 +394,6 @@ export function pageAgreementContract(args: {
       border-radius:18px;
       background:rgba(255,255,255,.04);
       padding:14px 16px 15px;
-      box-sizing:border-box;
       display:grid;
       grid-template-rows:auto auto auto;
       gap:10px;
@@ -462,7 +463,6 @@ export function pageAgreementContract(args: {
       width:16px;
       height:16px;
       border-radius:999px;
-      box-sizing:border-box;
       border:2px solid rgba(255,255,255,.16);
     }
 
@@ -613,11 +613,15 @@ export function pageContext(args: {
   <style>
     .pdpS5{
       position:relative;
-      height:var(--page-inner-h);
+      height:100%;
       border-radius:18px;
       overflow:hidden;
       background:#0B0D10;
       color:#fff;
+    }
+
+    .pdpS5 *{
+      box-sizing:border-box;
     }
 
     .pdpS5__wm{
@@ -637,7 +641,6 @@ export function pageContext(args: {
       object-fit:contain;
     }
 
-    /* 🔥 NU MET PRIMARY + SECONDARY */
     .pdpS5__wash{
       position:absolute;
       inset:0;
@@ -679,16 +682,15 @@ export function pageContext(args: {
       padding:18mm 16mm;
       padding-left:26mm;
       height:100%;
-      box-sizing:border-box;
       display:grid;
-      grid-template-rows:auto 74mm 1fr;
+      grid-template-rows:auto minmax(64mm, auto) minmax(0,1fr);
       gap:14px;
     }
 
     .pdpS5__top{
       display:flex;
       flex-direction:column;
-      gap:16px;
+      gap:14px;
       padding-top:.5mm;
     }
 
@@ -714,6 +716,7 @@ export function pageContext(args: {
       grid-template-columns:1fr 1fr;
       gap:14px;
       align-items:stretch;
+      min-height:0;
     }
 
     .pdpS5__card{
@@ -721,11 +724,10 @@ export function pageContext(args: {
       border-radius:16px;
       background:rgba(255,255,255,.04);
       padding:14px;
-      box-sizing:border-box;
       height:100%;
+      overflow:hidden;
     }
 
-    /* 🔥 BELANGRIJKSTE BLOK = MEER VISUEEL GEWICHT */
     .pdpS5__card--bottom{
       background:
         linear-gradient(
@@ -734,6 +736,8 @@ export function pageContext(args: {
           color-mix(in srgb, var(--accent-secondary, var(--accent)) 10%, rgba(0,0,0,.18)) 100%
         );
       border:1px solid color-mix(in srgb, var(--accent-secondary, var(--accent)) 22%, rgba(255,255,255,.10));
+      min-height:0;
+      align-self:stretch;
     }
 
     .pdpS5__cardHead{
@@ -762,8 +766,8 @@ export function pageContext(args: {
     }
 
     .pdpS5__li span:last-child{
-      font-size:12.5pt;
-      line-height:1.4;
+      font-size:12.4pt;
+      line-height:1.36;
       color:rgba(255,255,255,.82);
       font-weight:450;
       display:-webkit-box;
@@ -773,7 +777,6 @@ export function pageContext(args: {
       min-width:0;
     }
 
-    /* 🔥 MIX KLEUR = PERFECT HIER */
     .pdpS5__dot{
       width:6px;
       height:6px;
@@ -819,7 +822,6 @@ export function pageDiagnosis(args: {
     accentHex,
     clubName,
     logoUrl,
-    playerName,
     intro,
     momentItems,
     whatWeSeeItems,
@@ -829,7 +831,9 @@ export function pageDiagnosis(args: {
 
   const wm = (logoUrl || "").trim();
   const wmHtml = wm
-    ? `<div class="pdpS3__wm"><img src="${esc(wm)}" /></div>`
+    ? `<div class="pdpS3__wm" aria-hidden="true"><img src="${esc(
+        wm
+      )}" alt="${esc(clubName)} watermark" /></div>`
     : ``;
 
   const observations = (whatWeSeeItems || []).slice(0, 3);
@@ -861,7 +865,7 @@ export function pageDiagnosis(args: {
           <div class="pdpS3__videoThumb">
             ${
               slot.thumbnail_url
-                ? `<img src="${esc(slot.thumbnail_url)}" />`
+                ? `<img src="${esc(slot.thumbnail_url)}" alt="" />`
                 : ""
             }
             <div class="pdpS3__play"></div>
@@ -886,8 +890,8 @@ export function pageDiagnosis(args: {
   return `
 <section class="page pdpS3" style="--accent:${esc(accentHex)};">
   ${wmHtml}
-  <div class="pdpS3__wash"></div>
-  <div class="pdpS3__axis"></div>
+  <div class="pdpS3__wash" aria-hidden="true"></div>
+  <div class="pdpS3__axis" aria-hidden="true"></div>
 
   <div class="pdpS3__inner">
     <div class="pdpS3__top">
@@ -930,11 +934,32 @@ export function pageDiagnosis(args: {
   <style>
     .pdpS3{
       position:relative;
-      height:var(--page-inner-h);
+      height:100%;
       background:#0B0D10;
       color:#fff;
       border-radius:18px;
       overflow:hidden;
+    }
+
+    .pdpS3 *{
+      box-sizing:border-box;
+    }
+
+    .pdpS3__wm{
+      position:absolute;
+      right:-16mm;
+      bottom:-14mm;
+      width:126mm;
+      height:126mm;
+      opacity:.038;
+      z-index:0;
+      pointer-events:none;
+    }
+
+    .pdpS3__wm img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
     }
 
     .pdpS3__wash{
@@ -956,33 +981,60 @@ export function pageDiagnosis(args: {
 
     .pdpS3__inner{
       position:relative;
+      z-index:2;
       padding:18mm 16mm 16mm 26mm;
-      display:grid;
-      gap:16px;
       height:100%;
+      display:grid;
+      grid-template-rows:auto minmax(0,1fr) auto auto;
+      gap:12px;
+    }
+
+    .pdpS3__top{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .pdpS3__kicker{
+      font-size:10pt;
+      letter-spacing:.26em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.72);
     }
 
     .pdpS3__title{
       font-size:26pt;
+      line-height:1.02;
       font-weight:860;
+      letter-spacing:-0.02em;
+      max-width:20ch;
+      text-transform:uppercase;
     }
 
     .pdpS3__intro{
-      font-size:16pt;
+      font-size:15.2pt;
+      line-height:1.34;
       opacity:.9;
-      max-width:30ch;
+      max-width:28ch;
+      display:-webkit-box;
+      -webkit-line-clamp:3;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
     }
 
     .pdpS3__analysisRow{
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:14px;
+      align-items:stretch;
+      min-height:0;
     }
 
     .pdpS3__card{
       border-radius:16px;
       padding:14px;
       border:1px solid rgba(255,255,255,.1);
+      overflow:hidden;
     }
 
     .pdpS3__card--obs{
@@ -993,7 +1045,6 @@ export function pageDiagnosis(args: {
       background:rgba(255,255,255,.03);
     }
 
-    /* 🔥 EFFECT = BELANGRIJKSTE */
     .pdpS3__card--effect{
       background:
         linear-gradient(
@@ -1002,6 +1053,7 @@ export function pageDiagnosis(args: {
           color-mix(in srgb, var(--accent-secondary, var(--accent)) 12%, black)
         );
       border:1px solid color-mix(in srgb, var(--accent-secondary, var(--accent)) 25%, rgba(255,255,255,.1));
+      min-height:0;
     }
 
     .pdpS3__head{
@@ -1015,7 +1067,7 @@ export function pageDiagnosis(args: {
     .pdpS3__list{
       display:flex;
       flex-direction:column;
-      gap:10px;
+      gap:9px;
       padding:0;
       margin:0;
       list-style:none;
@@ -1024,6 +1076,8 @@ export function pageDiagnosis(args: {
     .pdpS3__li{
       display:flex;
       gap:8px;
+      align-items:flex-start;
+      min-width:0;
     }
 
     .pdpS3__dot{
@@ -1032,15 +1086,22 @@ export function pageDiagnosis(args: {
       border-radius:999px;
       background:var(--accent-mix, var(--accent));
       margin-top:6px;
+      flex:0 0 auto;
     }
 
     .pdpS3__li span:last-child{
-      font-size:13pt;
-      line-height:1.4;
+      font-size:12.8pt;
+      line-height:1.34;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      min-width:0;
     }
 
     .pdpS3__li--effect span:last-child{
-      font-size:14.5pt;
+      font-size:14pt;
+      line-height:1.36;
       font-weight:520;
     }
 
@@ -1048,6 +1109,7 @@ export function pageDiagnosis(args: {
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:10px;
+      align-items:stretch;
     }
 
     .pdpS3__videoCard{
@@ -1056,6 +1118,9 @@ export function pageDiagnosis(args: {
       border:1px solid rgba(255,255,255,.1);
       padding:10px;
       background:rgba(0,0,0,.12);
+      min-height:0;
+      text-decoration:none;
+      color:inherit;
     }
 
     .pdpS3__videoCard--active{
@@ -1068,6 +1133,7 @@ export function pageDiagnosis(args: {
       background:#111;
       border-radius:10px;
       position:relative;
+      overflow:hidden;
     }
 
     .pdpS3__videoThumb img{
@@ -1097,8 +1163,13 @@ export function pageDiagnosis(args: {
 
     .pdpS3__videoTitle{
       font-size:11pt;
+      line-height:1.28;
       margin-top:6px;
       opacity:.8;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
     }
   </style>
 </section>
@@ -1145,7 +1216,9 @@ export function pageDevelopmentRoute(args: {
 
   const wm = (logoUrl || "").trim();
   const wmHtml = wm
-    ? `<div class="pdpS4__wm"><img src="${esc(wm)}" /></div>`
+    ? `<div class="pdpS4__wm" aria-hidden="true"><img src="${esc(
+        wm
+      )}" alt="${esc(clubName)} watermark" /></div>`
     : ``;
 
   const planCard = (titleTxt: string, body: string) => `
@@ -1165,8 +1238,8 @@ export function pageDevelopmentRoute(args: {
   return `
 <section class="page pdpS4" style="--accent:${esc(accentHex)};">
   ${wmHtml}
-  <div class="pdpS4__wash"></div>
-  <div class="pdpS4__axis"></div>
+  <div class="pdpS4__wash" aria-hidden="true"></div>
+  <div class="pdpS4__axis" aria-hidden="true"></div>
 
   <div class="pdpS4__inner">
     <div class="pdpS4__top">
@@ -1176,7 +1249,6 @@ export function pageDevelopmentRoute(args: {
       </div>
     </div>
 
-    <!-- 🔥 SPELER = BELANGRIJKSTE -->
     <div class="pdpS4__card pdpS4__card--self">
       <div class="pdpS4__sectionHead">
         ${esc(t(lang, "WAT JIJ DOET", "WHAT YOU DO"))}
@@ -1186,7 +1258,6 @@ export function pageDevelopmentRoute(args: {
       </div>
     </div>
 
-    <!-- PLAN -->
     <div class="pdpS4__grid pdpS4__grid--plan">
       ${planCard(t(lang, "TRAINING", "TRAINING"), trainingText)}
       ${planCard(t(lang, "WEDSTRIJD", "MATCH"), matchText)}
@@ -1194,7 +1265,6 @@ export function pageDevelopmentRoute(args: {
       ${planCard(t(lang, "BUITEN HET VELD", "OFF FIELD"), offFieldText)}
     </div>
 
-    <!-- ROLLEN -->
     <div class="pdpS4__grid pdpS4__grid--roles">
       ${roleCard(t(lang, "SPELER", "PLAYER"), playerText)}
       ${roleCard(t(lang, "TRAINER", "COACH"), coachText)}
@@ -1206,11 +1276,32 @@ export function pageDevelopmentRoute(args: {
   <style>
     .pdpS4{
       position:relative;
-      height:var(--page-inner-h);
+      height:100%;
       background:#0B0D10;
       color:#fff;
       border-radius:18px;
       overflow:hidden;
+    }
+
+    .pdpS4 *{
+      box-sizing:border-box;
+    }
+
+    .pdpS4__wm{
+      position:absolute;
+      right:-18mm;
+      bottom:-14mm;
+      width:132mm;
+      height:132mm;
+      opacity:.038;
+      z-index:0;
+      pointer-events:none;
+    }
+
+    .pdpS4__wm img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
     }
 
     .pdpS4__wash{
@@ -1232,18 +1323,37 @@ export function pageDevelopmentRoute(args: {
 
     .pdpS4__inner{
       position:relative;
+      z-index:2;
       padding:18mm 16mm 16mm 26mm;
-      display:grid;
-      gap:14px;
       height:100%;
+      display:grid;
+      grid-template-rows:auto auto minmax(0,1fr) auto;
+      gap:12px;
+      align-content:start;
+    }
+
+    .pdpS4__top{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .pdpS4__kicker{
+      font-size:10pt;
+      letter-spacing:.26em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.72);
     }
 
     .pdpS4__title{
       font-size:26pt;
+      line-height:1.02;
       font-weight:860;
+      letter-spacing:-0.02em;
+      max-width:21ch;
+      text-transform:uppercase;
     }
 
-    /* 🔥 SPELER BLOK */
     .pdpS4__card--self{
       background:
         linear-gradient(
@@ -1252,22 +1362,28 @@ export function pageDevelopmentRoute(args: {
           color-mix(in srgb, var(--accent-mix, var(--accent)) 16%, black)
         );
       border:1px solid color-mix(in srgb, var(--accent-mix, var(--accent)) 30%, rgba(255,255,255,.1));
-      padding:16px;
+      padding:14px 16px;
       border-radius:16px;
       box-shadow:0 0 18px color-mix(in srgb, var(--accent-mix, var(--accent)) 18%, transparent);
+      overflow:hidden;
     }
 
     .pdpS4__cardBody--self{
-      font-size:16pt;
-      line-height:1.45;
+      font-size:15.2pt;
+      line-height:1.38;
       font-weight:520;
+      display:-webkit-box;
+      -webkit-line-clamp:3;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
     }
 
-    /* PLAN */
     .pdpS4__grid--plan{
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:12px;
+      align-items:stretch;
+      min-height:0;
     }
 
     .pdpS4__card--plan{
@@ -1275,18 +1391,25 @@ export function pageDevelopmentRoute(args: {
       padding:12px;
       border-radius:14px;
       border:1px solid rgba(255,255,255,.08);
+      overflow:hidden;
+      min-height:0;
     }
 
     .pdpS4__cardBody--plan{
-      font-size:13pt;
+      font-size:12.5pt;
+      line-height:1.34;
       opacity:.85;
+      display:-webkit-box;
+      -webkit-line-clamp:4;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
     }
 
-    /* ROLLEN */
     .pdpS4__grid--roles{
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:10px;
+      align-items:stretch;
     }
 
     .pdpS4__card--role{
@@ -1294,11 +1417,18 @@ export function pageDevelopmentRoute(args: {
       border:1px solid rgba(255,255,255,.06);
       padding:10px;
       border-radius:12px;
+      overflow:hidden;
+      min-height:0;
     }
 
     .pdpS4__cardBody--role{
-      font-size:11.5pt;
+      font-size:11.2pt;
+      line-height:1.28;
       opacity:.75;
+      display:-webkit-box;
+      -webkit-line-clamp:3;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
     }
 
     .pdpS4__cardHead{
@@ -1320,6 +1450,7 @@ export function pageDevelopmentRoute(args: {
 </section>
 `;
 }
+
 /** ---------------- SLIDE 6 ---------------- */
 export function pageSuccessDefinition(args: {
   lang: Lang;
@@ -1411,11 +1542,15 @@ export function pageSuccessDefinition(args: {
   <style>
     .pdpS6{
       position:relative;
-      height:var(--page-inner-h);
+      height:100%;
       border-radius:18px;
       overflow:hidden;
       background:#0B0D10;
       color:#fff;
+    }
+
+    .pdpS6 *{
+      box-sizing:border-box;
     }
 
     .pdpS6__wm{
@@ -1477,16 +1612,15 @@ export function pageSuccessDefinition(args: {
       padding:18mm 16mm;
       padding-left:26mm;
       height:100%;
-      box-sizing:border-box;
       display:grid;
-      grid-template-rows:auto 72mm 1fr;
-      gap:18px;
+      grid-template-rows:auto minmax(66mm, auto) minmax(0,1fr);
+      gap:16px;
     }
 
     .pdpS6__top{
       display:flex;
       flex-direction:column;
-      gap:16px;
+      gap:14px;
       padding-top:.5mm;
     }
 
@@ -1518,20 +1652,20 @@ export function pageSuccessDefinition(args: {
       grid-template-columns:1fr 1fr;
       gap:16px;
       align-items:stretch;
+      min-height:0;
     }
 
     .pdpS6__card{
       border:1px solid rgba(255,255,255,.10);
       border-radius:18px;
       padding:14px 16px;
-      box-sizing:border-box;
       overflow:hidden;
       height:100%;
     }
 
     .pdpS6__card--top{
       background:rgba(255,255,255,.04);
-      min-height:72mm;
+      min-height:66mm;
     }
 
     .pdpS6__card--bottom{
@@ -1541,7 +1675,7 @@ export function pageSuccessDefinition(args: {
           rgba(0,0,0,.14) 0%,
           color-mix(in srgb, var(--accent-secondary, var(--accent)) 10%, rgba(0,0,0,.16)) 100%
         );
-      min-height:44mm;
+      min-height:0;
       border:1px solid color-mix(in srgb, var(--accent-secondary, var(--accent)) 20%, rgba(255,255,255,.10));
     }
 
@@ -1560,7 +1694,7 @@ export function pageSuccessDefinition(args: {
       margin:0;
       display:flex;
       flex-direction:column;
-      gap:12px;
+      gap:10px;
     }
 
     .pdpS6__li{
@@ -1576,13 +1710,13 @@ export function pageSuccessDefinition(args: {
       border-radius:999px;
       background:var(--accent-mix, var(--accent));
       box-shadow:0 0 0 1px color-mix(in srgb, var(--accent-mix, var(--accent)) 18%, transparent);
-      margin-top:10px;
+      margin-top:9px;
       flex:0 0 auto;
     }
 
     .pdpS6__li span:last-child{
-      font-size:14.4pt;
-      line-height:1.46;
+      font-size:13.8pt;
+      line-height:1.38;
       color:rgba(255,255,255,.80);
       font-weight:500;
       display:-webkit-box;
@@ -1593,8 +1727,8 @@ export function pageSuccessDefinition(args: {
     }
 
     .pdpS6__li--signal span:last-child{
-      font-size:15.2pt;
-      line-height:1.48;
+      font-size:14.6pt;
+      line-height:1.40;
       color:rgba(255,255,255,.84);
       font-weight:520;
     }

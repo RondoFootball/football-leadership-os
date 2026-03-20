@@ -6,13 +6,13 @@ import {
   type DevelopmentPlanV1,
 } from "./lib/engineSchema";
 import { clubPresets, getClubPresetByName } from "./lib/clubPresets";
-import { PdpChat } from "./components/PdpChat";
+import { PdpChat, type ChatPlannerState } from "./components/PdpChat";
 
 type Lang = "nl" | "en";
 type Mode = "chat" | "manual";
 type TeamType = "academy" | "first_team";
 
-const ACADEMY_AGES = ["O13", "O14", "O15", "O16", "O17", "O18", "O19", "O21"];
+const ACADEMY_AGES = ["O13", "O14", "O15", "O16", "O17", "O18", "O19", "O21", "Jong"];
 
 const UI = {
   nl: {
@@ -26,7 +26,6 @@ const UI = {
     basicsSubtitle:
       "Leg eerst vast voor wie dit plan geldt. Club, team en branding bepalen daarna automatisch de juiste context.",
 
-    playerClubTitle: "Speler en club",
     brandingTitle: "Visuele preview",
     brandingEdit: "Branding aanpassen",
     brandingCollapse: "Inklappen",
@@ -46,12 +45,9 @@ const UI = {
 
     chooseClub: "Kies club",
     otherClub: "Andere club / handmatig invoeren",
-    other: "Overig",
 
     clubSearchPlaceholder: "Zoek club...",
-    selectedLeague: "Competitie",
     noClubResults: "Geen clubs gevonden",
-    clubPresetLoaded: "Clubpreset actief",
 
     primaryColor: "Primaire kleur",
     secondaryColor: "Secundaire kleur",
@@ -72,11 +68,7 @@ const UI = {
 
     developmentPoint: "Ontwikkelpunt",
 
-    rightIdentity: "Visuele identiteit",
-    rightStatus: "Planstatus",
-    rightSnapshot: "Snapshot",
-
-    statusPoint: "Ontwikkelpunt",
+    statusPoint: "Afspraak",
     statusContext: "Context",
     statusReality: "Realiteit",
     statusApproach: "Aanpak",
@@ -87,7 +79,7 @@ const UI = {
 
     downloadPlayer: "Download spelerplan",
     downloadStaff: "Download staffplan",
-    availableOther: "Ook beschikbaar in English",
+    availableOther: "Ook beschikbaar in Engels",
     downloadOther: "Download EN",
 
     langNl: "NL",
@@ -108,17 +100,20 @@ const UI = {
     avatarAdd: "Toevoegen",
     avatarEdit: "Aanpassen",
 
-    coverPreviewTitle: "Live cover preview",
     coverPreviewSub:
       "Deze preview gebruikt hetzelfde staande coverformat als de uiteindelijke PDF.",
     presetActive: "Clubpreset actief",
     coverSystemLine: "Persoonlijk Ontwikkelplan",
 
-    progressTitle: "Voortgang",
-    progressBody:
-      "Tijdens het beantwoorden van de vragen zie je hier direct welke delen van het plan al voldoende zijn ingevuld.",
-    slideCoverage: "Slide dekking",
-    builderSnapshot: "Builder snapshot",
+    progressHeader: "We maken dit plan voor",
+    totalProgress: "Totale voortgang",
+    planProgress: "Planvoortgang",
+    exportTitle: "Export",
+    exportBody:
+      "Je kunt het plan op elk moment uitdraaien, ook als nog niet alle onderdelen volledig zijn ingevuld.",
+    coverSlide: "Cover",
+    builderSnapshot: "Snapshot",
+    ready: "Klaar",
   },
   en: {
     eyebrow: "PLAYER DEVELOPMENT PLAN",
@@ -131,7 +126,6 @@ const UI = {
     basicsSubtitle:
       "First define who this plan is for. Club, team and branding then shape the right context automatically.",
 
-    playerClubTitle: "Player and club",
     brandingTitle: "Visual preview",
     brandingEdit: "Adjust branding",
     brandingCollapse: "Collapse",
@@ -151,12 +145,9 @@ const UI = {
 
     chooseClub: "Select club",
     otherClub: "Other club / manual entry",
-    other: "Other",
 
     clubSearchPlaceholder: "Search club...",
-    selectedLeague: "Competition",
     noClubResults: "No clubs found",
-    clubPresetLoaded: "Club preset active",
 
     primaryColor: "Primary color",
     secondaryColor: "Secondary color",
@@ -177,11 +168,7 @@ const UI = {
 
     developmentPoint: "Development point",
 
-    rightIdentity: "Visual identity",
-    rightStatus: "Plan status",
-    rightSnapshot: "Snapshot",
-
-    statusPoint: "Development point",
+    statusPoint: "Agreement",
     statusContext: "Context",
     statusReality: "Reality",
     statusApproach: "Approach",
@@ -213,23 +200,32 @@ const UI = {
     avatarAdd: "Add",
     avatarEdit: "Edit",
 
-    coverPreviewTitle: "Live cover preview",
     coverPreviewSub:
       "This preview uses the same portrait cover format as the final PDF.",
     presetActive: "Club preset active",
     coverSystemLine: "Personal Development Plan",
 
-    progressTitle: "Progress",
-    progressBody:
-      "While answering the questions, this panel shows which parts of the plan are already sufficiently covered.",
-    slideCoverage: "Slide coverage",
-    builderSnapshot: "Builder snapshot",
+    progressHeader: "We build this plan for",
+    totalProgress: "Overall progress",
+    planProgress: "Plan progress",
+    exportTitle: "Export",
+    exportBody:
+      "You can export the plan at any moment, even if not all sections are fully completed yet.",
+    coverSlide: "Cover",
+    builderSnapshot: "Snapshot",
+    ready: "Ready",
   },
 } as const;
 
 function createInitialPlan(): DevelopmentPlanV1 {
   const p = defaultDevelopmentPlan();
   p.meta.createdAtISO = "";
+  p.player.name = "";
+  p.player.role = "";
+  p.player.team = "";
+  p.brand.clubName = "";
+  p.meta.club = "";
+  p.meta.team = "";
   return p;
 }
 
@@ -247,10 +243,6 @@ function clampPercent(v: string | number | undefined, fallback = 70) {
   return Math.max(0, Math.min(100, Math.round(n)));
 }
 
-/**
- * Houdt speler-, club- en brandinggegevens vast
- * wanneer de chat een nieuw plan terugstuurt.
- */
 function mergeGeneratedPlanWithLockedBasics(
   current: DevelopmentPlanV1,
   generated: DevelopmentPlanV1
@@ -289,11 +281,29 @@ function mergeGeneratedPlanWithLockedBasics(
   return next;
 }
 
+function getSectionProgress(items: boolean[]) {
+  const total = items.length;
+  const filled = items.filter(Boolean).length;
+  const progress = total === 0 ? 0 : Math.round((filled / total) * 100);
+
+  return {
+    total,
+    filled,
+    progress,
+  };
+}
+
+function plannerFilled(planner: ChatPlannerState | null, key: string) {
+  return !!planner?.filledSlots?.[key];
+}
+
 export default function PlayerDevelopmentPlanBuilder() {
   const [plan, setPlan] = useState<DevelopmentPlanV1>(createInitialPlan());
   const [lang, setLang] = useState<Lang>("nl");
   const [mode, setMode] = useState<Mode>("chat");
   const [hasPlan, setHasPlan] = useState(false);
+  const [chatPlannerState, setChatPlannerState] =
+    useState<ChatPlannerState | null>(null);
 
   const [basicsOpen, setBasicsOpen] = useState(true);
   const [brandingOpen, setBrandingOpen] = useState(false);
@@ -309,23 +319,127 @@ export default function PlayerDevelopmentPlanBuilder() {
   const teamType = (((plan.player as any)?.teamType || "") as TeamType | "");
   const academyAge = (((plan.player as any)?.academyAgeCategory || "") as string);
 
-  const filledPoint = !!plan.slide2?.focusBehaviour?.trim();
-  const filledContext =
+  const coverReady =
+    !!plan.player.name?.trim() &&
+    !!plan.brand.clubName?.trim() &&
+    !!plan.meta.team?.trim() &&
+    !!plan.brand.primaryColor?.trim();
+
+  const agreementProgress = getSectionProgress([
+    !!plan.slide2?.focusBehaviour?.trim() ||
+      plannerFilled(chatPlannerState, "developmentPoint"),
+
+    !!plan.slide2?.developmentGoal?.trim() ||
+      plannerFilled(chatPlannerState, "targetBehaviour"),
+
+    !!plan.slide2?.matchSituation?.trim() ||
+      plannerFilled(chatPlannerState, "matchSituation"),
+  ]);
+
+  const contextProgress = getSectionProgress([
     !!plan.slideContext?.gameMoments?.length ||
+      plannerFilled(chatPlannerState, "gameMoments"),
+
     !!plan.slideContext?.zones?.length ||
-    !!plan.slideContext?.principles?.length;
-  const filledReality =
+      plannerFilled(chatPlannerState, "zones"),
+
+    !!plan.slideContext?.principles?.length ||
+      plannerFilled(chatPlannerState, "principles"),
+  ]);
+
+  const realityProgress = getSectionProgress([
     !!plan.slide3Baseline?.intro?.trim() ||
-    !!plan.slide3?.what_we_see?.items?.length;
-  const filledApproach =
+      !!plan.slide3Baseline?.observations?.length ||
+      plannerFilled(chatPlannerState, "observations"),
+
+    !!plan.slide3?.what_we_see?.items?.length ||
+      plannerFilled(chatPlannerState, "observations"),
+
+    !!plan.slide3?.moment?.items?.length ||
+      !!plan.slide3Baseline?.moments?.length ||
+      plannerFilled(chatPlannerState, "whenObserved"),
+
+    !!plan.slide3?.effect_on_match?.items?.length ||
+      !!plan.slide3Baseline?.matchEffects?.length ||
+      plannerFilled(chatPlannerState, "effectOnGame"),
+  ]);
+
+  const approachProgress = getSectionProgress([
     !!plan.slide4DevelopmentRoute?.developmentRoute?.training?.trim() ||
+      plannerFilled(chatPlannerState, "playerActions"),
+
     !!plan.slide4DevelopmentRoute?.developmentRoute?.match?.trim() ||
+      plannerFilled(chatPlannerState, "playerActions"),
+
     !!plan.slide4DevelopmentRoute?.developmentRoute?.video?.trim() ||
-    !!plan.slide4DevelopmentRoute?.developmentRoute?.off_field?.trim();
-  const filledSuccess =
+      plannerFilled(chatPlannerState, "staffResponsibilities"),
+
+    !!plan.slide4DevelopmentRoute?.developmentRoute?.off_field?.trim() ||
+      plannerFilled(chatPlannerState, "staffResponsibilities"),
+
+    !!plan.slide4DevelopmentRoute?.playerOwnText?.trim() ||
+      plannerFilled(chatPlannerState, "playerActions"),
+  ]);
+
+  const successProgress = getSectionProgress([
     !!plan.slide6SuccessDefinition?.inGame?.length ||
+      plannerFilled(chatPlannerState, "successSignals"),
+
     !!plan.slide6SuccessDefinition?.behaviour?.length ||
-    !!plan.slide6SuccessDefinition?.signals?.length;
+      plannerFilled(chatPlannerState, "successSignals"),
+
+    !!plan.slide6SuccessDefinition?.signals?.length ||
+      plannerFilled(chatPlannerState, "successSignals"),
+  ]);
+
+  const sections = [
+    {
+      key: "cover",
+      label: t.coverSlide,
+      progress: coverReady ? 100 : 0,
+      filled: coverReady ? 4 : 0,
+      total: 4,
+    },
+    {
+      key: "agreement",
+      label: t.statusPoint,
+      progress: agreementProgress.progress,
+      filled: agreementProgress.filled,
+      total: agreementProgress.total,
+    },
+    {
+      key: "context",
+      label: t.statusContext,
+      progress: contextProgress.progress,
+      filled: contextProgress.filled,
+      total: contextProgress.total,
+    },
+    {
+      key: "reality",
+      label: t.statusReality,
+      progress: realityProgress.progress,
+      filled: realityProgress.filled,
+      total: realityProgress.total,
+    },
+    {
+      key: "approach",
+      label: t.statusApproach,
+      progress: approachProgress.progress,
+      filled: approachProgress.filled,
+      total: approachProgress.total,
+    },
+    {
+      key: "success",
+      label: t.statusSuccess,
+      progress: successProgress.progress,
+      filled: successProgress.filled,
+      total: successProgress.total,
+    },
+  ];
+
+  const totalProgress = Math.round(
+    sections.reduce((sum, section) => sum + section.progress, 0) / sections.length
+  );
 
   const eredivisieClubs = useMemo(
     () =>
@@ -467,12 +581,11 @@ export default function PlayerDevelopmentPlanBuilder() {
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-[110px_minmax(0,1fr)] gap-5 items-start">
-                        {/* AVATAR */}
                         <div className="flex flex-col items-center md:items-start gap-3">
                           <button
                             type="button"
                             onClick={() => setIdentityPhotoOpen((v) => !v)}
-                            className="group relative w-[96px] h-[96px] rounded-[22px] overflow-visible border border-white/10 bg-white/[0.04] hover:border-white/20 transition"
+                            className="group relative w-[96px] h-[96px] rounded-[22px] overflow-hidden border border-white/10 bg-white/[0.04] hover:border-white/20 transition"
                           >
                             {plan.player.headshotUrl ? (
                               <img
@@ -510,7 +623,6 @@ export default function PlayerDevelopmentPlanBuilder() {
                           </div>
                         </div>
 
-                        {/* INPUTS */}
                         <div className="space-y-4">
                           <Input
                             label={t.playerName}
@@ -839,7 +951,11 @@ export default function PlayerDevelopmentPlanBuilder() {
                       </Hint>
                     </div>
 
-                    <PdpChat draftPlan={plan} onPlanGenerated={onPlanGenerated} />
+                    <PdpChat
+                      draftPlan={plan}
+                      onPlanGenerated={onPlanGenerated}
+                      onPlannerStateChange={setChatPlannerState}
+                    />
                   </>
                 ) : (
                   <>
@@ -868,109 +984,137 @@ export default function PlayerDevelopmentPlanBuilder() {
 
               {/* STICKY PROGRESS PANEL */}
               <div className="sticky top-6 space-y-4">
-                <div className="border border-white/10 rounded-2xl p-4 bg-white/[0.03]">
+                {/* PLAYER HEADER */}
+                <div className="border border-white/10 rounded-2xl p-5 bg-white/[0.03]">
                   <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
-                    {t.progressTitle}
-                  </div>
-                  <div className="text-[12px] text-white/48 mt-2 leading-relaxed">
-                    {t.progressBody}
-                  </div>
-                </div>
-
-                <div className="border border-white/10 rounded-2xl p-4 bg-white/[0.03] space-y-3">
-                  <div className="text-[11px] text-white/40 uppercase tracking-wide">
-                    {t.rightIdentity}
+                    {t.progressHeader}
                   </div>
 
-                  <div
-                    className="h-12 rounded-lg border border-white/10"
-                    style={{
-                      background: `linear-gradient(135deg, ${primary} ${balance}%, ${secondary} 100%)`,
-                    }}
-                  />
+                  <div className="mt-4 flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="text-[22px] leading-tight text-white/92 font-medium">
+                        {plan.player.name || t.noPlayerYet}
+                      </div>
 
-                  <div className="flex items-center gap-3 min-h-[32px]">
-                    {plan.brand.logoUrl ? (
-                      <img
-                        src={plan.brand.logoUrl}
-                        className="w-8 h-8 object-contain opacity-85"
-                        alt=""
-                      />
-                    ) : null}
+                      <div className="text-[13px] text-white/48 mt-2">
+                        {plan.brand.clubName || t.club}
+                      </div>
 
-                    {plan.player.headshotUrl ? (
-                      <img
-                        src={plan.player.headshotUrl}
-                        className="w-8 h-8 rounded-full object-cover"
-                        alt=""
-                      />
-                    ) : null}
-
-                    <div className="text-[12px] text-white/50">
-                      {plan.brand.clubName || t.club}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="border border-white/10 rounded-2xl p-4 bg-white/[0.03]">
-                  <div className="text-[11px] tracking-[0.18em] text-white/40 mb-3 uppercase">
-                    {t.slideCoverage}
-                  </div>
-
-                  <StatusItem label={t.statusPoint} filled={filledPoint} />
-                  <StatusItem label={t.statusContext} filled={filledContext} />
-                  <StatusItem label={t.statusReality} filled={filledReality} />
-                  <StatusItem label={t.statusApproach} filled={filledApproach} />
-                  <StatusItem label={t.statusSuccess} filled={filledSuccess} />
-                </div>
-
-                <div className="border border-white/10 rounded-2xl p-4 bg-white/[0.03]">
-                  <div className="text-[11px] text-white/40 mb-2 uppercase tracking-wide">
-                    {t.builderSnapshot}
-                  </div>
-
-                  <div className="text-[14px] text-white/85">
-                    {plan.player.name || t.noPlayerYet}
-                  </div>
-
-                  <div className="text-[12px] text-white/50 mt-1">
-                    {plan.player.role || t.playerPosition} ·{" "}
-                    {plan.player.team || t.teamType}
-                  </div>
-
-                  <div className="text-[12px] text-white/40 mt-3">
-                    {plan.slide2?.focusBehaviour || t.noPointYet}
-                  </div>
-                </div>
-
-                {hasPlan && (
-                  <div className="space-y-3 border border-white/10 rounded-2xl p-4 bg-white/[0.03]">
-                    <button
-                      onClick={() => download("player", lang)}
-                      className="w-full bg-white text-black py-2.5 rounded-full text-sm font-medium"
-                    >
-                      {t.downloadPlayer}
-                    </button>
-
-                    <button
-                      onClick={() => download("staff", lang)}
-                      className="w-full border border-white/20 py-2.5 rounded-full text-sm"
-                    >
-                      {t.downloadStaff}
-                    </button>
-
-                    <div className="text-center text-[11px] text-white/35 pt-2">
-                      {t.availableOther}
+                      <div className="text-[12px] text-white/34 mt-1">
+                        {plan.meta.team || t.teamType}
+                      </div>
                     </div>
 
-                    <button
-                      onClick={() => download("player", otherLang)}
-                      className="w-full text-[12px] text-white/70"
-                    >
-                      {t.downloadOther}
-                    </button>
+                    <div className="shrink-0">
+                      {plan.player.headshotUrl ? (
+                        <img
+                          src={plan.player.headshotUrl}
+                          className="w-12 h-12 rounded-full object-cover border border-white/10"
+                          alt=""
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full border border-white/10 bg-white/[0.04]" />
+                      )}
+                    </div>
                   </div>
-                )}
+
+                  <div className="mt-5 h-[1px] w-full overflow-hidden rounded-full bg-white/6">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: "42%",
+                        background: `linear-gradient(90deg, ${primary} 0%, ${secondary} 100%)`,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* TOTAL PROGRESS */}
+                <div className="border border-white/10 rounded-2xl p-5 bg-white/[0.03]">
+                  <div className="flex items-end justify-between gap-4">
+                    <div>
+                      <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
+                        {t.totalProgress}
+                      </div>
+                      <div className="text-[30px] leading-none tracking-[-0.03em] text-white/92 font-semibold mt-3">
+                        {totalProgress}%
+                      </div>
+                    </div>
+
+                    <div className="text-[12px] text-white/38">
+                      {sections.filter((s) => s.progress === 100).length}/{sections.length}
+                    </div>
+                  </div>
+
+                  <div className="mt-4 h-[8px] rounded-full bg-white/8 overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{
+                        width: `${totalProgress}%`,
+                        background: `linear-gradient(90deg, ${primary} 0%, ${secondary} 100%)`,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* SECTION PROGRESS */}
+                <div className="border border-white/10 rounded-2xl p-4 bg-white/[0.03]">
+                  <div className="text-[11px] tracking-[0.18em] text-white/40 mb-4 uppercase">
+                    {t.planProgress}
+                  </div>
+
+                  <div className="space-y-3">
+                    {sections.map((section) => (
+                      <ProgressRow
+                        key={section.key}
+                        label={section.label}
+                        progress={section.progress}
+                        filled={section.filled}
+                        total={section.total}
+                        primary={primary}
+                        secondary={secondary}
+                        readyLabel={t.ready}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* EXPORT ALWAYS AVAILABLE */}
+                <div className="space-y-3 border border-white/10 rounded-2xl p-4 bg-white/[0.03]">
+                  <div>
+                    <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
+                      {t.exportTitle}
+                    </div>
+                    <div className="text-[12px] text-white/45 mt-2 leading-relaxed">
+                      {t.exportBody}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => download("player", lang)}
+                    className="w-full bg-white text-black py-2.5 rounded-full text-sm font-medium"
+                  >
+                    {t.downloadPlayer}
+                  </button>
+
+                  <button
+                    onClick={() => download("staff", lang)}
+                    className="w-full border border-white/20 py-2.5 rounded-full text-sm"
+                  >
+                    {t.downloadStaff}
+                  </button>
+
+                  <div className="text-center text-[11px] text-white/35 pt-2">
+                    {t.availableOther}
+                  </div>
+
+                  <button
+                    onClick={() => download("player", otherLang)}
+                    className="w-full text-[12px] text-white/70"
+                  >
+                    {t.downloadOther}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1251,7 +1395,7 @@ function ClubSelect({
               {filteredEredivisie.length > 0 && (
                 <ClubSection
                   title="Eredivisie"
-                  competitionLogoUrl="/logos/competitions/eredivisie.png"
+                  competitionLogoUrl="/logos/netherlands/eredivisie/eredivisie.png"
                   items={filteredEredivisie}
                   selectedValue={value}
                   activeIndex={activeIndex}
@@ -1270,7 +1414,7 @@ function ClubSelect({
               {filteredKkd.length > 0 && (
                 <ClubSection
                   title="KKD"
-                  competitionLogoUrl="/logos/competitions/kkd.png"
+                  competitionLogoUrl="/logos/netherlands/kkd/kkd.png"
                   items={filteredKkd}
                   selectedValue={value}
                   activeIndex={activeIndex}
@@ -1561,7 +1705,7 @@ function SimpleDropdown({
         </button>
 
         {open && (
-          <div className="absolute z-40 mt-2 w-full overflow-hidden rounded-2xl border border-white/10 bg-[#101317] shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
+          <div className="absolute z-[999] mt-2 w-full overflow-hidden rounded-2xl border border-white/10 bg-[#101317] shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
             <div ref={listRef} className="max-h-[280px] overflow-y-auto p-2" role="listbox">
               {items.map((item, idx) => {
                 const active = idx === activeIndex;
@@ -1716,25 +1860,6 @@ function LangPill({
   );
 }
 
-function StatusItem({
-  label,
-  filled,
-}: {
-  label: string;
-  filled: boolean;
-}) {
-  return (
-    <div className="flex items-center justify-between text-[13px] py-1">
-      <span className="text-white/70">{label}</span>
-      <span
-        className={`w-2 h-2 rounded-full ${
-          filled ? "bg-white" : "bg-white/20"
-        }`}
-      />
-    </div>
-  );
-}
-
 function Hint({
   children,
   onClick,
@@ -1749,6 +1874,47 @@ function Hint({
     >
       + {children}
     </button>
+  );
+}
+
+function ProgressRow({
+  label,
+  progress,
+  filled,
+  total,
+  primary,
+  secondary,
+  readyLabel,
+}: {
+  label: string;
+  progress: number;
+  filled: number;
+  total: number;
+  primary: string;
+  secondary: string;
+  readyLabel: string;
+}) {
+  const done = progress === 100;
+
+  return (
+    <div className="rounded-xl border border-white/8 bg-white/[0.02] p-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-[13px] text-white/82">{label}</div>
+        <div className="text-[11px] text-white/38">
+          {done ? readyLabel : `${filled}/${total}`}
+        </div>
+      </div>
+
+      <div className="mt-3 h-[6px] rounded-full bg-white/8 overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all"
+          style={{
+            width: `${progress}%`,
+            background: `linear-gradient(90deg, ${primary} 0%, ${secondary} 100%)`,
+          }}
+        />
+      </div>
+    </div>
   );
 }
 
@@ -1774,118 +1940,100 @@ function CoverPreviewCard({
   return (
     <div className="h-full w-full flex items-center justify-center">
       <div
-        className="relative w-full max-w-[420px] aspect-[210/297] rounded-[18px] overflow-hidden border border-white/10"
-        style={
-          {
-            "--accent": primary,
-            "--accent-primary": primary,
-            "--accent-secondary": secondary,
-            "--accent-mix": primary,
-          } as React.CSSProperties
-        }
+        className="relative h-full max-h-[760px] aspect-[210/297] w-auto max-w-full overflow-hidden rounded-[18px] border border-white/10"
+        style={{
+          background: `linear-gradient(135deg, ${primary} ${balance}%, ${secondary} 100%)`,
+        }}
       >
-        {/* MEDIA */}
-        <div className="absolute inset-0 bg-[#050608]">
-          {playerImageUrl ? (
-            <img
-              src={playerImageUrl}
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{
-                objectPosition: "center 22%",
-                transform: "scale(1.02)",
-                filter: "saturate(.94) contrast(1.02)",
-              }}
-            />
-          ) : (
-            <div className="absolute inset-0 bg-[#0B0D10]" />
-          )}
-
-          {/* SHADE */}
-          <div
-            className="absolute inset-0"
+        {playerImageUrl ? (
+          <img
+            src={playerImageUrl}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover opacity-[0.9]"
             style={{
-              background: `
-                linear-gradient(90deg, rgba(0,0,0,.74) 0%, rgba(0,0,0,.34) 42%, rgba(0,0,0,.62) 100%),
-                linear-gradient(180deg, rgba(0,0,0,.16) 0%, rgba(0,0,0,.46) 100%)
-              `,
+              objectPosition: "center 22%",
+              transform: "scale(1.02)",
+              filter: "saturate(.94) contrast(1.02)",
             }}
           />
+        ) : null}
 
-          {/* WASH */}
-          <div
-            className="absolute inset-0 mix-blend-screen opacity-[0.96]"
-            style={{
-              background: `
-                radial-gradient(circle at 14% 26%, ${primary}55 0%, transparent 44%),
-                radial-gradient(circle at 82% 74%, ${secondary}33 0%, transparent 34%),
-                linear-gradient(135deg, ${primary}22 0%, transparent 42%, ${secondary}22 100%)
-              `,
-            }}
-          />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `
+              linear-gradient(90deg, rgba(0,0,0,.74) 0%, rgba(0,0,0,.34) 42%, rgba(0,0,0,.62) 100%),
+              linear-gradient(180deg, rgba(0,0,0,.16) 0%, rgba(0,0,0,.46) 100%)
+            `,
+          }}
+        />
 
-          {/* VIGNETTE */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background: `
-                radial-gradient(circle at center, transparent 38%, rgba(0,0,0,.22) 100%),
-                linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.22))
-              `,
-            }}
-          />
+        <div
+          className="absolute inset-0 mix-blend-screen opacity-[0.96]"
+          style={{
+            background: `
+              radial-gradient(circle at 14% 26%, ${primary}55 0%, transparent 44%),
+              radial-gradient(circle at 82% 74%, ${secondary}33 0%, transparent 34%),
+              linear-gradient(135deg, ${primary}22 0%, transparent 42%, ${secondary}22 100%)
+            `,
+          }}
+        />
 
-          {/* GRAIN */}
-          <div
-            className="absolute inset-0 opacity-[0.04]"
-            style={{
-              backgroundImage: `
-                linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px)
-              `,
-              backgroundSize: "4px 4px",
-            }}
-          />
-        </div>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `
+              radial-gradient(circle at center, transparent 38%, rgba(0,0,0,.22) 100%),
+              linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.22))
+            `,
+          }}
+        />
 
-        {/* CONTENT */}
+        <div
+          className="absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px)
+            `,
+            backgroundSize: "4px 4px",
+          }}
+        />
+
         <div className="relative z-10 w-full h-full">
-          {/* RAIL */}
           <div
             className="absolute left-[18px] top-[18px] bottom-[18px] w-[3px] rounded-full"
             style={{ background: primary }}
           />
 
-          {/* TOP TEXT */}
           <div className="absolute top-[22px] left-[32px]">
             <div className="text-[11px] tracking-[0.16em] uppercase text-white/90 font-semibold">
               {clubName}
             </div>
             <div className="text-[10px] text-white/70 mt-1">
-              Persoonlijk Ontwikkelplan
+              {systemLine}
             </div>
           </div>
 
-          {/* LOGO */}
-          {logoUrl && (
-            <div className="absolute top-[16px] right-[16px] w-[44px] h-[44px] rounded-[12px] border border-white/20 bg-white/10 backdrop-blur-sm flex items-center justify-center shadow">
+          {logoUrl ? (
+            <div className="absolute top-[16px] right-[16px] w-[44px] h-[44px] rounded-[12px] border border-white/20 bg-white/10 backdrop-blur-sm flex items-center justify-center shadow-[0_8px_22px_rgba(0,0,0,0.22)]">
               <img
                 src={logoUrl}
                 className="w-[24px] h-[24px] object-contain"
+                alt=""
               />
             </div>
-          )}
+          ) : null}
 
-          {/* NAME */}
-          <div className="absolute left-[32px] right-[20px] bottom-[50px]">
-            <div className="text-[32px] leading-none tracking-[-0.03em] font-extrabold text-white drop-shadow">
+          <div className="absolute left-[32px] right-[20px] bottom-[90px]">
+            <div className="text-[32px] leading-none tracking-[-0.03em] font-extrabold text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.28)] break-words">
               {playerName}
             </div>
           </div>
 
-          {/* FOOTER */}
           <div className="absolute left-[32px] right-[20px] bottom-[20px] flex items-center justify-between">
             <div className="text-[10px] tracking-[0.26em] uppercase text-white/70">
-              Performance Development System
+              {systemLine}
             </div>
 
             <div

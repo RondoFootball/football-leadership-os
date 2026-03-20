@@ -1,171 +1,187 @@
+// src/app/api/pdp/generate/route.ts
+
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
-import type { DevelopmentPlanV1 } from "@/app/development/player-development-plan/ui/lib/engineSchema";
-import { retrieveKnowledge } from "@/app/development/player-development-plan/ui/lib/knowledgeIndex";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+import type {
+  DevelopmentPlanV1,
+  Lang,
+} from "@/app/development/player-development-plan/ui/lib/engineSchema";
+import { buildPlannerState } from "../chat/chatPlanner";
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const apiKey = process.env.OPENAI_API_KEY;
 
-function safeString(v: any, fallback = "") {
-  return typeof v === "string" && v.trim() ? v.trim() : fallback;
+const client = apiKey
+  ? new OpenAI({
+      apiKey,
+    })
+  : null;
+
+type ChatMsg = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+type ApiInput = {
+  messages: ChatMsg[];
+  draftPlan?: Partial<DevelopmentPlanV1>;
+  lang?: Lang;
+};
+
+function deepMergePlan(
+  base: Partial<DevelopmentPlanV1>,
+  patch: Partial<DevelopmentPlanV1>
+): Partial<DevelopmentPlanV1> {
+  const out = structuredClone(base || {});
+
+  function merge(target: any, source: any) {
+    for (const key of Object.keys(source || {})) {
+      const sourceValue = source[key];
+      const targetValue = target[key];
+
+      if (
+        sourceValue &&
+        typeof sourceValue === "object" &&
+        !Array.isArray(sourceValue)
+      ) {
+        target[key] = merge(targetValue || {}, sourceValue);
+      } else {
+        target[key] = sourceValue;
+      }
+    }
+    return target;
+  }
+
+  return merge(out, patch || {});
 }
 
-function clampHex(v: string) {
-  const s = (v || "").trim();
-  if (!s) return "#111111";
-  if (/^#[0-9A-Fa-f]{6}$/.test(s)) return s;
-  if (/^[0-9A-Fa-f]{6}$/.test(s)) return `#${s}`;
-  return "#111111";
+function buildGeneratePrompt(lang: Lang) {
+  return `
+You generate a structured football Player Development Plan patch.
+
+Rules:
+- Return only valid JSON
+- Output only fields you are confident about
+- Be concrete, football-specific and observable
+- Keep one dominant development line
+- Responsibilities must be explicit
+- Avoid generic coaching language
+- Use role and match context where available
+- Output must fit these areas:
+  - slide2
+  - slideContext
+  - slide3Baseline and/or slide3
+  - slide4DevelopmentRoute
+  - slide6SuccessDefinition
+
+Very important:
+- This is an INDIVIDUAL player development plan inside a team context
+- The player's role and the effect on the team matter
+- Responsibilities must not stay vague
+- Success must be observable in football behaviour and game impact
+
+Language:
+${lang === "nl" ? "Write all content in Dutch." : "Write all content in English."}
+
+Return exactly this shape:
+{
+  "message": "short user-facing note",
+  "planPatch": {
+    "slide2": {},
+    "slideContext": {},
+    "slide3Baseline": {},
+    "slide3": {},
+    "slide4DevelopmentRoute": {},
+    "slide6SuccessDefinition": {}
+  }
 }
-
-function normalizePlan(seed: DevelopmentPlanV1, ai: any): DevelopmentPlanV1 {
-  const merged: any = { ...seed, ...(ai || {}) };
-
-  // Ensure required blocks exist
-  merged.meta = merged.meta || seed.meta;
-  merged.brand = merged.brand || seed.brand;
-  merged.player = merged.player || seed.player;
-  merged.clubModel = merged.clubModel || seed.clubModel;
-  merged.diagnosis = merged.diagnosis || seed.diagnosis;
-  merged.priority = merged.priority || seed.priority;
-  merged.notNow = merged.notNow || seed.notNow;
-
-  merged.meta.blockLengthWeeks =
-    Number(merged.meta.blockLengthWeeks) || seed.meta.blockLengthWeeks || 8;
-  merged.brand.primaryColor = clampHex(
-    merged.brand.primaryColor || seed.brand.primaryColor
-  );
-
-  // Focus normalize
-  const rawFocus = Array.isArray(merged.focus) ? merged.focus : [];
-  merged.focus = rawFocus.slice(0, 3).map((f: any, idx: number) => ({
-    id: safeString(f?.id, `f_${idx}_${safeString(f?.title, "focus").slice(0, 18)}`),
-    title: safeString(f?.title, `Focus ${idx + 1}`),
-    context: safeString(f?.context, ""),
-    type: safeString(f?.type, "focus"),
-    goodLooksLike: Array.isArray(f?.goodLooksLike)
-      ? f.goodLooksLike.filter((x: any) => typeof x === "string").join(" • ")
-      : safeString(f?.goodLooksLike, ""),
-    constraints: safeString(f?.constraints, ""),
-    playerActions: Array.isArray(f?.playerActions)
-      ? f.playerActions.filter((x: any) => typeof x === "string").slice(0, 8)
-      : [],
-    staffActions: Array.isArray(f?.staffActions)
-      ? f.staffActions.filter((x: any) => typeof x === "string").slice(0, 8)
-      : [],
-    riskIfOverloaded: safeString(f?.riskIfOverloaded, ""),
-  }));
-
-  // Context/stakeholders/governance/expectedShift/evaluation/versions
-  merged.context = merged.context || seed.context;
-  merged.stakeholders = merged.stakeholders || seed.stakeholders;
-  merged.governance = merged.governance || seed.governance;
-  merged.expectedShift = merged.expectedShift || seed.expectedShift;
-  merged.evaluation = merged.evaluation || seed.evaluation;
-  merged.versions = merged.versions || seed.versions;
-
-  if (!merged.governance?.horizonWeeks) merged.governance.horizonWeeks = merged.meta.blockLengthWeeks || 8;
-  if (!Array.isArray(merged.governance?.checkpoints)) merged.governance.checkpoints = [];
-
-  if (!Array.isArray(merged.expectedShift?.staffSignals)) merged.expectedShift.staffSignals = [];
-  if (!Array.isArray(merged.expectedShift?.playerSignals)) merged.expectedShift.playerSignals = [];
-
-  if (!merged.evaluation?.reviewMoment) merged.evaluation.reviewMoment = seed.evaluation?.reviewMoment || "End of block.";
-  if (!merged.evaluation?.decisionCriteria) merged.evaluation.decisionCriteria = seed.evaluation?.decisionCriteria || "Observable shift is visible.";
-
-  if (!merged.versions?.staff) merged.versions.staff = { summary: "", keyMessages: [] };
-  if (!merged.versions?.player) merged.versions.player = { summary: "", keyMessages: [] };
-  if (!Array.isArray(merged.versions.staff.keyMessages)) merged.versions.staff.keyMessages = [];
-  if (!Array.isArray(merged.versions.player.keyMessages)) merged.versions.player.keyMessages = [];
-
-  // Ensure createdAtISO
-  if (!merged.meta.createdAtISO) merged.meta.createdAtISO = new Date().toISOString();
-
-  return merged as DevelopmentPlanV1;
+  `.trim();
 }
-
-const SYSTEM = `
-You are an elite Head of Player Development in professional football.
-
-Write a decision-grade 8-week Player Development Plan.
-Language: simple English for football industry (MBO/HBO level). Short sentences. No academic jargon.
-
-Output requirements:
-- Output JSON ONLY (no markdown).
-- Produce a full plan object matching the provided schema shape.
-- The plan must include:
-  (1) context (match + training + video)
-  (2) stakeholders (who is involved)
-  (3) governance (time horizon + checkpoints)
-  (4) expectedShift (signals for staff + player)
-  (5) focus blocks (max 3) with practical training + actions
-  (6) two versions: staff + player summaries and key messages.
-
-Quality rules:
-- Do not ask questions. Make reasonable assumptions if something is missing.
-- Focus on ONE dominant match moment under pressure.
-- Make it executable: weekly rhythm, clear observables, simple constraints.
-- Avoid red/green judgement language.
-`;
 
 export async function POST(req: Request) {
   try {
-    const seed = (await req.json()) as DevelopmentPlanV1;
-
-    // RAG hits (Dutch query allowed; model output stays English)
-    const ragQueryParts = [
-      seed?.diagnosis?.initialIntent,
-      seed?.diagnosis?.breakdownMoment,
-      seed?.diagnosis?.pressureType,
-      seed?.player?.role,
-    ].filter(Boolean);
-    const ragQuery = ragQueryParts.join(" | ").slice(0, 400);
-
-    const hits = retrieveKnowledge({ query: ragQuery || "player development plan time horizon checkpoints", topK: 6 });
-    const knowledge = hits
-      .map((h) => `SOURCE: ${h.source}${h.page ? ` p.${h.page}` : ""}\n${h.text}`)
-      .join("\n\n---\n\n")
-      .slice(0, 9000);
-
-    const userPrompt = `
-PLAN INPUT (seed):
-${JSON.stringify(seed, null, 2)}
-
-MASTER KNOWLEDGE (use as principles, not quotes):
-${knowledge || "(no hits)"}
-
-Write the full plan now.
-`.trim();
-
-    const resp = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      temperature: 0.35,
-      messages: [
-        { role: "system", content: SYSTEM },
-        { role: "user", content: userPrompt },
-      ],
-      response_format: { type: "json_object" } as any,
-    });
-
-    const raw = resp.choices?.[0]?.message?.content || "{}";
-    let parsed: any;
-    try {
-      parsed = JSON.parse(raw);
-    } catch {
+    if (!client) {
       return NextResponse.json(
-        { error: "Generate failed", message: "Model returned non-JSON." },
+        {
+          message: "OPENAI_API_KEY ontbreekt in je lokale environment.",
+        },
         { status: 500 }
       );
     }
 
-    const out = normalizePlan(seed, parsed);
-    return NextResponse.json(out);
-  } catch (err: any) {
-    const message =
-      err?.message || (typeof err === "string" ? err : "Unknown error");
-    console.error("PDP_GENERATE_ERROR:", message);
-    return NextResponse.json({ error: "Generate failed", message }, { status: 500 });
+    const body = (await req.json()) as ApiInput;
+    const messages = Array.isArray(body.messages) ? body.messages : [];
+    const draftPlan = body.draftPlan || {};
+    const lang: Lang = body.lang === "en" ? "en" : "nl";
+
+    const conversation = messages
+      .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
+      .join("\n\n");
+
+    const response = await client.responses.create({
+      model: "gpt-4.1",
+      temperature: 0.7,
+      input: [
+        {
+          role: "system",
+          content: buildGeneratePrompt(lang),
+        },
+        {
+          role: "user",
+          content: `
+Current structured draft:
+${JSON.stringify(draftPlan, null, 2)}
+
+Conversation so far:
+${conversation}
+
+Build the strongest possible first draft from this conversation.
+Return only valid JSON.
+          `.trim(),
+        },
+      ],
+    });
+
+    const text = response.output_text?.trim();
+    if (!text) {
+      throw new Error("No output returned from generate route.");
+    }
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      throw new Error("Generate route returned invalid JSON.");
+    }
+
+    const mergedPlan = deepMergePlan(
+      draftPlan,
+      parsed.planPatch || {}
+    ) as DevelopmentPlanV1;
+
+    const planner = buildPlannerState(mergedPlan);
+
+    return NextResponse.json({
+      message:
+        parsed.message ||
+        (lang === "nl"
+          ? "Ik heb een eerste versie van het plan opgebouwd."
+          : "I built a first version of the plan."),
+      plan: mergedPlan,
+      derived: {
+        planner,
+      },
+    });
+  } catch (error: any) {
+    console.error("/api/pdp/generate error", error);
+
+    return NextResponse.json(
+      {
+        message:
+          error?.message ||
+          "Er ging iets mis tijdens het opbouwen van de eerste versie.",
+      },
+      { status: 500 }
+    );
   }
 }

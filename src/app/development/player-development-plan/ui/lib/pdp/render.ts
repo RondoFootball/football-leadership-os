@@ -85,17 +85,27 @@ function formatDateNL(d: Date) {
 
 function normalizeVideoSlots(
   clips: Slide3VideoClip[] | undefined,
-  lang: Lang
+  lang: Lang,
+  baseUrl: string
 ): Slide3VideoSlot[] {
   const raw: Slide3VideoClip[] = Array.isArray(clips) ? clips.slice(0, 2) : [];
   const xs = [...raw];
   while (xs.length < 2) xs.push({ status: "pending" });
 
   return xs.map((c) => {
+    const resolvedUrl = resolveAssetUrl(
+      typeof c?.url === "string" ? c.url : "",
+      baseUrl
+    );
+    const resolvedThumb = resolveAssetUrl(
+      typeof c?.thumbnail_url === "string" ? c.thumbnail_url : "",
+      baseUrl
+    );
+
     const isActive =
       c?.status === "active" &&
-      typeof c?.url === "string" &&
-      c.url.trim().length > 0;
+      typeof resolvedUrl === "string" &&
+      resolvedUrl.trim().length > 0;
 
     return {
       status: isActive ? "active" : "pending",
@@ -106,9 +116,8 @@ function normalizeVideoSlots(
         c?.source === "match" || c?.source === "training"
           ? c.source
           : undefined,
-      url: typeof c?.url === "string" ? c.url : null,
-      thumbnail_url:
-        typeof c?.thumbnail_url === "string" ? c.thumbnail_url : null,
+      url: resolvedUrl || null,
+      thumbnail_url: resolvedThumb || null,
       pendingTitle: t(lang, "Video pending", "Video pending"),
       pendingSub: t(lang, "Observatie loopt", "Observation in progress"),
     };
@@ -117,7 +126,8 @@ function normalizeVideoSlots(
 
 function deriveBaselineFromLegacy(
   legacy: Slide3Diagnosis | undefined,
-  lang: Lang
+  lang: Lang,
+  baseUrl: string
 ) {
   const s3 = legacy || ({} as Slide3Diagnosis);
 
@@ -128,13 +138,14 @@ function deriveBaselineFromLegacy(
     momentItems: asArray(s3?.moment?.items).slice(0, 3),
     whatWeSeeItems: asArray(s3?.what_we_see?.items).slice(0, 3),
     effectItems: asArray(s3?.effect_on_match?.items).slice(0, 3),
-    videoSlots: normalizeVideoSlots(s3?.video_clips, lang),
+    videoSlots: normalizeVideoSlots(s3?.video_clips, lang, baseUrl),
   };
 }
 
 function deriveBaselineFromPreferred(
   baseline: Slide3Baseline | undefined,
-  lang: Lang
+  lang: Lang,
+  baseUrl: string
 ) {
   if (!baseline) return null;
 
@@ -145,16 +156,37 @@ function deriveBaselineFromPreferred(
     momentItems: asArray(baseline.moments).slice(0, 3),
     whatWeSeeItems: asArray(baseline.observations).slice(0, 3),
     effectItems: asArray(baseline.matchEffects).slice(0, 3),
-    videoSlots: normalizeVideoSlots(baseline.videoClips, lang),
+    videoSlots: normalizeVideoSlots(baseline.videoClips, lang, baseUrl),
   };
+}
+
+function stripTrailingSlash(v: string) {
+  return v.replace(/\/+$/, "");
+}
+
+function resolveAssetUrl(input: string, baseUrl: string) {
+  const s = safeStr(input, "");
+  if (!s) return "";
+
+  if (/^data:/i.test(s)) return s;
+  if (/^https?:\/\//i.test(s)) return s;
+  if (/^\/\//.test(s)) return `https:${s}`;
+
+  const cleanBase = stripTrailingSlash(baseUrl || "");
+  if (!cleanBase) return s;
+
+  if (s.startsWith("/")) return `${cleanBase}${s}`;
+  return `${cleanBase}/${s}`;
 }
 
 export function renderPdpHtmlPro(
   plan: DevelopmentPlanV1,
-  opts?: { version?: PlanVersion; lang?: Lang }
+  opts?: { version?: PlanVersion; lang?: Lang; baseUrl?: string }
 ) {
   const lang: Lang =
     opts?.lang || ((plan?.meta?.lang === "en" ? "en" : "nl") as Lang);
+
+  const baseUrl = stripTrailingSlash(opts?.baseUrl || "https://www.ftbll.ai");
 
   const theme = buildTheme({
     primaryHex: plan?.brand?.primaryColor || "#111111",
@@ -163,8 +195,11 @@ export function renderPdpHtmlPro(
   });
 
   const clubName = safeStr(plan.brand?.clubName || plan.meta?.club, "Club");
-  const logoUrl = safeStr(plan.brand?.logoUrl, "");
-  const headshotUrl = safeStr(plan.player?.headshotUrl, "");
+  const logoUrl = resolveAssetUrl(safeStr(plan.brand?.logoUrl, ""), baseUrl);
+  const headshotUrl = resolveAssetUrl(
+    safeStr(plan.player?.headshotUrl, ""),
+    baseUrl
+  );
   const playerName = safeStr(
     plan.player?.name,
     lang === "nl" ? "Speler" : "Player"
@@ -218,8 +253,13 @@ export function renderPdpHtmlPro(
   /**
    * Slide 4 - Realiteit
    */
-  const preferred = deriveBaselineFromPreferred(plan.slide3Baseline, lang);
-  const baseline = preferred || deriveBaselineFromLegacy(plan.slide3, lang);
+  const preferred = deriveBaselineFromPreferred(
+    plan.slide3Baseline,
+    lang,
+    baseUrl
+  );
+  const baseline =
+    preferred || deriveBaselineFromLegacy(plan.slide3, lang, baseUrl);
 
   /**
    * Slide 5 - Aanpak
@@ -259,7 +299,10 @@ export function renderPdpHtmlPro(
       playerName,
       headshotUrl,
       headline,
-      systemLine: "PERFORMANCE DEVELOPMENT SYSTEM",
+      systemLine:
+        lang === "nl"
+          ? "PERSOONLIJK ONTWIKKELPLAN"
+          : "PERSONAL DEVELOPMENT PLAN",
     }),
 
     pageAgreementContract({
@@ -338,30 +381,68 @@ export function renderPdpHtmlPro(
   ];
 
   return `<!doctype html>
-<html>
+<html lang="${lang}">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${lang === "nl" ? "Persoonlijk Ontwikkelplan" : "Player Development Plan"}</title>
+  <title>${
+    lang === "nl" ? "Persoonlijk Ontwikkelplan" : "Player Development Plan"
+  }</title>
   <style>
-    @page { size: A4; margin: 14mm; }
+    @page {
+      size: A4;
+      margin: 14mm;
+    }
 
     ${theme.cssVarBlock}
 
     :root{
+      --page-w: 210mm;
       --page-h: 297mm;
       --page-margin: 14mm;
+      --page-inner-w: calc(var(--page-w) - (2 * var(--page-margin)));
       --page-inner-h: calc(var(--page-h) - (2 * var(--page-margin)));
     }
 
-    html, body { margin: 0; padding: 0; background: #fff; color: var(--ink); }
-    body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+      color: var(--ink);
+      width: 100%;
+    }
+
+    body {
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.35;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      text-rendering: geometricPrecision;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    img, svg {
+      max-width: 100%;
+      display: block;
+      image-rendering: auto;
+    }
 
     .page{
       break-before: page;
       page-break-before: always;
+      position: relative;
+      width: 100%;
       height: var(--page-inner-h);
+      min-height: var(--page-inner-h);
+      max-height: var(--page-inner-h);
+      overflow: hidden;
       box-sizing: border-box;
+      isolation: isolate;
     }
 
     .page:first-child{
@@ -369,11 +450,63 @@ export function renderPdpHtmlPro(
       page-break-before: auto;
     }
 
-    .kicker { font-size: 9.5pt; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-soft); }
-    .h2 { font-size: 22pt; line-height: 1.08; letter-spacing: -0.01em; margin: 0; }
-    .h3 { font-size: 16pt; line-height: 1.15; margin: 0; letter-spacing: -0.01em; }
-    .p { font-size: 12.8pt; line-height: 1.55; color: var(--ink-muted); margin: 0; }
-    .strong { color: var(--ink); font-weight: 600; }
+    .kicker {
+      font-size: 9.5pt;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+
+    .h2 {
+      font-size: 22pt;
+      line-height: 1.08;
+      letter-spacing: -0.01em;
+      margin: 0;
+    }
+
+    .h3 {
+      font-size: 16pt;
+      line-height: 1.15;
+      margin: 0;
+      letter-spacing: -0.01em;
+    }
+
+    .p {
+      font-size: 12.8pt;
+      line-height: 1.55;
+      color: var(--ink-muted);
+      margin: 0;
+    }
+
+    .strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    /* Print stability helpers */
+    .avoid-break {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .clip {
+      overflow: hidden;
+    }
+
+    @media print {
+      html, body {
+        background: #ffffff !important;
+      }
+
+      .page {
+        overflow: hidden !important;
+      }
+
+      a, a:visited {
+        color: inherit;
+        text-decoration: none;
+      }
+    }
   </style>
 </head>
 <body>
