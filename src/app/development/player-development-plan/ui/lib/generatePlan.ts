@@ -1,18 +1,46 @@
 import type { DevelopmentPlanV1, FocusItemV1 } from "./engineSchema";
 
+function safeString(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function safeStringArray(value: unknown, max = 3): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => safeString(item))
+    .filter(Boolean)
+    .slice(0, max);
+}
+
 function pickMax3(focus: FocusItemV1[]) {
   return Array.isArray(focus) ? focus.slice(0, 3) : [];
 }
 
+function normalizeFocusItem(item: FocusItemV1): FocusItemV1 {
+  return {
+    ...item,
+    id: safeString(item?.id),
+    title: safeString(item?.title),
+    type: item?.type,
+    context: safeString(item?.context),
+    goodLooksLike: safeString(item?.goodLooksLike),
+    playerActions: safeStringArray(item?.playerActions, 6),
+    staffActions: safeStringArray(item?.staffActions, 6),
+    constraints: safeString(item?.constraints),
+    riskIfOverloaded: safeString(item?.riskIfOverloaded),
+  };
+}
+
 /**
- * v1 generator: deterministic + closed output
- * - Gives a premium baseline
- * - Later we swap internals to LLM + your master library
+ * v1 generator: evidence-based + non-inventing
+ * - Structures only what is already present
+ * - Leaves fields empty if they are not supported by user input / chat evidence
+ * - Never auto-fills substantive football content without basis
  */
 export function generatePlanV1(input: DevelopmentPlanV1): DevelopmentPlanV1 {
   const p = structuredClone(input);
 
-  // Minimal guards
+  // Defensive object guards
   p.meta = p.meta || ({} as DevelopmentPlanV1["meta"]);
   p.brand = p.brand || ({} as DevelopmentPlanV1["brand"]);
   p.player = p.player || ({} as DevelopmentPlanV1["player"]);
@@ -22,122 +50,57 @@ export function generatePlanV1(input: DevelopmentPlanV1): DevelopmentPlanV1 {
   p.notNow = p.notNow || ({} as DevelopmentPlanV1["notNow"]);
   p.focus = Array.isArray(p.focus) ? p.focus : [];
 
-  if (!p.meta.club) p.meta.club = p.brand.clubName || "Club";
-  if (!p.meta.team) p.meta.team = p.player.team || "First Team";
+  // Minimal non-substantive guards only
+  p.meta.club = safeString(p.meta.club) || safeString(p.brand.clubName);
+  p.meta.team = safeString(p.meta.team) || safeString(p.player.team);
 
-  // If trainer didn't write the sharp object yet, create a safe baseline
-  const intent = (p.diagnosis.initialIntent || "").trim();
-  if (!(p.diagnosis.dominantDevelopmentObject || "").trim()) {
-    p.diagnosis.dominantDevelopmentObject = intent
-      ? `Execution under pressure: ${intent}`
-      : "Execution under pressure (define in intake)";
-  }
+  p.brand.clubName = safeString(p.brand.clubName);
+  p.brand.logoUrl = safeString(p.brand.logoUrl);
+  p.brand.primaryColor = safeString(p.brand.primaryColor);
+  p.brand.secondaryColor = safeString(p.brand.secondaryColor);
 
-  // Priority
-  if (!(p.priority.title || "").trim()) {
-    p.priority.title = "Execution under pressure";
-  }
+  p.player.name = safeString(p.player.name);
+  p.player.role = safeString(p.player.role);
+  p.player.team = safeString(p.player.team);
+  p.player.headshotUrl = safeString(p.player.headshotUrl);
+  // p.player.phase intentionally left untouched:
+  // this is a typed domain field, not a free string
 
-  if (!(p.priority.whyNow || "").trim()) {
-    const model = (p.clubModel.criticalPhase || "").trim();
-    p.priority.whyNow = model
-      ? `This block protects clarity and repeatability in the player’s role — with focus on ${model}.`
-      : "This block protects clarity and repeatability in the player’s role. Focus stays narrow to avoid overload.";
-  }
+  p.diagnosis.initialIntent = safeString(p.diagnosis.initialIntent);
+  p.diagnosis.dominantDevelopmentObject = safeString(
+    p.diagnosis.dominantDevelopmentObject
+  );
 
-  if (!(p.priority.observableShift || "").trim()) {
-    p.priority.observableShift =
-      "Within 8 weeks: stable, repeatable execution in match-like pressure moments.";
-  }
+  p.priority.title = safeString(p.priority.title);
+  p.priority.whyNow = safeString(p.priority.whyNow);
+  p.priority.observableShift = safeString(p.priority.observableShift);
 
-  // Default focus suggestions (if empty)
-  if (!p.focus.length) {
-    const base: FocusItemV1[] = [
-      {
-        id: "SCAN_DECIDE_EXECUTE",
-        title: "Scan → decide → execute",
-        type: "tactical",
-        context:
-          "Build-up and progression moments where time is limited and options collapse.",
-        goodLooksLike:
-          "Chooses first or second option within ~2 seconds and commits without hesitation.",
-        playerActions: [
-          "2 decision reps per session (match-like constraints).",
-          "One short clip review: identify trigger → pick option A/B.",
-          "Pre-scan rule: shoulders before first touch (every rep).",
-        ],
-        staffActions: [
-          "Design reps with time/space constraints (2-touch windows).",
-          "Freeze + replay: reinforce correct trigger recognition.",
-          "Protect reps volume: depth over variety this block.",
-        ],
-        constraints:
-          "Reduce options to 2–3 in reps to train speed and clarity.",
-        riskIfOverloaded:
-          "Too many cues slows decisions and increases hesitation.",
-      },
-      {
-        id: "ROLE_CLARITY_NONNEGOTIABLES",
-        title: "Role clarity (non-negotiables)",
-        type: "tactical",
-        context:
-          "Moments where the club model demands a consistent choice (spacing, cover, rest-defence).",
-        goodLooksLike:
-          "Hits the non-negotiable action without hesitation in chaotic moments.",
-        playerActions: [
-          "Before session: state the role rule in one line.",
-          "After session: tag 2 moments where the rule was met/missed.",
-        ],
-        staffActions: [
-          "Name the non-negotiable in one sentence (no extra coaching).",
-          "Use 2–3 clips that show the rule under pressure.",
-        ],
-        constraints:
-          "One rule only for this block. No expanding the role description.",
-        riskIfOverloaded:
-          "Role becomes ‘everything’ and the player loses clarity.",
-      },
-      {
-        id: "STABILITY_AFTER_MISTAKE",
-        title: "Stability after mistake",
-        type: "behavioural",
-        context:
-          "Immediate next action after an error in a high-visibility moment.",
-        goodLooksLike:
-          "Resets within 5 seconds and executes the next action at normal speed.",
-        playerActions: [
-          "Reset routine: breath + cue word (every error rep).",
-          "Next action rule: play the simple option immediately after error.",
-        ],
-        staffActions: [
-          "Create controlled error reps (safe exposure).",
-          "Reinforce the reset, not the emotion narrative.",
-        ],
-        constraints: "No post-error lectures. One cue, then next rep.",
-        riskIfOverloaded:
-          "Over-coaching increases shame and slows the reset.",
-      },
-    ];
+  p.clubModel.dominantGameModel = safeString(p.clubModel.dominantGameModel);
+  p.clubModel.roleInModel = safeString(p.clubModel.roleInModel);
+  p.clubModel.nonNegotiables = safeString(p.clubModel.nonNegotiables);
+  p.clubModel.criticalPhase = safeString(p.clubModel.criticalPhase);
 
-    p.focus = pickMax3(base);
-  } else {
-    p.focus = pickMax3(p.focus);
-  }
+  // Focus: keep only what exists, max 3, normalized
+  p.focus = pickMax3(p.focus)
+    .map(normalizeFocusItem)
+    .filter((item) => {
+      return !!(
+        safeString(item.id) ||
+        safeString(item.title) ||
+        safeString(item.context) ||
+        safeString(item.goodLooksLike) ||
+        item.playerActions?.length ||
+        item.staffActions?.length ||
+        safeString(item.constraints) ||
+        safeString(item.riskIfOverloaded)
+      );
+    });
 
-  // Not now
-  if (!(p.notNow.reasoning || "").trim()) {
-    p.notNow = {
-      excludedFocus: ["Add extra focus points"],
-      reasoning:
-        "This block stays narrow to protect clarity and repeatability.",
-    };
-  } else {
-    p.notNow.excludedFocus = Array.isArray(p.notNow.excludedFocus)
-      ? p.notNow.excludedFocus
-      : [];
-  }
+  // Not now: keep only if present, never invent reasoning
+  p.notNow.excludedFocus = safeStringArray(p.notNow.excludedFocus, 6);
+  p.notNow.reasoning = safeString(p.notNow.reasoning);
 
-  // Evaluation
+  // Evaluation: initialize safely, but do not invent substantive content
   const evaluation =
     p.evaluation ??
     (p.evaluation = {
@@ -147,23 +110,10 @@ export function generatePlanV1(input: DevelopmentPlanV1): DevelopmentPlanV1 {
       midTermMarker: "",
     });
 
-  if (!(evaluation.reviewMoment || "").trim()) {
-    evaluation.reviewMoment = "Week 4 + Week 8";
-  }
-
-  if (!(evaluation.decisionCriteria || "").trim()) {
-    evaluation.decisionCriteria =
-      "Continue if behaviour is stable under pressure; adjust if instability persists or overload signals increase.";
-  }
-
-  if (!(evaluation.shortTermMarker || "").trim()) {
-    evaluation.shortTermMarker = "Clarity starts: fewer hesitations in reps.";
-  }
-
-  if (!(evaluation.midTermMarker || "").trim()) {
-    evaluation.midTermMarker =
-      "Behaviour holds in match-like pressure moments.";
-  }
+  evaluation.reviewMoment = safeString(evaluation.reviewMoment);
+  evaluation.decisionCriteria = safeString(evaluation.decisionCriteria);
+  evaluation.shortTermMarker = safeString(evaluation.shortTermMarker);
+  evaluation.midTermMarker = safeString(evaluation.midTermMarker);
 
   return p;
 }
