@@ -80,7 +80,7 @@ function FocusBlock({
           </div>
 
           <div className="shrink-0">
-            <Tag>{f.type.toUpperCase()}</Tag>
+            <Tag>{(f.type || "focus").toUpperCase()}</Tag>
           </div>
         </div>
 
