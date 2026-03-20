@@ -73,12 +73,14 @@ function mergePlannerState(
     return basePlanner;
   }
 
-  const nextFilledSlots = {
+  const nextFilledSlots: Record<string, boolean> = {
     ...(basePlanner.filledSlots || {}),
   };
 
   for (const [key, value] of Object.entries(slotPatch)) {
-    if (value) nextFilledSlots[key] = true;
+    if (value === true) {
+      nextFilledSlots[key] = true;
+    }
   }
 
   const missingFirstDraft = (basePlanner.missingFirstDraft || []).filter(
@@ -99,7 +101,7 @@ function mergePlannerState(
   const nextPrioritySlot =
     basePlanner.nextPrioritySlot && !nextFilledSlots[basePlanner.nextPrioritySlot]
       ? basePlanner.nextPrioritySlot
-      : Object.keys(nextFilledSlots).find((key) => !nextFilledSlots[key]);
+      : undefined;
 
   return {
     ...basePlanner,
