@@ -299,7 +299,7 @@ export default function ExportPage() {
               )}
 
               <div className="mt-3 text-[12px] text-white/50">
-                {plan.meta.blockLengthWeeks}-week block · {plan.evaluation.reviewMoment || "Review"}
+                {plan.meta.blockLengthWeeks}-week block · {plan.evaluation?.reviewMoment || "Review"}
               </div>
             </div>
           </div>
@@ -396,25 +396,25 @@ export default function ExportPage() {
                 <div className="text-[11px] tracking-[0.14em] text-black/45">
                   SHORT TERM
                 </div>
-                <div className="mt-1">{plan.evaluation.shortTermMarker || "—"}</div>
+                <div className="mt-1">{plan.evaluation?.shortTermMarker || "—"}</div>
               </div>
               <div>
                 <div className="text-[11px] tracking-[0.14em] text-black/45">
                   MID TERM
                 </div>
-                <div className="mt-1">{plan.evaluation.midTermMarker || "—"}</div>
+                <div className="mt-1">{plan.evaluation?.midTermMarker || "—"}</div>
               </div>
               <div>
                 <div className="text-[11px] tracking-[0.14em] text-black/45">
                   REVIEW MOMENTS
                 </div>
-                <div className="mt-1">{plan.evaluation.reviewMoment || "—"}</div>
+                <div className="mt-1">{plan.evaluation?.reviewMoment || "—"}</div>
               </div>
               <div>
                 <div className="text-[11px] tracking-[0.14em] text-black/45">
                   DECISION CRITERIA
                 </div>
-                <div className="mt-1">{plan.evaluation.decisionCriteria || "—"}</div>
+                <div className="mt-1">{plan.evaluation?.decisionCriteria || "—"}</div>
               </div>
             </div>
           </section>
