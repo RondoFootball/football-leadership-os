@@ -11,6 +11,12 @@ import { PdpChat, type ChatPlannerState } from "./components/PdpChat";
 type Lang = "nl" | "en";
 type Mode = "chat" | "manual";
 type TeamType = "academy" | "first_team";
+type ClubMode = "preset" | "custom";
+
+type LocalVideoUpload = {
+  fileName: string;
+  objectUrl: string;
+};
 
 const ACADEMY_AGES = ["O13", "O14", "O15", "O16", "O17", "O18", "O19", "O21", "Jong"];
 
@@ -43,20 +49,24 @@ const UI = {
     chooseAgeCategory: "Kies leeftijdscategorie",
     periodWeeks: "Periode ontwikkelplan (weken)",
 
+    country: "Land",
+    chooseCountry: "Kies land",
+    league: "Competitie",
+    chooseLeague: "Kies competitie",
     chooseClub: "Kies club",
-    otherClub: "Andere club / handmatig invoeren",
-
-    clubSearchPlaceholder: "Zoek club...",
-    noClubResults: "Geen clubs gevonden",
+    clubModePreset: "Club uit lijst",
+    clubModeCustom: "Eigen club",
+    customClubHelp:
+      "Gebruik dit voor een club die niet in de lijst staat. Je kunt daarna handmatig logo en kleuren invullen.",
 
     primaryColor: "Primaire kleur",
     secondaryColor: "Secundaire kleur",
     colorBalance: "Kleurverdeling (%)",
     logoUrl: "Clublogo URL",
 
-    heroChatTitle: "Werk vanuit observaties, ideeën of wedstrijden.",
+    heroChatTitle: "Werk vanuit wat je concreet ziet.",
     heroChatBody:
-      "De chat vertaalt dit naar een concreet ontwikkelplan dat je daarna aanscherpt en exporteert.",
+      "Beschrijf één situatie, het gedrag van de speler en het effect op het spel.",
 
     heroManualTitle: "Werk handmatig vanuit een scherp ontwikkelpunt.",
     heroManualBody:
@@ -64,7 +74,7 @@ const UI = {
 
     hintObservation: "Observatie",
     hintMoment: "Moment",
-    hintGoal: "Doel",
+    hintGoal: "Effect",
 
     developmentPoint: "Ontwikkelpunt",
 
@@ -75,12 +85,32 @@ const UI = {
     statusSuccess: "Succes",
 
     noPlayerYet: "Speler",
-    noPointYet: "Nog geen ontwikkelpunt",
 
     downloadPlayer: "Download spelerplan",
     downloadStaff: "Download staffplan",
-    availableOther: "Ook beschikbaar in Engels",
+    availableOther: "Ook beschikbaar in het Engels",
     downloadOther: "Download EN",
+    exportAlways: "Altijd beschikbaar",
+    exportStrong:
+      "Je kunt het plan op ieder moment exporteren — ook als het nog niet volledig is afgerond.",
+
+    videoTitle: "Video / clips",
+    videoBody:
+      "Voeg relevante wedstrijd- of trainingsbeelden toe. Werk met een link of kies direct een bestand vanaf je laptop.",
+    videoClip1: "Clip 1",
+    videoClip2: "Clip 2",
+    videoClip3: "Clip 3",
+    videoName: "Titel",
+    videoUrl: "Video URL",
+    videoMoment: "Datum / voorbeeldmoment",
+    videoSource: "Bron",
+    videoMatch: "Wedstrijd",
+    videoTraining: "Training",
+    videoUpload: "Upload video",
+    videoChosen: "Gekozen bestand",
+    videoOr: "of",
+    videoUploadHelp:
+      "Upload werkt in deze versie binnen je sessie. Voor vaste opslag koppelen we later een upload-API.",
 
     langNl: "NL",
     langEn: "EN",
@@ -108,11 +138,8 @@ const UI = {
     progressHeader: "We maken dit plan voor",
     totalProgress: "Totale voortgang",
     planProgress: "Planvoortgang",
-    exportTitle: "Export",
-    exportBody:
-      "Je kunt het plan op elk moment uitdraaien, ook als nog niet alle onderdelen volledig zijn ingevuld.",
+    exportTitle: "Download plan",
     coverSlide: "Cover",
-    builderSnapshot: "Snapshot",
     ready: "Klaar",
   },
   en: {
@@ -143,20 +170,24 @@ const UI = {
     chooseAgeCategory: "Choose age category",
     periodWeeks: "Development plan period (weeks)",
 
-    chooseClub: "Select club",
-    otherClub: "Other club / manual entry",
-
-    clubSearchPlaceholder: "Search club...",
-    noClubResults: "No clubs found",
+    country: "Country",
+    chooseCountry: "Choose country",
+    league: "League",
+    chooseLeague: "Choose league",
+    chooseClub: "Choose club",
+    clubModePreset: "Club from list",
+    clubModeCustom: "Custom club",
+    customClubHelp:
+      "Use this for a club that is not in the list. You can then enter logo and colours manually.",
 
     primaryColor: "Primary color",
     secondaryColor: "Secondary color",
     colorBalance: "Color balance (%)",
     logoUrl: "Club logo URL",
 
-    heroChatTitle: "Work from observations, ideas or matches.",
+    heroChatTitle: "Work from what you concretely see.",
     heroChatBody:
-      "The chat translates this into a concrete development plan that you refine and export afterwards.",
+      "Describe one situation, the player's behaviour and the effect on the game.",
 
     heroManualTitle: "Work manually from a sharp development point.",
     heroManualBody:
@@ -164,7 +195,7 @@ const UI = {
 
     hintObservation: "Observation",
     hintMoment: "Moment",
-    hintGoal: "Goal",
+    hintGoal: "Effect",
 
     developmentPoint: "Development point",
 
@@ -175,12 +206,32 @@ const UI = {
     statusSuccess: "Success",
 
     noPlayerYet: "Player",
-    noPointYet: "No development point yet",
 
     downloadPlayer: "Download player plan",
     downloadStaff: "Download staff plan",
     availableOther: "Also available in Dutch",
     downloadOther: "Download NL",
+    exportAlways: "Always available",
+    exportStrong:
+      "You can export the plan at any moment — even if it is not fully completed yet.",
+
+    videoTitle: "Video / clips",
+    videoBody:
+      "Add relevant match or training footage. Work with a link or choose a file directly from your laptop.",
+    videoClip1: "Clip 1",
+    videoClip2: "Clip 2",
+    videoClip3: "Clip 3",
+    videoName: "Title",
+    videoUrl: "Video URL",
+    videoMoment: "Date / example moment",
+    videoSource: "Source",
+    videoMatch: "Match",
+    videoTraining: "Training",
+    videoUpload: "Upload video",
+    videoChosen: "Chosen file",
+    videoOr: "or",
+    videoUploadHelp:
+      "Upload works in this version within your session. We can connect fixed storage later with an upload API.",
 
     langNl: "NL",
     langEn: "EN",
@@ -208,14 +259,48 @@ const UI = {
     progressHeader: "We build this plan for",
     totalProgress: "Overall progress",
     planProgress: "Plan progress",
-    exportTitle: "Export",
-    exportBody:
-      "You can export the plan at any moment, even if not all sections are fully completed yet.",
+    exportTitle: "Download plan",
     coverSlide: "Cover",
-    builderSnapshot: "Snapshot",
     ready: "Ready",
   },
 } as const;
+
+const COUNTRY_LABELS: Record<string, { nl: string; en: string }> = {
+  Netherlands: { nl: "Nederland", en: "Netherlands" },
+  Belgium: { nl: "België", en: "Belgium" },
+  Germany: { nl: "Duitsland", en: "Germany" },
+  England: { nl: "Engeland", en: "England" },
+  France: { nl: "Frankrijk", en: "France" },
+  Spain: { nl: "Spanje", en: "Spain" },
+  Italy: { nl: "Italië", en: "Italy" },
+  Portugal: { nl: "Portugal", en: "Portugal" },
+  Other: { nl: "Overig", en: "Other" },
+};
+
+function countryLabel(country: string, lang: Lang) {
+  const found = COUNTRY_LABELS[country];
+  if (found) return found[lang];
+  return country;
+}
+
+function slugify(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function getCountryLogoUrl(country: string) {
+  return `/logos/countries/${slugify(country)}.png`;
+}
+
+function getLeagueLogoUrl(country: string, league: string) {
+  return `/logos/${slugify(country)}/${slugify(league)}/${slugify(league)}.png`;
+}
 
 function createInitialPlan(): DevelopmentPlanV1 {
   const p = defaultDevelopmentPlan();
@@ -299,9 +384,11 @@ function plannerFilled(planner: ChatPlannerState | null, key: string) {
 
 export default function PlayerDevelopmentPlanBuilder() {
   const [plan, setPlan] = useState<DevelopmentPlanV1>(createInitialPlan());
+  const [generatedPlan, setGeneratedPlan] =
+    useState<DevelopmentPlanV1 | null>(null);
+
   const [lang, setLang] = useState<Lang>("nl");
   const [mode, setMode] = useState<Mode>("chat");
-  const [hasPlan, setHasPlan] = useState(false);
   const [chatPlannerState, setChatPlannerState] =
     useState<ChatPlannerState | null>(null);
 
@@ -309,8 +396,26 @@ export default function PlayerDevelopmentPlanBuilder() {
   const [brandingOpen, setBrandingOpen] = useState(false);
   const [identityPhotoOpen, setIdentityPhotoOpen] = useState(false);
 
+  const [selectedCountry, setSelectedCountry] = useState("Netherlands");
+  const [selectedLeague, setSelectedLeague] = useState("");
+  const [clubMode, setClubMode] = useState<ClubMode>("preset");
+
+  const [localVideoUploads, setLocalVideoUploads] = useState<
+    Record<number, LocalVideoUpload | undefined>
+  >({});
+
   const t = UI[lang];
   const otherLang: Lang = lang === "nl" ? "en" : "nl";
+
+  useEffect(() => {
+    setGeneratedPlan(null);
+  }, [
+    plan.player.name,
+    plan.player.role,
+    plan.meta.club,
+    plan.meta.team,
+    plan.meta.blockLengthWeeks,
+  ]);
 
   const primary = clampHex(plan.brand.primaryColor, "#111111");
   const secondary = clampHex(plan.brand.secondaryColor, "#FFFFFF");
@@ -328,10 +433,8 @@ export default function PlayerDevelopmentPlanBuilder() {
   const agreementProgress = getSectionProgress([
     !!plan.slide2?.focusBehaviour?.trim() ||
       plannerFilled(chatPlannerState, "developmentPoint"),
-
     !!plan.slide2?.developmentGoal?.trim() ||
       plannerFilled(chatPlannerState, "targetBehaviour"),
-
     !!plan.slide2?.matchSituation?.trim() ||
       plannerFilled(chatPlannerState, "matchSituation"),
   ]);
@@ -339,10 +442,8 @@ export default function PlayerDevelopmentPlanBuilder() {
   const contextProgress = getSectionProgress([
     !!plan.slideContext?.gameMoments?.length ||
       plannerFilled(chatPlannerState, "gameMoments"),
-
     !!plan.slideContext?.zones?.length ||
       plannerFilled(chatPlannerState, "zones"),
-
     !!plan.slideContext?.principles?.length ||
       plannerFilled(chatPlannerState, "principles"),
   ]);
@@ -351,14 +452,11 @@ export default function PlayerDevelopmentPlanBuilder() {
     !!plan.slide3Baseline?.intro?.trim() ||
       !!plan.slide3Baseline?.observations?.length ||
       plannerFilled(chatPlannerState, "observations"),
-
     !!plan.slide3?.what_we_see?.items?.length ||
       plannerFilled(chatPlannerState, "observations"),
-
     !!plan.slide3?.moment?.items?.length ||
       !!plan.slide3Baseline?.moments?.length ||
       plannerFilled(chatPlannerState, "whenObserved"),
-
     !!plan.slide3?.effect_on_match?.items?.length ||
       !!plan.slide3Baseline?.matchEffects?.length ||
       plannerFilled(chatPlannerState, "effectOnGame"),
@@ -367,16 +465,12 @@ export default function PlayerDevelopmentPlanBuilder() {
   const approachProgress = getSectionProgress([
     !!plan.slide4DevelopmentRoute?.developmentRoute?.training?.trim() ||
       plannerFilled(chatPlannerState, "playerActions"),
-
     !!plan.slide4DevelopmentRoute?.developmentRoute?.match?.trim() ||
       plannerFilled(chatPlannerState, "playerActions"),
-
     !!plan.slide4DevelopmentRoute?.developmentRoute?.video?.trim() ||
       plannerFilled(chatPlannerState, "staffResponsibilities"),
-
     !!plan.slide4DevelopmentRoute?.developmentRoute?.off_field?.trim() ||
       plannerFilled(chatPlannerState, "staffResponsibilities"),
-
     !!plan.slide4DevelopmentRoute?.playerOwnText?.trim() ||
       plannerFilled(chatPlannerState, "playerActions"),
   ]);
@@ -384,10 +478,8 @@ export default function PlayerDevelopmentPlanBuilder() {
   const successProgress = getSectionProgress([
     !!plan.slide6SuccessDefinition?.inGame?.length ||
       plannerFilled(chatPlannerState, "successSignals"),
-
     !!plan.slide6SuccessDefinition?.behaviour?.length ||
       plannerFilled(chatPlannerState, "successSignals"),
-
     !!plan.slide6SuccessDefinition?.signals?.length ||
       plannerFilled(chatPlannerState, "successSignals"),
   ]);
@@ -441,25 +533,52 @@ export default function PlayerDevelopmentPlanBuilder() {
     sections.reduce((sum, section) => sum + section.progress, 0) / sections.length
   );
 
-  const eredivisieClubs = useMemo(
-    () =>
-      clubPresets.filter(
-        (club) => club.league?.toLowerCase() === "eredivisie"
-      ),
+  const selectableClubPresets = useMemo(
+    () => clubPresets.filter((club) => club.id !== "custom-club"),
     []
   );
 
-  const kkdClubs = useMemo(
-    () => clubPresets.filter((club) => club.league?.toLowerCase() === "kkd"),
-    []
-  );
+  const availableCountries = useMemo(() => {
+    return Array.from(
+      new Set(selectableClubPresets.map((club) => club.country).filter(Boolean))
+    ).sort((a, b) => a.localeCompare(b));
+  }, [selectableClubPresets]);
+
+  const availableLeagues = useMemo(() => {
+    if (!selectedCountry) return [];
+    return Array.from(
+      new Set(
+        selectableClubPresets
+          .filter((club) => club.country === selectedCountry)
+          .map((club) => club.league)
+          .filter(Boolean)
+      )
+    ).sort((a, b) => a.localeCompare(b));
+  }, [selectableClubPresets, selectedCountry]);
+
+  const availableClubs = useMemo(() => {
+    if (!selectedCountry || !selectedLeague) return [];
+    return selectableClubPresets
+      .filter(
+        (club) =>
+          club.country === selectedCountry && club.league === selectedLeague
+      )
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [selectableClubPresets, selectedCountry, selectedLeague]);
 
   const activePreset = getClubPresetByName(plan.brand.clubName);
 
   function onPlanGenerated(next: DevelopmentPlanV1) {
     const merged = mergeGeneratedPlanWithLockedBasics(plan, next);
     setPlan(merged);
-    setHasPlan(true);
+    setGeneratedPlan(merged);
+
+    console.log("✅ GENERATED PLAN BINNEN");
+    console.log("slide2", merged.slide2);
+    console.log("context", merged.slideContext);
+    console.log("baseline", merged.slide3Baseline);
+    console.log("approach", merged.slide4DevelopmentRoute);
+    console.log("success", merged.slide6SuccessDefinition);
   }
 
   function applyClubPreset(clubName: string) {
@@ -470,6 +589,7 @@ export default function PlayerDevelopmentPlanBuilder() {
 
       next.brand.clubName = clubName;
       next.meta.club = clubName;
+      setGeneratedPlan(null);
 
       if (preset) {
         next.brand.logoUrl = preset.logoUrl || "";
@@ -485,15 +605,112 @@ export default function PlayerDevelopmentPlanBuilder() {
     });
   }
 
+  function updateVideoClip(index: number, patch: Record<string, string>) {
+    setPlan((prev) => {
+      const next = structuredClone(prev) as any;
+
+      if (!next.slide3Baseline) next.slide3Baseline = {};
+      if (!Array.isArray(next.slide3Baseline.videoClips)) {
+        next.slide3Baseline.videoClips = [];
+      }
+
+      while (next.slide3Baseline.videoClips.length < 3) {
+        next.slide3Baseline.videoClips.push({
+          status: "pending",
+          source: "match",
+          title: "",
+          url: "",
+          timestamp: "",
+          match_or_session: "",
+        });
+      }
+
+      const current = next.slide3Baseline.videoClips[index] || {};
+      const merged = {
+        ...current,
+        ...patch,
+      };
+
+      const hasUrl =
+        typeof merged.url === "string" && merged.url.trim().length > 0;
+      const hasUpload = !!localVideoUploads[index]?.fileName;
+
+      merged.status = hasUrl || hasUpload ? "active" : "pending";
+      next.slide3Baseline.videoClips[index] = merged;
+
+      return next;
+    });
+  }
+
+  function handleVideoUpload(index: number, file: File | null) {
+    if (!file) return;
+
+    const objectUrl = URL.createObjectURL(file);
+
+    setLocalVideoUploads((prev) => {
+      const old = prev[index];
+      if (old?.objectUrl) {
+        try {
+          URL.revokeObjectURL(old.objectUrl);
+        } catch {}
+      }
+
+      return {
+        ...prev,
+        [index]: {
+          fileName: file.name,
+          objectUrl,
+        },
+      };
+    });
+
+    setPlan((prev) => {
+      const next = structuredClone(prev) as any;
+
+      if (!next.slide3Baseline) next.slide3Baseline = {};
+      if (!Array.isArray(next.slide3Baseline.videoClips)) {
+        next.slide3Baseline.videoClips = [];
+      }
+
+      while (next.slide3Baseline.videoClips.length < 3) {
+        next.slide3Baseline.videoClips.push({
+          status: "pending",
+          source: "match",
+          title: "",
+          url: "",
+          timestamp: "",
+          match_or_session: "",
+        });
+      }
+
+      const current = next.slide3Baseline.videoClips[index] || {};
+      next.slide3Baseline.videoClips[index] = {
+        ...current,
+        status: "active",
+        title:
+          current?.title && String(current.title).trim()
+            ? current.title
+            : file.name.replace(/\.[^/.]+$/, ""),
+      };
+
+      return next;
+    });
+  }
+
   async function download(version: "player" | "staff", exportLang: Lang) {
+    const exportPlan = generatedPlan || plan;
+
+    console.log("📤 EXPORT PLAN");
+    console.log(exportPlan);
+
     const res = await fetch(`/api/pdp/pdf`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         plan: {
-          ...plan,
+          ...exportPlan,
           meta: {
-            ...plan.meta,
+            ...exportPlan.meta,
             lang: exportLang,
           },
         },
@@ -542,9 +759,7 @@ export default function PlayerDevelopmentPlanBuilder() {
               </div>
             </div>
 
-            {/* TOP AREA — 50 / 50 */}
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch relative z-0">
-              {/* LEFT — BASICS */}
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-visible h-full">
                 <button
                   onClick={() => setBasicsOpen((v) => !v)}
@@ -564,7 +779,6 @@ export default function PlayerDevelopmentPlanBuilder() {
 
                 {basicsOpen && (
                   <div className="px-6 pb-6 space-y-5">
-                    {/* STEP 1 — PLAYER IDENTITY */}
                     <div className="rounded-[20px] border border-white/10 bg-black/20 p-5">
                       <div className="mb-5">
                         <div className="text-[11px] tracking-[0.18em] uppercase text-white/38">
@@ -692,53 +906,150 @@ export default function PlayerDevelopmentPlanBuilder() {
                       </div>
                     </div>
 
-                    {/* REST OF PLAYER + CLUB FORM */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="sm:col-span-2">
-                        <ClubSelect
-                          label={t.club}
-                          value={plan.brand.clubName || ""}
-                          placeholder={t.chooseClub}
-                          searchPlaceholder={t.clubSearchPlaceholder}
-                          noResultsLabel={t.noClubResults}
-                          otherLabel={t.otherClub}
-                          eredivisieClubs={eredivisieClubs}
-                          kkdClubs={kkdClubs}
-                          onChange={(value) => {
-                            if (value === "custom") {
+                      <SimpleDropdown
+                        label={t.country}
+                        value={selectedCountry}
+                        placeholder={t.chooseCountry}
+                        items={availableCountries.map((country) => ({
+                          value: country,
+                          label: countryLabel(country, lang),
+                          iconUrl: getCountryLogoUrl(country),
+                        }))}
+                        onChange={(value) => {
+                          setSelectedCountry(value);
+                          setSelectedLeague("");
+                          setClubMode("preset");
+                          setGeneratedPlan(null);
+                          setPlan((prev) => ({
+                            ...prev,
+                            brand: {
+                              ...prev.brand,
+                              clubName: "",
+                              logoUrl: "",
+                            },
+                            meta: {
+                              ...prev.meta,
+                              club: "",
+                            },
+                          }));
+                        }}
+                      />
+
+                      <SimpleDropdown
+                        label={t.league}
+                        value={selectedLeague}
+                        placeholder={t.chooseLeague}
+                        items={availableLeagues.map((league) => ({
+                          value: league,
+                          label: league,
+                          iconUrl: getLeagueLogoUrl(selectedCountry, league),
+                        }))}
+                        onChange={(value) => {
+                          setSelectedLeague(value);
+                          setClubMode("preset");
+                          setGeneratedPlan(null);
+                          setPlan((prev) => ({
+                            ...prev,
+                            brand: {
+                              ...prev.brand,
+                              clubName: "",
+                              logoUrl: "",
+                            },
+                            meta: {
+                              ...prev.meta,
+                              club: "",
+                            },
+                          }));
+                        }}
+                      />
+
+                      <div className="sm:col-span-2 rounded-2xl border border-white/10 bg-black/20 p-4">
+                        <div className="text-[11px] text-white/40 mb-3 uppercase tracking-wide">
+                          {t.club}
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          <ChoicePill
+                            active={clubMode === "preset"}
+                            onClick={() => {
+                              setClubMode("preset");
+                              setGeneratedPlan(null);
                               setPlan((prev) => ({
                                 ...prev,
                                 brand: {
                                   ...prev.brand,
-                                  clubName: "custom",
+                                  clubName: "",
                                   logoUrl: "",
                                 },
-                                meta: { ...prev.meta, club: "" },
+                                meta: {
+                                  ...prev.meta,
+                                  club: "",
+                                },
                               }));
+                            }}
+                          >
+                            {t.clubModePreset}
+                          </ChoicePill>
+
+                          <ChoicePill
+                            active={clubMode === "custom"}
+                            onClick={() => {
+                              setClubMode("custom");
                               setBrandingOpen(true);
-                              return;
-                            }
-
-                            applyClubPreset(value);
-                          }}
-                        />
-                      </div>
-
-                      {(plan.brand.clubName === "custom" || !plan.brand.clubName) && (
-                        <div className="sm:col-span-2">
-                          <Input
-                            label={t.customClub}
-                            value={plan.meta.club || ""}
-                            onChange={(v) =>
+                              setGeneratedPlan(null);
                               setPlan((prev) => ({
                                 ...prev,
-                                meta: { ...prev.meta, club: v },
-                                brand: { ...prev.brand, clubName: v },
-                              }))
-                            }
-                          />
+                                brand: {
+                                  ...prev.brand,
+                                  clubName: "",
+                                  logoUrl: "",
+                                },
+                                meta: {
+                                  ...prev.meta,
+                                  club: "",
+                                },
+                              }));
+                            }}
+                          >
+                            {t.clubModeCustom}
+                          </ChoicePill>
                         </div>
-                      )}
+
+                        {clubMode === "preset" ? (
+                          <SimpleDropdown
+                            label=""
+                            value={plan.brand.clubName || ""}
+                            placeholder={t.chooseClub}
+                            items={availableClubs.map((club) => ({
+                              value: club.name,
+                              label: club.name,
+                              iconUrl: club.logoUrl,
+                            }))}
+                            onChange={(value) => {
+                              applyClubPreset(value);
+                            }}
+                            hideLabel
+                          />
+                        ) : (
+                          <div>
+                            <Input
+                              label={t.customClub}
+                              value={plan.meta.club || ""}
+                              onChange={(v) =>
+                                setPlan((prev) => ({
+                                  ...prev,
+                                  meta: { ...prev.meta, club: v },
+                                  brand: { ...prev.brand, clubName: v },
+                                }))
+                              }
+                            />
+                            <div className="text-[11px] text-white/35 mt-2 leading-relaxed">
+                              {t.customClubHelp}
+                            </div>
+                          </div>
+                        )}
+                      </div>
 
                       <div>
                         <SimpleDropdown
@@ -752,6 +1063,7 @@ export default function PlayerDevelopmentPlanBuilder() {
                           onChange={(value) =>
                             setPlan((prev) => {
                               const next = structuredClone(prev);
+                              setGeneratedPlan(null);
 
                               (next.player as any).teamType = value as TeamType;
 
@@ -826,7 +1138,6 @@ export default function PlayerDevelopmentPlanBuilder() {
                 )}
               </div>
 
-              {/* RIGHT — COVER PREVIEW */}
               <div className="rounded-2xl bg-white/[0.03] border border-white/8 p-5 h-full flex flex-col min-h-[760px]">
                 <div className="flex items-center justify-between">
                   <div>
@@ -926,66 +1237,159 @@ export default function PlayerDevelopmentPlanBuilder() {
               </div>
             </div>
 
-            {/* BOTTOM AREA — 75 / 25 */}
-            <div className="grid grid-cols-1 xl:grid-cols-[3fr_1fr] gap-6 items-start">
-              {/* MAIN BUILDER AREA */}
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8">
-                {mode === "chat" ? (
-                  <>
-                    <div className="text-[15px] text-white/88 max-w-[40ch]">
-                      {t.heroChatTitle}
-                    </div>
-                    <div className="text-[13px] text-white/55 max-w-[52ch] mt-2 mb-6">
-                      {t.heroChatBody}
-                    </div>
+            <div className="grid grid-cols-1 xl:grid-cols-[3.25fr_1fr] gap-6 items-stretch">
+              <div className="flex flex-col gap-6 h-full">
+                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 min-h-[760px]">
+                  {mode === "chat" ? (
+                    <>
+                      <div className="max-w-[52ch] mb-6">
+                        <div className="text-[18px] leading-tight text-white/92 font-medium">
+                          {t.heroChatTitle}
+                        </div>
+                        <div className="text-[13px] text-white/52 mt-2 leading-relaxed">
+                          {t.heroChatBody}
+                        </div>
+                      </div>
 
-                    <div className="flex gap-2 flex-wrap mb-6">
-                      <Hint onClick={() => insertPrompt("Observatie")}>
-                        {t.hintObservation}
-                      </Hint>
-                      <Hint onClick={() => insertPrompt("Moment")}>
-                        {t.hintMoment}
-                      </Hint>
-                      <Hint onClick={() => insertPrompt("Doel")}>
-                        {t.hintGoal}
-                      </Hint>
-                    </div>
+                      <div className="flex gap-2 flex-wrap mb-6">
+                        <Hint onClick={() => insertPrompt("Beschrijf wat je concreet ziet in gedrag")}>
+                          {t.hintObservation}
+                        </Hint>
+                        <Hint onClick={() => insertPrompt("Beschrijf in welk wedstrijdmoment dit gebeurt")}>
+                          {t.hintMoment}
+                        </Hint>
+                        <Hint onClick={() => insertPrompt("Beschrijf wat het effect is op het spel")}>
+                          {t.hintGoal}
+                        </Hint>
+                      </div>
 
-                    <PdpChat
-                      draftPlan={plan}
-                      onPlanGenerated={onPlanGenerated}
-                      onPlannerStateChange={setChatPlannerState}
-                    />
-                  </>
-                ) : (
-                  <>
-                    <div className="text-[15px] text-white/88 max-w-[40ch]">
-                      {t.heroManualTitle}
-                    </div>
-                    <div className="text-[13px] text-white/55 max-w-[52ch] mt-2 mb-6">
-                      {t.heroManualBody}
-                    </div>
-
-                    <div className="max-w-[520px]">
-                      <Input
-                        label={t.developmentPoint}
-                        value={plan.slide2?.focusBehaviour}
-                        onChange={(v) =>
-                          setPlan((prev) => ({
-                            ...prev,
-                            slide2: { ...prev.slide2, focusBehaviour: v },
-                          }))
-                        }
+                      <PdpChat
+                        draftPlan={plan}
+                        onPlanGenerated={onPlanGenerated}
+                        onPlannerStateChange={setChatPlannerState}
+                        onViewPlan={() => {
+                          console.log("Current builder plan:", generatedPlan || plan);
+                        }}
+                        onDownloadPdf={(version) => download(version, lang)}
                       />
-                    </div>
-                  </>
-                )}
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-[15px] text-white/88 max-w-[40ch]">
+                        {t.heroManualTitle}
+                      </div>
+                      <div className="text-[13px] text-white/55 max-w-[52ch] mt-2 mb-6">
+                        {t.heroManualBody}
+                      </div>
+
+                      <div className="max-w-[520px]">
+                        <Input
+                          label={t.developmentPoint}
+                          value={plan.slide2?.focusBehaviour}
+                          onChange={(v) =>
+                            setPlan((prev) => ({
+                              ...prev,
+                              slide2: { ...prev.slide2, focusBehaviour: v },
+                            }))
+                          }
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+                  <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
+                    {t.videoTitle}
+                  </div>
+                  <div className="text-[13px] text-white/50 mt-2 max-w-[64ch] leading-relaxed">
+                    {t.videoBody}
+                  </div>
+
+                  <div className="mt-2 text-[11px] text-white/32 leading-relaxed">
+                    {t.videoUploadHelp}
+                  </div>
+
+                  <div className="mt-5 grid grid-cols-1 xl:grid-cols-3 gap-4">
+                    <VideoCardCompact
+                      title={t.videoClip1}
+                      clip={(plan as any)?.slide3Baseline?.videoClips?.[0]}
+                      upload={localVideoUploads[0]}
+                      t={t}
+                      onChange={(patch) => updateVideoClip(0, patch)}
+                      onUpload={(file) => handleVideoUpload(0, file)}
+                    />
+
+                    <VideoCardCompact
+                      title={t.videoClip2}
+                      clip={(plan as any)?.slide3Baseline?.videoClips?.[1]}
+                      upload={localVideoUploads[1]}
+                      t={t}
+                      onChange={(patch) => updateVideoClip(1, patch)}
+                      onUpload={(file) => handleVideoUpload(1, file)}
+                    />
+
+                    <VideoCardCompact
+                      title={t.videoClip3}
+                      clip={(plan as any)?.slide3Baseline?.videoClips?.[2]}
+                      upload={localVideoUploads[2]}
+                      t={t}
+                      onChange={(patch) => updateVideoClip(2, patch)}
+                      onUpload={(file) => handleVideoUpload(2, file)}
+                    />
+                  </div>
+                </div>
               </div>
 
-              {/* STICKY PROGRESS PANEL */}
-              <div className="sticky top-6 space-y-4">
-                {/* PLAYER HEADER */}
-                <div className="border border-white/10 rounded-2xl p-5 bg-white/[0.03]">
+              <div className="flex flex-col gap-6 h-full">
+                <div className="rounded-2xl border border-white/10 bg-white/[0.05] p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
+                        {t.exportTitle}
+                      </div>
+                      <div className="mt-3 text-[22px] leading-tight text-white/92 font-medium">
+                        {t.exportAlways}
+                      </div>
+                      <div className="mt-2 text-[12px] text-white/50 leading-relaxed max-w-[26ch]">
+                        {t.exportStrong}
+                      </div>
+                    </div>
+
+                    <div className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] text-white/68">
+                      PDF
+                    </div>
+                  </div>
+
+                  <div className="mt-5 space-y-3">
+                    <button
+                      onClick={() => download("player", lang)}
+                      className="w-full bg-white text-black py-3 rounded-xl text-sm font-medium hover:bg-white/90"
+                    >
+                      {t.downloadPlayer}
+                    </button>
+
+                    <button
+                      onClick={() => download("staff", lang)}
+                      className="w-full border border-white/20 py-3 rounded-xl text-sm text-white/88 hover:border-white/30"
+                    >
+                      {t.downloadStaff}
+                    </button>
+
+                    <div className="pt-1 text-center text-[11px] text-white/35">
+                      {t.availableOther}
+                    </div>
+
+                    <button
+                      onClick={() => download("player", otherLang)}
+                      className="w-full rounded-xl border border-white/10 bg-white/[0.03] py-2.5 text-[12px] text-white/72 hover:text-white hover:border-white/20"
+                    >
+                      {t.downloadOther}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
                   <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
                     {t.progressHeader}
                   </div>
@@ -1029,8 +1433,7 @@ export default function PlayerDevelopmentPlanBuilder() {
                   </div>
                 </div>
 
-                {/* TOTAL PROGRESS */}
-                <div className="border border-white/10 rounded-2xl p-5 bg-white/[0.03]">
+                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
                   <div className="flex items-end justify-between gap-4">
                     <div>
                       <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
@@ -1057,8 +1460,7 @@ export default function PlayerDevelopmentPlanBuilder() {
                   </div>
                 </div>
 
-                {/* SECTION PROGRESS */}
-                <div className="border border-white/10 rounded-2xl p-4 bg-white/[0.03]">
+                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 flex-1">
                   <div className="text-[11px] tracking-[0.18em] text-white/40 mb-4 uppercase">
                     {t.planProgress}
                   </div>
@@ -1078,495 +1480,11 @@ export default function PlayerDevelopmentPlanBuilder() {
                     ))}
                   </div>
                 </div>
-
-                {/* EXPORT ALWAYS AVAILABLE */}
-                <div className="space-y-3 border border-white/10 rounded-2xl p-4 bg-white/[0.03]">
-                  <div>
-                    <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
-                      {t.exportTitle}
-                    </div>
-                    <div className="text-[12px] text-white/45 mt-2 leading-relaxed">
-                      {t.exportBody}
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => download("player", lang)}
-                    className="w-full bg-white text-black py-2.5 rounded-full text-sm font-medium"
-                  >
-                    {t.downloadPlayer}
-                  </button>
-
-                  <button
-                    onClick={() => download("staff", lang)}
-                    className="w-full border border-white/20 py-2.5 rounded-full text-sm"
-                  >
-                    {t.downloadStaff}
-                  </button>
-
-                  <div className="text-center text-[11px] text-white/35 pt-2">
-                    {t.availableOther}
-                  </div>
-
-                  <button
-                    onClick={() => download("player", otherLang)}
-                    className="w-full text-[12px] text-white/70"
-                  >
-                    {t.downloadOther}
-                  </button>
-                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function ClubSelect({
-  label,
-  value,
-  placeholder,
-  searchPlaceholder,
-  noResultsLabel,
-  otherLabel,
-  eredivisieClubs,
-  kkdClubs,
-  onChange,
-}: {
-  label: string;
-  value?: string;
-  placeholder: string;
-  searchPlaceholder: string;
-  noResultsLabel: string;
-  otherLabel: string;
-  eredivisieClubs: Array<{
-    id: string;
-    name: string;
-    logoUrl?: string;
-    league?: string;
-  }>;
-  kkdClubs: Array<{
-    id: string;
-    name: string;
-    logoUrl?: string;
-    league?: string;
-  }>;
-  onChange: (v: string) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const [activeIndex, setActiveIndex] = useState<number>(-1);
-
-  const rootRef = useRef<HTMLDivElement | null>(null);
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const listRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    function onDocClick(e: MouseEvent) {
-      if (!rootRef.current) return;
-      if (!rootRef.current.contains(e.target as Node)) {
-        setOpen(false);
-        setActiveIndex(-1);
-      }
-    }
-
-    function onKey(e: KeyboardEvent) {
-      if (!rootRef.current?.contains(document.activeElement)) return;
-
-      if (e.key === "Escape") {
-        setOpen(false);
-        setActiveIndex(-1);
-      }
-    }
-
-    document.addEventListener("mousedown", onDocClick);
-    document.addEventListener("keydown", onKey);
-
-    return () => {
-      document.removeEventListener("mousedown", onDocClick);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (open) {
-      const id = requestAnimationFrame(() => {
-        inputRef.current?.focus();
-      });
-      return () => cancelAnimationFrame(id);
-    }
-  }, [open]);
-
-  const selectedClub =
-    [...eredivisieClubs, ...kkdClubs].find((club) => club.name === value) || null;
-
-  const q = query.trim().toLowerCase();
-
-  const filteredEredivisie = eredivisieClubs.filter((club) =>
-    club.name.toLowerCase().includes(q)
-  );
-  const filteredKkd = kkdClubs.filter((club) =>
-    club.name.toLowerCase().includes(q)
-  );
-
-  const flatItems: Array<
-    | {
-        type: "club";
-        key: string;
-        club: {
-          id: string;
-          name: string;
-          logoUrl?: string;
-          league?: string;
-        };
-      }
-    | {
-        type: "custom";
-        key: string;
-      }
-  > = [
-    ...filteredEredivisie.map((club) => ({
-      type: "club" as const,
-      key: `eredivisie-${club.id}`,
-      club,
-    })),
-    ...filteredKkd.map((club) => ({
-      type: "club" as const,
-      key: `kkd-${club.id}`,
-      club,
-    })),
-    { type: "custom" as const, key: "custom" },
-  ];
-
-  useEffect(() => {
-    if (!open) return;
-    if (!flatItems.length) {
-      setActiveIndex(-1);
-      return;
-    }
-
-    const selectedIdx = flatItems.findIndex(
-      (item) => item.type === "club" && item.club.name === value
-    );
-
-    if (selectedIdx >= 0) {
-      setActiveIndex(selectedIdx);
-    } else {
-      setActiveIndex(0);
-    }
-  }, [open, value, query]);
-
-  useEffect(() => {
-    if (!open || activeIndex < 0) return;
-
-    const el = listRef.current?.querySelector<HTMLElement>(
-      `[data-option-index="${activeIndex}"]`
-    );
-    el?.scrollIntoView({ block: "nearest" });
-  }, [activeIndex, open]);
-
-  function commitActive() {
-    const item = flatItems[activeIndex];
-    if (!item) return;
-
-    if (item.type === "custom") {
-      onChange("custom");
-    } else {
-      onChange(item.club.name);
-    }
-
-    setOpen(false);
-    setQuery("");
-    setActiveIndex(-1);
-  }
-
-  function onKeyDown(e: React.KeyboardEvent) {
-    if (!open && (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ")) {
-      e.preventDefault();
-      setOpen(true);
-      return;
-    }
-
-    if (!open) return;
-
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setActiveIndex((prev) => Math.min(prev + 1, flatItems.length - 1));
-      return;
-    }
-
-    if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setActiveIndex((prev) => Math.max(prev - 1, 0));
-      return;
-    }
-
-    if (e.key === "Enter") {
-      e.preventDefault();
-      commitActive();
-      return;
-    }
-
-    if (e.key === "Escape") {
-      e.preventDefault();
-      setOpen(false);
-      setActiveIndex(-1);
-    }
-  }
-
-  const hasResults =
-    filteredEredivisie.length > 0 || filteredKkd.length > 0 || !q.length;
-
-  return (
-    <div ref={rootRef}>
-      <div className="text-[11px] text-white/40 mb-2 uppercase tracking-wide">
-        {label}
-      </div>
-
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          onKeyDown={onKeyDown}
-          className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-left transition hover:border-white/16 focus:outline-none focus:border-white/24 focus:bg-white/[0.06]"
-          aria-haspopup="listbox"
-          aria-expanded={open}
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0">
-              {selectedClub?.logoUrl ? (
-                <img
-                  src={selectedClub.logoUrl}
-                  alt=""
-                  className="w-5 h-5 object-contain shrink-0 opacity-90"
-                />
-              ) : (
-                <div className="w-5 h-5 rounded-full border border-white/10 bg-white/[0.03] shrink-0" />
-              )}
-
-              <div className="min-w-0">
-                <div className="text-[14px] text-white/90 truncate">
-                  {selectedClub?.name || placeholder}
-                </div>
-                {selectedClub?.league ? (
-                  <div className="text-[11px] text-white/35 mt-0.5 truncate">
-                    {selectedClub.league}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="text-white/35 shrink-0">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 14 14"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M3 5.25L7 9.25L11 5.25"
-                  stroke="currentColor"
-                  strokeWidth="1.4"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-          </div>
-        </button>
-
-        {open && (
-          <div className="absolute z-[999] mt-2 w-full overflow-hidden rounded-2xl border border-white/10 bg-[#101317] shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
-            <div className="p-3 border-b border-white/6">
-              <input
-                ref={inputRef}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={onKeyDown}
-                placeholder={searchPlaceholder}
-                className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-[14px] text-white/90 outline-none placeholder:text-white/25 focus:border-white/20"
-              />
-            </div>
-
-            <div ref={listRef} className="max-h-[360px] overflow-y-auto p-2" role="listbox">
-              {filteredEredivisie.length > 0 && (
-                <ClubSection
-                  title="Eredivisie"
-                  competitionLogoUrl="/logos/netherlands/eredivisie/eredivisie.png"
-                  items={filteredEredivisie}
-                  selectedValue={value}
-                  activeIndex={activeIndex}
-                  startIndex={0}
-                  query={query}
-                  onHoverIndex={setActiveIndex}
-                  onSelect={(clubName) => {
-                    onChange(clubName);
-                    setOpen(false);
-                    setQuery("");
-                    setActiveIndex(-1);
-                  }}
-                />
-              )}
-
-              {filteredKkd.length > 0 && (
-                <ClubSection
-                  title="KKD"
-                  competitionLogoUrl="/logos/netherlands/kkd/kkd.png"
-                  items={filteredKkd}
-                  selectedValue={value}
-                  activeIndex={activeIndex}
-                  startIndex={filteredEredivisie.length}
-                  query={query}
-                  onHoverIndex={setActiveIndex}
-                  onSelect={(clubName) => {
-                    onChange(clubName);
-                    setOpen(false);
-                    setQuery("");
-                    setActiveIndex(-1);
-                  }}
-                />
-              )}
-
-              {!hasResults && (
-                <div className="px-3 py-4 text-[13px] text-white/35">
-                  {noResultsLabel}
-                </div>
-              )}
-
-              <div className="mt-1 pt-2 border-t border-white/6">
-                <button
-                  type="button"
-                  data-option-index={flatItems.length - 1}
-                  onMouseEnter={() => setActiveIndex(flatItems.length - 1)}
-                  onClick={() => {
-                    onChange("custom");
-                    setOpen(false);
-                    setQuery("");
-                    setActiveIndex(-1);
-                  }}
-                  className={`w-full flex items-center gap-3 rounded-xl px-3 py-3 text-left transition ${
-                    activeIndex === flatItems.length - 1
-                      ? "bg-white/[0.08] border border-white/10"
-                      : "hover:bg-white/[0.04] border border-transparent"
-                  }`}
-                >
-                  <div className="w-8 h-8 rounded-lg border border-white/10 bg-white/[0.03] flex items-center justify-center text-white/45 shrink-0">
-                    +
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-[14px] text-white/88">{otherLabel}</div>
-                  </div>
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ClubSection({
-  title,
-  competitionLogoUrl,
-  items,
-  selectedValue,
-  activeIndex,
-  startIndex,
-  query,
-  onHoverIndex,
-  onSelect,
-}: {
-  title: string;
-  competitionLogoUrl?: string;
-  items: Array<{
-    id: string;
-    name: string;
-    logoUrl?: string;
-  }>;
-  selectedValue?: string;
-  activeIndex: number;
-  startIndex: number;
-  query: string;
-  onHoverIndex: (index: number) => void;
-  onSelect: (clubName: string) => void;
-}) {
-  return (
-    <div className="mb-2">
-      <div className="flex items-center gap-2 px-3 py-2">
-        {competitionLogoUrl ? (
-          <img
-            src={competitionLogoUrl}
-            alt=""
-            className="w-4 h-4 object-contain opacity-70"
-          />
-        ) : null}
-        <div className="text-[11px] uppercase tracking-[0.16em] text-white/30">
-          {title}
-        </div>
-      </div>
-
-      <div className="space-y-1">
-        {items.map((club, idx) => {
-          const selected = selectedValue === club.name;
-          const absoluteIndex = startIndex + idx;
-          const active = activeIndex === absoluteIndex;
-
-          return (
-            <button
-              key={club.id}
-              type="button"
-              data-option-index={absoluteIndex}
-              onMouseEnter={() => onHoverIndex(absoluteIndex)}
-              onClick={() => onSelect(club.name)}
-              className={`w-full flex items-center gap-3 rounded-xl px-3 py-3 text-left transition ${
-                active || selected
-                  ? "bg-white/[0.08] border border-white/10"
-                  : "hover:bg-white/[0.04] border border-transparent"
-              }`}
-            >
-              {club.logoUrl ? (
-                <img
-                  src={club.logoUrl}
-                  alt=""
-                  className="w-8 h-8 object-contain shrink-0"
-                />
-              ) : (
-                <div className="w-8 h-8 rounded-lg border border-white/10 bg-white/[0.03] shrink-0" />
-              )}
-
-              <div className="min-w-0 flex-1">
-                <div className="text-[14px] text-white/90 truncate">
-                  {highlightMatch(club.name, query)}
-                </div>
-              </div>
-
-              {selected ? (
-                <div className="text-white/45 shrink-0">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 14 14"
-                    fill="none"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M3 7.5L5.5 10L11 4.5"
-                      stroke="currentColor"
-                      strokeWidth="1.4"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-              ) : null}
-            </button>
-          );
-        })}
-      </div>
+      </div>      
     </div>
   );
 }
@@ -1577,12 +1495,14 @@ function SimpleDropdown({
   placeholder,
   items,
   onChange,
+  hideLabel = false,
 }: {
   label: string;
   value?: string;
   placeholder: string;
-  items: Array<{ value: string; label: string }>;
+  items: Array<{ value: string; label: string; iconUrl?: string }>;
   onChange: (v: string) => void;
+  hideLabel?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -1664,9 +1584,11 @@ function SimpleDropdown({
 
   return (
     <div ref={rootRef}>
-      <div className="text-[11px] text-white/40 mb-2 uppercase tracking-wide">
-        {label}
-      </div>
+      {!hideLabel ? (
+        <div className="text-[11px] text-white/40 mb-2 uppercase tracking-wide">
+          {label}
+        </div>
+      ) : null}
 
       <div className="relative">
         <button
@@ -1678,7 +1600,17 @@ function SimpleDropdown({
           aria-expanded={open}
         >
           <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
+            <div className="min-w-0 flex items-center gap-3">
+              {selectedItem?.iconUrl ? (
+                <img
+                  src={selectedItem.iconUrl}
+                  alt=""
+                  className="w-5 h-5 object-contain shrink-0"
+                />
+              ) : (
+                <div className="w-5 h-5 rounded-full border border-white/10 bg-white/[0.03] shrink-0" />
+              )}
+
               <div className="text-[14px] text-white/90 truncate">
                 {selectedItem?.label || placeholder}
               </div>
@@ -1704,7 +1636,7 @@ function SimpleDropdown({
           </div>
         </button>
 
-        {open && (
+        {open ? (
           <div className="absolute z-[999] mt-2 w-full overflow-hidden rounded-2xl border border-white/10 bg-[#101317] shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
             <div ref={listRef} className="max-h-[280px] overflow-y-auto p-2" role="listbox">
               {items.map((item, idx) => {
@@ -1728,9 +1660,21 @@ function SimpleDropdown({
                         : "hover:bg-white/[0.04] border border-transparent"
                     }`}
                   >
-                    <span className="text-[14px] text-white/90 truncate">
-                      {item.label}
-                    </span>
+                    <div className="flex items-center gap-3 min-w-0">
+                      {item.iconUrl ? (
+                        <img
+                          src={item.iconUrl}
+                          alt=""
+                          className="w-5 h-5 object-contain shrink-0"
+                        />
+                      ) : (
+                        <div className="w-5 h-5 rounded-full border border-white/10 bg-white/[0.03] shrink-0" />
+                      )}
+
+                      <span className="text-[14px] text-white/90 truncate">
+                        {item.label}
+                      </span>
+                    </div>
 
                     {selected ? (
                       <div className="text-white/45 shrink-0">
@@ -1756,32 +1700,147 @@ function SimpleDropdown({
               })}
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
 }
 
-function highlightMatch(text: string, query: string) {
-  const q = query.trim();
-  if (!q) return text;
-
-  const lower = text.toLowerCase();
-  const lowerQ = q.toLowerCase();
-  const idx = lower.indexOf(lowerQ);
-
-  if (idx === -1) return text;
-
-  const before = text.slice(0, idx);
-  const match = text.slice(idx, idx + q.length);
-  const after = text.slice(idx + q.length);
+function VideoCardCompact({
+  title,
+  clip,
+  upload,
+  t,
+  onChange,
+  onUpload,
+}: {
+  title: string;
+  clip?: any;
+  upload?: LocalVideoUpload;
+  t: (typeof UI)["nl"] | (typeof UI)["en"];
+  onChange: (patch: Record<string, string>) => void;
+  onUpload: (file: File | null) => void;
+}) {
+  const source = clip?.source === "training" ? "training" : "match";
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   return (
-    <>
-      {before}
-      <span className="text-white font-medium">{match}</span>
-      {after}
-    </>
+    <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+      <div className="text-[12px] text-white/82 font-medium">{title}</div>
+
+      <div className="mt-3 space-y-3">
+        <InputCompact
+          label={t.videoName}
+          value={clip?.title || ""}
+          onChange={(v) => onChange({ title: v })}
+        />
+
+        <InputCompact
+          label={t.videoUrl}
+          value={clip?.url || ""}
+          onChange={(v) => onChange({ url: v })}
+        />
+
+        <div className="text-[10px] text-white/28 uppercase tracking-[0.14em]">
+          {t.videoOr}
+        </div>
+
+        <div>
+          <div className="text-[10px] text-white/40 mb-1 uppercase tracking-wide">
+            {t.videoUpload}
+          </div>
+
+          <input
+            ref={inputRef}
+            type="file"
+            accept="video/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0] || null;
+              onUpload(file);
+            }}
+          />
+
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-left text-[12px] text-white/80 hover:border-white/20 hover:text-white"
+          >
+            {t.videoUpload}
+          </button>
+
+          {upload?.fileName ? (
+            <div className="mt-1.5 text-[10px] text-white/45 leading-relaxed">
+              {t.videoChosen}: <span className="text-white/72">{upload.fileName}</span>
+            </div>
+          ) : null}
+        </div>
+
+        <InputCompact
+          label={t.videoMoment}
+          value={clip?.timestamp || ""}
+          onChange={(v) => onChange({ timestamp: v })}
+        />
+
+        <SimpleDropdown
+          label={t.videoSource}
+          value={source}
+          placeholder={t.videoSource}
+          items={[
+            { value: "match", label: t.videoMatch },
+            { value: "training", label: t.videoTraining },
+          ]}
+          onChange={(v) => onChange({ source: v })}
+        />
+      </div>
+    </div>
+  );
+}
+
+function InputCompact({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value?: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div>
+      <div className="text-[10px] text-white/40 mb-1 uppercase tracking-wide">
+        {label}
+      </div>
+      <input
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full bg-transparent border-b border-white/20 py-1.5 text-[12px] focus:outline-none focus:border-white"
+      />
+    </div>
+  );
+}
+
+function ChoicePill({
+  active,
+  children,
+  onClick,
+}: {
+  active: boolean;
+  children: React.ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full px-3 py-1.5 text-[12px] transition ${
+        active
+          ? "bg-white text-black"
+          : "border border-white/10 bg-white/[0.04] text-white/72 hover:text-white hover:border-white/20"
+      }`}
+    >
+      {children}
+    </button>
   );
 }
 

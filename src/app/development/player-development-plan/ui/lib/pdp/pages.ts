@@ -69,101 +69,106 @@ export function pageAgreementContract(args: {
       return input
         .map((x) => String(x || "").trim())
         .filter(Boolean)
-        .slice(0, 3);
+        .slice(0, 2);
     }
 
     return String(input || "")
       .split(/\r?\n|;|•/g)
       .map((x) => x.trim())
       .filter(Boolean)
-      .slice(0, 3);
+      .slice(0, 2);
   };
 
   const matchMoments = normalizeItems(matchSituation);
   const focusText = String(focusBehaviour || "").trim();
   const targetText = String(targetBehaviour || "").trim();
-  const hasTarget = !!targetText;
-  const hasMoments = matchMoments.length > 0;
   const evalTxt = (evalLabel || t(lang, "EVALUATIE", "EVALUATION")).toUpperCase();
+  const periodTxt = t(lang, "FOCUSPERIODE", "FOCUS PERIOD");
 
-  const momentListHtml = hasMoments
-    ? `<ul class="pdpS2__momentList">
-        ${matchMoments
-          .map(
-            (item) => `
-              <li class="pdpS2__momentItem">
-                <span class="pdpS2__momentDot"></span>
-                <span class="pdpS2__momentText">${esc(item)}</span>
-              </li>
-            `
-          )
-          .join("")}
-      </ul>`
-    : `<div class="pdpS2__momentEmpty"></div>`;
+  const matchHtml =
+    matchMoments.length > 0
+      ? `<ul class="pdpS2__contextList">
+          ${matchMoments
+            .map(
+              (item) => `
+                <li class="pdpS2__contextItem">
+                  <span class="pdpS2__contextDot"></span>
+                  <span class="pdpS2__contextText">${esc(item)}</span>
+                </li>
+              `
+            )
+            .join("")}
+        </ul>`
+      : `<div class="pdpS2__contextEmpty"></div>`;
 
   return `
 <section class="page pdpS2" style="--accent:${esc(accentHex)};">
   ${wmHtml}
   <div class="pdpS2__wash" aria-hidden="true"></div>
+  <div class="pdpS2__vignette" aria-hidden="true"></div>
+  <div class="pdpS2__grain" aria-hidden="true"></div>
   <div class="pdpS2__axis" aria-hidden="true"></div>
 
-  <div class="pdpS2__inner">
-    <div class="pdpS2__top">
-      <div class="pdpS2__kicker">${esc(t(lang, "AFSPRAAK", "AGREEMENT"))}</div>
+  <div class="pdpS2__top">
+    <div class="pdpS2__kicker">${esc(t(lang, "AFSPRAAK", "AGREEMENT"))}</div>
 
-      <div class="pdpS2__hero">
-        <div class="pdpS2__title">${esc(
-          t(lang, "JOUW ONTWIKKELPUNT", "YOUR DEVELOPMENT POINT")
-        )}</div>
+    <div class="pdpS2__hero">
+      <div class="pdpS2__heroGrid" aria-hidden="true"></div>
+      <div class="pdpS2__heroGlow" aria-hidden="true"></div>
+
+      <div class="pdpS2__title">${esc(
+        t(lang, "JOUW ONTWIKKELPUNT", "YOUR DEVELOPMENT POINT")
+      )}</div>
+
+      <div class="pdpS2__focusWrap">
         <div class="pdpS2__focus">${esc(focusText)}</div>
       </div>
     </div>
+  </div>
 
-    <div class="pdpS2__middle">
-      <div class="pdpS2__contentCard pdpS2__contentCard--target">
-        <div class="pdpS2__sectionHead">${esc(
-          t(lang, "GEWENST GEDRAG", "TARGET BEHAVIOUR")
-        )}</div>
-        <div class="pdpS2__targetText ${hasTarget ? "" : "pdpS2__targetText--empty"}">${esc(
-          targetText
-        )}</div>
-      </div>
-
-      <div class="pdpS2__contentCard pdpS2__contentCard--moments">
-        <div class="pdpS2__sectionHead">${esc(
-          t(lang, "WEDSTRIJDMOMENTEN", "MATCH MOMENTS")
-        )}</div>
-        ${momentListHtml}
-      </div>
+  <div class="pdpS2__targetCard">
+    <div class="pdpS2__sectionHead">${esc(
+      t(lang, "GEWENST GEDRAG", "TARGET BEHAVIOUR")
+    )}</div>
+    <div class="pdpS2__targetBody">
+      <div class="pdpS2__targetRail"></div>
+      <div class="pdpS2__targetText ${targetText ? "" : "pdpS2__targetText--empty"}">${esc(
+        targetText
+      )}</div>
     </div>
+  </div>
 
-    <div class="pdpS2__bottom">
-      <div class="pdpS2__periodCard">
-        <div class="pdpS2__periodTop">
-          <div class="pdpS2__sectionHead pdpS2__sectionHead--period">${esc(
-            t(lang, "ONTWIKKELPERIODE", "DEVELOPMENT PERIOD")
-          )}</div>
-          <div class="pdpS2__periodPill">${esc(durationWeeksLabel)}</div>
-        </div>
+  <div class="pdpS2__contextCard">
+    <div class="pdpS2__sectionHead">${esc(
+      t(lang, "WEDSTRIJDMOMENTEN", "MATCH MOMENTS")
+    )}</div>
+    <div class="pdpS2__contextBody">
+      ${matchHtml}
+    </div>
+  </div>
 
-        <div class="pdpS2__timeline" aria-hidden="true">
-          <div class="pdpS2__timelineTrack"></div>
-          <div class="pdpS2__timelineFill"></div>
-          <div class="pdpS2__timelineDot pdpS2__timelineDot--start"></div>
-          <div class="pdpS2__timelineDot pdpS2__timelineDot--end"></div>
-        </div>
+  <div class="pdpS2__bottomBar">
+    <div class="pdpS2__bottomLine"></div>
+    <div class="pdpS2__bottomProgress"></div>
+    <div class="pdpS2__bottomMarker pdpS2__bottomMarker--start"></div>
+    <div class="pdpS2__bottomMarker pdpS2__bottomMarker--end"></div>
 
-        <div class="pdpS2__periodMeta">
-          <div class="pdpS2__periodCol">
-            <div class="pdpS2__periodK">${esc(t(lang, "START", "START"))}</div>
-            <div class="pdpS2__periodV">${esc(startDateLabel)}</div>
-          </div>
+    <div class="pdpS2__bottomGrid">
+      <div class="pdpS2__bottomCol pdpS2__bottomCol--left">
+        <div class="pdpS2__bottomLabel">${esc(t(lang, "START", "START"))}</div>
+        <div class="pdpS2__bottomValue">${esc(startDateLabel)}</div>
+      </div>
 
-          <div class="pdpS2__periodCol pdpS2__periodCol--right">
-            <div class="pdpS2__periodK">${esc(evalTxt)}</div>
-            <div class="pdpS2__periodV">${esc(endDateLabel)}</div>
-          </div>
-        </div>
+      <div class="pdpS2__bottomCol pdpS2__bottomCol--center">
+        <div class="pdpS2__bottomLabel">${esc(periodTxt)}</div>
+        <div class="pdpS2__bottomValue pdpS2__bottomValue--strong">${esc(
+          durationWeeksLabel
+        )}</div>
+      </div>
+
+      <div class="pdpS2__bottomCol pdpS2__bottomCol--right">
+        <div class="pdpS2__bottomLabel">${esc(evalTxt)}</div>
+        <div class="pdpS2__bottomValue">${esc(endDateLabel)}</div>
       </div>
     </div>
   </div>
@@ -188,7 +193,7 @@ export function pageAgreementContract(args: {
       bottom:-16mm;
       width:138mm;
       height:138mm;
-      opacity:.038;
+      opacity:.04;
       filter:blur(.15px);
       z-index:0;
       pointer-events:none;
@@ -205,14 +210,14 @@ export function pageAgreementContract(args: {
       inset:0;
       background:
         radial-gradient(
-          circle at 22% 20%,
-          color-mix(in srgb, var(--accent-primary, var(--accent)) 8%, black 10%) 0%,
-          transparent 36%
+          circle at 20% 18%,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 10%, black 8%) 0%,
+          transparent 34%
         ),
         radial-gradient(
-          circle at 74% 82%,
+          circle at 76% 82%,
           color-mix(in srgb, var(--accent-secondary, var(--accent)) 7%, black 18%) 0%,
-          transparent 30%
+          transparent 28%
         ),
         linear-gradient(
           145deg,
@@ -223,156 +228,311 @@ export function pageAgreementContract(args: {
       pointer-events:none;
     }
 
+    .pdpS2__vignette{
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at center, transparent 48%, rgba(0,0,0,.18) 100%),
+        linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.14));
+      z-index:0;
+      pointer-events:none;
+    }
+
+    .pdpS2__grain{
+      position:absolute;
+      inset:0;
+      opacity:.028;
+      background-image:
+        linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
+      background-size:5px 5px, 5px 5px;
+      z-index:0;
+      pointer-events:none;
+    }
+
     .pdpS2__axis{
       position:absolute;
       left:18mm;
       top:16mm;
-      bottom:12mm;
+      bottom:16mm;
       width:3px;
       border-radius:3px;
-      background:var(--accent-primary, var(--accent));
-      opacity:.95;
+      background:
+        linear-gradient(
+          180deg,
+          var(--accent-primary, var(--accent)) 0%,
+          var(--accent-primary, var(--accent)) 65%,
+          rgba(255,255,255,.08) 100%
+        );
+      box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--accent-primary, var(--accent)) 16%, transparent),
+        0 0 14px color-mix(in srgb, var(--accent-primary, var(--accent)) 10%, transparent);
+      opacity:.98;
       z-index:1;
     }
 
-    .pdpS2__inner{
-      position:relative;
-      z-index:2;
-      padding:18mm 16mm;
-      padding-left:26mm;
-      height:100%;
-      display:grid;
-      grid-template-rows:auto minmax(0,1fr) auto;
-      gap:18px;
-    }
-
     .pdpS2__top{
+      position:absolute;
+      left:26mm;
+      right:16mm;
+      top:18mm;
+      height:92mm;
+      z-index:2;
       display:flex;
       flex-direction:column;
-      gap:14px;
-      padding-top:.5mm;
+      overflow:hidden;
     }
 
     .pdpS2__kicker{
-      font-size:10.2pt;
-      letter-spacing:.26em;
+      font-size:9.5pt;
+      letter-spacing:.22em;
       text-transform:uppercase;
       color:rgba(255,255,255,.72);
-    }
-
-    .pdpS2__hero{
-      display:flex;
-      flex-direction:column;
-      gap:18px;
-    }
-
-    .pdpS2__title{
-      font-size:26pt;
-      line-height:1.02;
-      letter-spacing:-0.02em;
-      font-weight:860;
-      text-transform:uppercase;
-      max-width:20ch;
-      text-wrap:balance;
-    }
-
-    .pdpS2__focus{
-      font-size:22.2pt;
-      line-height:1.16;
-      letter-spacing:-0.022em;
-      font-weight:780;
-      color:rgba(255,255,255,.97);
-      max-width:19ch;
-      text-wrap:balance;
-      overflow-wrap:anywhere;
-      min-height:14mm;
-    }
-
-    .pdpS2__middle{
-      min-height:0;
-      display:grid;
-      grid-template-rows:minmax(42mm, auto) minmax(28mm, 1fr);
-      gap:18px;
-      align-content:start;
-      padding-top:2px;
-    }
-
-    .pdpS2__contentCard{
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:18px;
-      padding:14px 16px;
-      min-height:0;
-      overflow:hidden;
-    }
-
-    .pdpS2__contentCard--target{
-      background:rgba(255,255,255,.04);
-    }
-
-    .pdpS2__contentCard--moments{
-      background:rgba(0,0,0,.12);
-    }
-
-    .pdpS2__sectionHead{
-      font-size:9.3pt;
-      letter-spacing:.26em;
-      text-transform:uppercase;
-      color:rgba(255,255,255,.46);
-      font-weight:720;
+      font-weight:640;
+      line-height:1.1;
       margin-bottom:10px;
     }
 
-    .pdpS2__sectionHead--period{
-      margin-bottom:0;
+    .pdpS2__hero{
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      height:100%;
+      min-height:0;
+      padding:2mm 0 0 0;
+      overflow:hidden;
     }
 
-    .pdpS2__targetText{
-      font-size:16.6pt;
-      line-height:1.44;
-      color:rgba(255,255,255,.80);
-      font-weight:520;
-      text-wrap:balance;
+    .pdpS2__heroGrid{
+      position:absolute;
+      inset:0;
+      opacity:.055;
+      background-image:
+        linear-gradient(rgba(255,255,255,.18) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.14) 1px, transparent 1px);
+      background-size:7px 7px, 7px 7px;
+      mask-image:linear-gradient(180deg, rgba(0,0,0,.34), transparent 86%);
+      pointer-events:none;
+    }
+
+    .pdpS2__heroGlow{
+      position:absolute;
+      left:-4mm;
+      top:8mm;
+      width:74mm;
+      height:40mm;
+      background:
+        radial-gradient(
+          circle,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 14%, transparent) 0%,
+          transparent 70%
+        );
+      opacity:.55;
+      pointer-events:none;
+      filter:blur(4px);
+      transform:rotate(-8deg);
+    }
+
+    .pdpS2__title{
+      position:relative;
+      z-index:2;
+      font-size:11pt;
+      line-height:1.1;
+      letter-spacing:.18em;
+      font-weight:600;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.58);
+      max-width:24ch;
+    }
+
+    .pdpS2__focusWrap{
+      margin-top:auto;
+      position:relative;
+      z-index:2;
+      max-width:18ch;
+    }
+
+    .pdpS2__focusWrap::before{
+      content:"";
+      position:absolute;
+      left:-14mm;
+      top:50%;
+      width:10mm;
+      height:1px;
+      background:linear-gradient(
+        90deg,
+        var(--accent-primary, var(--accent)),
+        transparent
+      );
+      opacity:.4;
+      transform:translateY(-50%);
+    }
+
+    .pdpS2__focus{
+      font-size:22pt;
+      line-height:1.08;
+      letter-spacing:-0.02em;
+      font-weight:820;
+      color:rgba(255,255,255,.98);
       display:-webkit-box;
-      -webkit-line-clamp:4;
+      -webkit-line-clamp:2;
       -webkit-box-orient:vertical;
       overflow:hidden;
+      overflow-wrap:anywhere;
+      text-wrap:balance;
+      min-height:0;
+      text-shadow:0 0 18px rgba(255,255,255,.08);
+    }
+
+    .pdpS2__focusWrap::after{
+      content:"";
+      display:block;
+      width:36px;
+      height:2px;
+      margin-top:10px;
+      border-radius:999px;
+      background:var(--accent-primary, var(--accent));
+      opacity:.72;
+      box-shadow:0 0 10px color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, transparent);
+    }
+
+    .pdpS2__targetCard{
+      position:absolute;
+      left:26mm;
+      right:16mm;
+      top:118mm;
+      height:56mm;
+      z-index:2;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:18px;
+      padding:13px 16px;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255,255,255,.05) 0%,
+          rgba(255,255,255,.03) 100%
+        );
+      overflow:hidden;
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.015),
+        0 10px 30px rgba(0,0,0,.12);
+    }
+
+    .pdpS2__targetCard::after{
+      content:"";
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:-12px;
+      width:1px;
+      height:12px;
+      background:rgba(255,255,255,.08);
+    }
+
+    .pdpS2__contextCard{
+      position:absolute;
+      left:26mm;
+      right:16mm;
+      top:182mm;
+      height:48mm;
+      z-index:2;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:18px;
+      padding:12px 16px;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(0,0,0,.16) 0%,
+          rgba(0,0,0,.10) 100%
+        );
+      overflow:hidden;
+    }
+
+    .pdpS2__sectionHead{
+      font-size:8.8pt;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.46);
+      font-weight:720;
+      margin-bottom:8px;
+      line-height:1.1;
+    }
+
+    .pdpS2__targetBody{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
       min-height:0;
     }
 
-    .pdpS2__targetText--empty{
-      min-height:24px;
+    .pdpS2__targetRail{
+      width:2px;
+      height:28mm;
+      border-radius:999px;
+      background:
+        linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 46%, rgba(255,255,255,.18)) 0%,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 12%, transparent) 100%
+        );
+      flex:0 0 auto;
+      opacity:.9;
     }
 
-    .pdpS2__momentList{
+    .pdpS2__targetText{
+      font-size:13.8pt;
+      line-height:1.36;
+      color:rgba(255,255,255,.86);
+      font-weight:560;
+      display:-webkit-box;
+      -webkit-line-clamp:3;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      text-wrap:balance;
+      min-height:0;
+      letter-spacing:.005em;
+    }
+
+    .pdpS2__targetText--empty{
+      min-height:14px;
+    }
+
+    .pdpS2__contextBody{
+      min-height:0;
+    }
+
+    .pdpS2__contextList{
       list-style:none;
-      padding:0;
       margin:0;
+      padding:0;
       display:flex;
       flex-direction:column;
-      gap:10px;
+      gap:8px;
     }
 
-    .pdpS2__momentItem{
+    .pdpS2__contextItem{
       display:flex;
-      gap:10px;
+      gap:9px;
       align-items:flex-start;
       min-width:0;
     }
 
-    .pdpS2__momentDot{
+    .pdpS2__contextDot{
       width:7px;
       height:7px;
       border-radius:999px;
       background:var(--accent-mix, var(--accent));
-      box-shadow:0 0 0 1px color-mix(in srgb, var(--accent-mix, var(--accent)) 18%, transparent);
-      margin-top:9px;
+      margin-top:4px;
       flex:0 0 auto;
+      box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--accent-mix, var(--accent)) 18%, transparent),
+        0 0 10px color-mix(in srgb, var(--accent-mix, var(--accent)) 12%, transparent);
     }
 
-    .pdpS2__momentText{
-      font-size:13.8pt;
-      line-height:1.38;
-      color:rgba(255,255,255,.78);
+    .pdpS2__contextText{
+      font-size:12.2pt;
+      line-height:1.28;
+      color:rgba(255,255,255,.80);
       font-weight:500;
       display:-webkit-box;
       -webkit-line-clamp:2;
@@ -381,134 +541,136 @@ export function pageAgreementContract(args: {
       min-width:0;
     }
 
-    .pdpS2__momentEmpty{
-      min-height:20px;
+    .pdpS2__contextEmpty{
+      min-height:8px;
     }
 
-    .pdpS2__bottom{
-      align-self:end;
-    }
-
-    .pdpS2__periodCard{
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:18px;
-      background:rgba(255,255,255,.04);
-      padding:14px 16px 15px;
-      display:grid;
-      grid-template-rows:auto auto auto;
-      gap:10px;
-    }
-
-    .pdpS2__periodTop{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      min-width:0;
-    }
-
-    .pdpS2__periodPill{
-      padding:4px 11px;
-      border-radius:999px;
-      border:1px solid color-mix(in srgb, var(--accent-mix, var(--accent)) 22%, rgba(255,255,255,.10));
-      background:
-        linear-gradient(
-          145deg,
-          rgba(0,0,0,.18) 0%,
-          color-mix(in srgb, var(--accent-mix, var(--accent)) 10%, rgba(0,0,0,.18)) 100%
-        );
-      font-size:10pt;
-      letter-spacing:.22em;
-      text-transform:uppercase;
-      color:rgba(255,255,255,.84);
-      font-weight:780;
-      white-space:nowrap;
-      flex:0 0 auto;
-    }
-
-    .pdpS2__timeline{
-      position:relative;
-      height:22px;
-    }
-
-    .pdpS2__timelineTrack{
+    .pdpS2__bottomBar{
       position:absolute;
-      left:10px;
-      right:10px;
-      top:10px;
-      height:3px;
-      border-radius:999px;
+      left:26mm;
+      right:16mm;
+      bottom:14mm;
+      height:18mm;
+      z-index:2;
+    }
+
+    .pdpS2__bottomLine{
+      position:absolute;
+      left:0;
+      right:0;
+      top:0;
+      height:1px;
       background:linear-gradient(
         90deg,
-        rgba(255,255,255,.20) 0%,
-        rgba(255,255,255,.16) 100%
+        rgba(255,255,255,.16) 0%,
+        rgba(255,255,255,.12) 100%
       );
     }
 
-    .pdpS2__timelineFill{
+    .pdpS2__bottomProgress{
       position:absolute;
-      left:10px;
-      right:10px;
-      top:10px;
-      height:3px;
-      border-radius:999px;
-      background:var(--accent-gradient);
-      opacity:.98;
-      box-shadow:0 0 10px color-mix(in srgb, var(--accent-mix, var(--accent)) 14%, transparent);
-    }
-
-    .pdpS2__timelineDot{
-      position:absolute;
-      top:3px;
-      width:16px;
-      height:16px;
-      border-radius:999px;
-      border:2px solid rgba(255,255,255,.16);
-    }
-
-    .pdpS2__timelineDot--start{
       left:0;
-      background:rgba(255,255,255,.92);
-      border-color:rgba(255,255,255,.28);
+      top:0;
+      width:38%;
+      height:2px;
+      background:linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--accent-primary, var(--accent)) 84%, #ffffff 10%) 0%,
+        color-mix(in srgb, var(--accent-primary, var(--accent)) 10%, transparent) 100%
+      );
+      opacity:.55;
+      border-radius:999px;
     }
 
-    .pdpS2__timelineDot--end{
+    .pdpS2__bottomMarker{
+      position:absolute;
+      top:-1.4px;
+      width:4px;
+      height:4px;
+      border-radius:999px;
+      background:var(--accent-primary, var(--accent));
+      box-shadow:0 0 10px color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, transparent);
+    }
+
+    .pdpS2__bottomMarker--start{
+      left:0;
+    }
+
+    .pdpS2__bottomMarker--end{
       right:0;
-      background:var(--accent-secondary, var(--accent));
-      border-color:color-mix(in srgb, var(--accent-secondary, var(--accent)) 74%, rgba(255,255,255,.24));
-      box-shadow:0 0 0 4px color-mix(in srgb, var(--accent-mix, var(--accent)) 16%, transparent);
+      opacity:.9;
     }
 
-    .pdpS2__periodMeta{
+    .pdpS2__bottomGrid{
+      position:absolute;
+      left:0;
+      right:0;
+      top:4.2mm;
       display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-      align-items:end;
+      grid-template-columns:1fr auto 1fr;
+      align-items:start;
+      gap:14px;
     }
 
-    .pdpS2__periodCol--right{
+    .pdpS2__bottomCol{
+      display:flex;
+      flex-direction:column;
+      gap:5px;
+      min-width:0;
+    }
+
+    .pdpS2__bottomCol--left{
+      align-items:flex-start;
+      text-align:left;
+    }
+
+    .pdpS2__bottomCol--center{
+      align-items:center;
+      text-align:center;
+    }
+
+    .pdpS2__bottomCol--center::after{
+      content:"WINDOW";
+      display:block;
+      font-size:7pt;
+      letter-spacing:.2em;
+      opacity:.35;
+      margin-top:2px;
+      text-transform:uppercase;
+    }
+
+    .pdpS2__bottomCol--right{
+      align-items:flex-end;
       text-align:right;
     }
 
-    .pdpS2__periodK{
-      font-size:8.9pt;
-      letter-spacing:.24em;
+    .pdpS2__bottomLabel{
+      font-size:8.3pt;
+      letter-spacing:.18em;
       text-transform:uppercase;
-      color:rgba(255,255,255,.52);
+      color:rgba(255,255,255,.44);
       font-weight:720;
+      white-space:nowrap;
+      line-height:1.1;
     }
 
-    .pdpS2__periodV{
-      margin-top:4px;
-      font-size:13pt;
+    .pdpS2__bottomValue{
+      font-size:10.8pt;
       line-height:1.1;
-      letter-spacing:.10em;
+      letter-spacing:.05em;
       text-transform:uppercase;
-      color:rgba(255,255,255,.88);
-      font-weight:760;
+      color:rgba(255,255,255,.84);
+      font-weight:640;
       white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+    }
+
+    .pdpS2__bottomValue--strong{
+      font-size:13pt;
+      letter-spacing:.28em;
+      color:#fff;
+      font-weight:900;
+      transform:scale(1.02);
+      transform-origin:center;
     }
   </style>
 </section>
@@ -543,70 +705,104 @@ export function pageContext(args: {
        </div>`
     : ``;
 
-  const bullets = (items: string[]) =>
-    `<ul class="pdpS5__list">
-      ${(items || [])
-        .slice(0, 3)
-        .map(
-          (x) =>
-            `<li class="pdpS5__li">
-              <span class="pdpS5__dot"></span>
-              <span>${esc(x)}</span>
-            </li>`
-        )
-        .join("")}
-    </ul>`;
+  const roleItems = (gameMoments || []).slice(0, 3);
+  const phaseItems = (zones || []).slice(0, 3);
+
+  const impactAll = (principles || []).slice(0, 6);
+  const impactWins = impactAll.slice(0, 3);
+  const impactLosses = impactAll.slice(3, 6);
+
+  const bulletList = (
+    items: string[],
+    variant: "default" | "impact" = "default"
+  ) =>
+    items.length
+      ? `<ul class="pdpS5__list">
+          ${items
+            .map(
+              (x) => `
+                <li class="pdpS5__li ${
+                  variant === "impact" ? "pdpS5__li--impact" : ""
+                }">
+                  <span class="pdpS5__dot"></span>
+                  <span>${esc(x)}</span>
+                </li>`
+            )
+            .join("")}
+        </ul>`
+      : `<div class="pdpS5__empty"></div>`;
 
   return `
 <section class="page pdpS5" style="--accent:${esc(accentHex)};">
   ${wmHtml}
-  <div class="pdpS5__wash"></div>
-  <div class="pdpS5__axis"></div>
+  <div class="pdpS5__wash" aria-hidden="true"></div>
+  <div class="pdpS5__vignette" aria-hidden="true"></div>
+  <div class="pdpS5__grain" aria-hidden="true"></div>
+  <div class="pdpS5__axis" aria-hidden="true"></div>
 
-  <div class="pdpS5__inner">
-    <div class="pdpS5__top">
-      <div class="pdpS5__kicker">${esc(t(lang, "CONTEXT", "CONTEXT"))}</div>
+  <div class="pdpS5__top">
+    <div class="pdpS5__kicker">${esc(t(lang, "ROLCONTEXT", "ROLE CONTEXT"))}</div>
+    <div class="pdpS5__title">
+      ${esc(
+        t(
+          lang,
+          "WAT DE ROL VRAAGT",
+          "WHAT THE ROLE REQUIRES"
+        )
+      )}
+    </div>
+    <div class="pdpS5__titleMarker" aria-hidden="true"></div>
+  </div>
 
-      <div class="pdpS5__hero">
-        <div class="pdpS5__title">
-          ${esc(
-            t(
-              lang,
-              "WAAROM DIT BELANGRIJK IS",
-              "WHY THIS MATTERS"
-            )
-          )}
-        </div>
+  <div class="pdpS5__gridTop">
+    <div class="pdpS5__card pdpS5__card--role">
+      <div class="pdpS5__cardHead">
+        ${esc(t(lang, "WAT DE ROL VRAAGT", "WHAT THE ROLE REQUIRES"))}
       </div>
+      ${bulletList(roleItems)}
     </div>
 
-    <div class="pdpS5__gridTop">
-      <div class="pdpS5__card">
-        <div class="pdpS5__cardHead">
-          ${esc(t(lang, "WANNEER IN HET SPEL", "WHEN IN THE GAME"))}
-        </div>
-        ${bullets(gameMoments)}
-      </div>
-
-      <div class="pdpS5__card">
-        <div class="pdpS5__cardHead">
-          ${esc(t(lang, "WAAR OP HET VELD", "WHERE ON THE PITCH"))}
-        </div>
-        ${bullets(zones)}
-      </div>
-    </div>
-
-    <div class="pdpS5__card pdpS5__card--bottom">
+    <div class="pdpS5__card pdpS5__card--phase">
       <div class="pdpS5__cardHead">
         ${esc(
           t(
             lang,
-            "WAT HET TEAM VRAAGT",
-            "WHAT THE TEAM REQUIRES"
+            "IN WELKE TEAMFASE DIT BESLISSEND WORDT",
+            "IN WHICH TEAM PHASE THIS BECOMES DECISIVE"
           )
         )}
       </div>
-      ${bullets(principles)}
+      ${bulletList(phaseItems)}
+    </div>
+  </div>
+
+  <div class="pdpS5__impactCard">
+    <div class="pdpS5__cardHead pdpS5__cardHead--impact">
+      ${esc(
+        t(
+          lang,
+          "WAT HET TEAM WINT / VERLIEST",
+          "WHAT THE TEAM WINS / LOSES"
+        )
+      )}
+    </div>
+
+    <div class="pdpS5__impactGrid">
+      <div class="pdpS5__impactCol pdpS5__impactCol--win">
+        <div class="pdpS5__impactLabel">
+          ${esc(t(lang, "ALS HET LUKT", "IF THIS LANDS"))}
+        </div>
+        ${bulletList(impactWins, "impact")}
+      </div>
+
+      <div class="pdpS5__impactDivider" aria-hidden="true"></div>
+
+      <div class="pdpS5__impactCol pdpS5__impactCol--loss">
+        <div class="pdpS5__impactLabel">
+          ${esc(t(lang, "ALS HET NIET LUKT", "IF THIS DOES NOT LAND"))}
+        </div>
+        ${bulletList(impactLosses, "impact")}
+      </div>
     </div>
   </div>
 
@@ -626,13 +822,14 @@ export function pageContext(args: {
 
     .pdpS5__wm{
       position:absolute;
-      right:-14mm;
+      right:-18mm;
       top:-12mm;
-      width:120mm;
-      height:120mm;
-      opacity:.04;
+      width:132mm;
+      height:132mm;
+      opacity:.036;
       z-index:0;
       pointer-events:none;
+      filter:blur(.2px);
     }
 
     .pdpS5__wm img{
@@ -646,20 +843,42 @@ export function pageContext(args: {
       inset:0;
       background:
         radial-gradient(
-          circle at 20% 80%,
-          color-mix(in srgb, var(--accent-primary, var(--accent)) 10%, black 12%) 0%,
+          circle at 16% 84%,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 10%, black 10%) 0%,
           transparent 34%
         ),
         radial-gradient(
-          circle at 80% 20%,
+          circle at 84% 18%,
           color-mix(in srgb, var(--accent-secondary, var(--accent)) 8%, black 18%) 0%,
-          transparent 30%
+          transparent 28%
         ),
         linear-gradient(
-          140deg,
-          transparent 0%,
-          color-mix(in srgb, var(--accent-mix, var(--accent)) 6%, black 16%) 100%
+          145deg,
+          color-mix(in srgb, var(--accent-mix, var(--accent)) 6%, black 16%) 0%,
+          transparent 60%
         );
+      z-index:0;
+      pointer-events:none;
+    }
+
+    .pdpS5__vignette{
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at center, transparent 46%, rgba(0,0,0,.18) 100%),
+        linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.14));
+      z-index:0;
+      pointer-events:none;
+    }
+
+    .pdpS5__grain{
+      position:absolute;
+      inset:0;
+      opacity:.022;
+      background-image:
+        linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
+      background-size:5px 5px, 5px 5px;
       z-index:0;
       pointer-events:none;
     }
@@ -669,84 +888,207 @@ export function pageContext(args: {
       left:18mm;
       top:16mm;
       bottom:16mm;
-      width:3px;
-      border-radius:3px;
-      background:var(--accent-primary, var(--accent));
+      width:4px;
+      border-radius:999px;
+      background:
+        linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 96%, #fff 4%) 0%,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 76%, transparent) 58%,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 16%, transparent) 100%
+        );
+      box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, transparent),
+        0 0 14px color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, transparent),
+        0 0 28px color-mix(in srgb, var(--accent-primary, var(--accent)) 10%, transparent);
+      opacity:.98;
       z-index:1;
-      opacity:.95;
-    }
-
-    .pdpS5__inner{
-      position:relative;
-      z-index:2;
-      padding:18mm 16mm;
-      padding-left:26mm;
-      height:100%;
-      display:grid;
-      grid-template-rows:auto minmax(64mm, auto) minmax(0,1fr);
-      gap:14px;
     }
 
     .pdpS5__top{
-      display:flex;
-      flex-direction:column;
-      gap:14px;
-      padding-top:.5mm;
-    }
-
-    .pdpS5__kicker{
-      font-size:10pt;
-      letter-spacing:.26em;
-      text-transform:uppercase;
-      color:rgba(255,255,255,.72);
-    }
-
-    .pdpS5__title{
-      font-size:26pt;
-      line-height:1.02;
-      letter-spacing:-0.02em;
-      font-weight:860;
-      text-transform:uppercase;
-      max-width:20ch;
-      text-wrap:balance;
-    }
-
-    .pdpS5__gridTop{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:14px;
-      align-items:stretch;
-      min-height:0;
-    }
-
-    .pdpS5__card{
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:16px;
-      background:rgba(255,255,255,.04);
-      padding:14px;
-      height:100%;
+      position:absolute;
+      left:26mm;
+      right:16mm;
+      top:18mm;
+      height:27mm;
+      z-index:2;
       overflow:hidden;
     }
 
-    .pdpS5__card--bottom{
+    .pdpS5__kicker{
+      font-size:9.5pt;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.72);
+      font-weight:640;
+      line-height:1.1;
+      margin-bottom:6px;
+    }
+
+    .pdpS5__title{
+      font-size:22pt;
+      line-height:1.02;
+      letter-spacing:-0.02em;
+      font-weight:840;
+      text-transform:uppercase;
+      color:#fff;
+      max-width:16ch;
+      text-shadow:0 8px 24px rgba(0,0,0,.18);
+    }
+
+    .pdpS5__titleMarker{
+      width:22mm;
+      height:2px;
+      margin-top:6px;
+      border-radius:999px;
+      background:
+        linear-gradient(
+          90deg,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 94%, #fff 2%) 0%,
+          transparent 100%
+        );
+      opacity:.82;
+      box-shadow:0 0 10px color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, transparent);
+    }
+
+    /* Same start height as slide 3 */
+    .pdpS5__gridTop{
+      position:absolute;
+      left:26mm;
+      right:16mm;
+      top:40mm;
+      height:76mm;
+      z-index:2;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    /* Slightly smaller than before so top blocks can breathe more */
+    .pdpS5__impactCard{
+      position:absolute;
+      left:26mm;
+      right:16mm;
+      top:122mm;
+      bottom:14mm;
+      z-index:2;
+      border-radius:18px;
+      padding:14px 16px;
+      overflow:hidden;
+      border:1px solid color-mix(in srgb, var(--accent-secondary, var(--accent)) 22%, rgba(255,255,255,.10));
       background:
         linear-gradient(
           145deg,
           rgba(0,0,0,.18) 0%,
-          color-mix(in srgb, var(--accent-secondary, var(--accent)) 10%, rgba(0,0,0,.18)) 100%
+          color-mix(in srgb, var(--accent-secondary, var(--accent)) 9%, rgba(0,0,0,.14)) 100%
         );
-      border:1px solid color-mix(in srgb, var(--accent-secondary, var(--accent)) 22%, rgba(255,255,255,.10));
+      box-shadow:
+        0 14px 34px rgba(0,0,0,.30),
+        inset 0 0 0 1px rgba(255,255,255,.02);
+    }
+
+    .pdpS5__impactGrid{
+      display:grid;
+      grid-template-columns:1fr 1px 1fr;
+      gap:14px;
+      align-items:stretch;
       min-height:0;
+      height:calc(100% - 22px);
+    }
+
+    .pdpS5__impactCol{
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-start;
+    }
+
+    .pdpS5__impactCol--win{
+      padding-right:4px;
+    }
+
+    .pdpS5__impactCol--loss{
+      padding-left:4px;
+    }
+
+    .pdpS5__impactDivider{
+      width:1px;
       align-self:stretch;
+      background:
+        linear-gradient(
+          180deg,
+          rgba(255,255,255,.04) 0%,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 14%, rgba(255,255,255,.08)) 20%,
+          rgba(255,255,255,.14) 50%,
+          color-mix(in srgb, var(--accent-secondary, var(--accent)) 12%, rgba(255,255,255,.08)) 80%,
+          rgba(255,255,255,.04) 100%
+        );
+      border-radius:999px;
+      opacity:.88;
+    }
+
+    .pdpS5__impactLabel{
+      font-size:8.2pt;
+      letter-spacing:.20em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.54);
+      font-weight:760;
+      margin-bottom:9px;
+      line-height:1.1;
+    }
+
+    .pdpS5__card{
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:18px;
+      overflow:hidden;
+      min-height:0;
+      padding:13px 14px;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255,255,255,.04) 0%,
+          rgba(255,255,255,.025) 100%
+        );
+      box-shadow:
+        0 12px 32px rgba(0,0,0,.28),
+        inset 0 0 0 1px rgba(255,255,255,.02);
+    }
+
+    .pdpS5__card--role{
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255,255,255,.045) 0%,
+          rgba(255,255,255,.024) 100%
+        );
+    }
+
+    .pdpS5__card--phase{
+      border:1px solid color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, rgba(255,255,255,.08));
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255,255,255,.05) 0%,
+          color-mix(in srgb, var(--accent-mix, var(--accent)) 8%, rgba(255,255,255,.025)) 100%
+        );
+      box-shadow:
+        0 14px 34px rgba(0,0,0,.30),
+        inset 0 0 0 1px rgba(255,255,255,.022);
     }
 
     .pdpS5__cardHead{
-      font-size:9.5pt;
-      letter-spacing:.26em;
+      font-size:8.8pt;
+      letter-spacing:.22em;
       text-transform:uppercase;
-      color:rgba(255,255,255,.46);
-      margin-bottom:10px;
+      color:rgba(255,255,255,.50);
       font-weight:720;
+      margin-bottom:9px;
+      line-height:1.1;
+    }
+
+    .pdpS5__cardHead--impact{
+      color:rgba(255,255,255,.54);
+      margin-bottom:12px;
     }
 
     .pdpS5__list{
@@ -755,21 +1097,33 @@ export function pageContext(args: {
       margin:0;
       display:flex;
       flex-direction:column;
-      gap:10px;
+      gap:9px;
     }
 
     .pdpS5__li{
       display:flex;
-      gap:8px;
+      gap:9px;
       align-items:flex-start;
       min-width:0;
     }
 
+    .pdpS5__dot{
+      width:7px;
+      height:7px;
+      border-radius:999px;
+      background:var(--accent-mix, var(--accent));
+      margin-top:4px;
+      flex:0 0 auto;
+      box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--accent-mix, var(--accent)) 22%, transparent),
+        0 0 10px color-mix(in srgb, var(--accent-mix, var(--accent)) 14%, transparent);
+    }
+
     .pdpS5__li span:last-child{
-      font-size:12.4pt;
-      line-height:1.36;
+      font-size:12pt;
+      line-height:1.28;
       color:rgba(255,255,255,.82);
-      font-weight:450;
+      font-weight:500;
       display:-webkit-box;
       -webkit-line-clamp:2;
       -webkit-box-orient:vertical;
@@ -777,14 +1131,15 @@ export function pageContext(args: {
       min-width:0;
     }
 
-    .pdpS5__dot{
-      width:6px;
-      height:6px;
-      border-radius:999px;
-      background:var(--accent-mix, var(--accent));
-      margin-top:7px;
-      flex:0 0 auto;
-      box-shadow:0 0 0 1px color-mix(in srgb, var(--accent-mix, var(--accent)) 20%, transparent);
+    .pdpS5__li--impact span:last-child{
+      font-size:12.4pt;
+      line-height:1.30;
+      color:rgba(255,255,255,.88);
+      font-weight:560;
+    }
+
+    .pdpS5__empty{
+      min-height:10px;
     }
   </style>
 </section>
@@ -822,7 +1177,6 @@ export function pageDiagnosis(args: {
     accentHex,
     clubName,
     logoUrl,
-    intro,
     momentItems,
     whatWeSeeItems,
     effectItems,
@@ -831,33 +1185,50 @@ export function pageDiagnosis(args: {
 
   const wm = (logoUrl || "").trim();
   const wmHtml = wm
-    ? `<div class="pdpS3__wm" aria-hidden="true"><img src="${esc(
-        wm
-      )}" alt="${esc(clubName)} watermark" /></div>`
+    ? `<div class="pdpS3__wm" aria-hidden="true">
+         <img src="${esc(wm)}" alt="${esc(clubName)} watermark" />
+       </div>`
     : ``;
 
   const observations = (whatWeSeeItems || []).slice(0, 3);
   const contexts = (momentItems || []).slice(0, 3);
   const effects = (effectItems || []).slice(0, 3);
 
-  const videos = [...(videoSlots || []).slice(0, 2)];
-  while (videos.length < 2) videos.push({ status: "pending" });
+  const videos = [...(videoSlots || []).slice(0, 3)];
+  while (videos.length < 3) videos.push({ status: "pending" });
+
+  const safeVideoText = (v?: string) => String(v || "").trim();
 
   const bulletList = (items: string[], variant = "") =>
-    `<ul class="pdpS3__list">
-      ${items
-        .map(
-          (x) => `
-            <li class="pdpS3__li ${variant}">
-              <span class="pdpS3__dot"></span>
-              <span>${esc(x)}</span>
-            </li>`
-        )
-        .join("")}
-    </ul>`;
+    items.length
+      ? `<ul class="pdpS3__list">
+          ${items
+            .map(
+              (x) => `
+                <li class="pdpS3__li ${variant}">
+                  <span class="pdpS3__dot"></span>
+                  <span>${esc(x)}</span>
+                </li>`
+            )
+            .join("")}
+        </ul>`
+      : `<div class="pdpS3__empty"></div>`;
+
+  const videoMetaLine = (slot: Slide3VideoSlot) => {
+    const parts = [
+      safeVideoText(slot.match_or_session),
+      safeVideoText(slot.timestamp),
+    ].filter(Boolean);
+
+    return parts.length ? parts.join(" • ") : "";
+  };
+
+  const stripHead = t(lang, "VIDEO'S (VOORBEELDEN)", "VIDEOS (EXAMPLES)");
 
   const videoCard = (slot: Slide3VideoSlot) => {
     if (slot.status === "active") {
+      const sub = videoMetaLine(slot);
+
       return `
         <a class="pdpS3__videoCard pdpS3__videoCard--active" href="${esc(
           slot.url || "#"
@@ -866,11 +1237,22 @@ export function pageDiagnosis(args: {
             ${
               slot.thumbnail_url
                 ? `<img src="${esc(slot.thumbnail_url)}" alt="" />`
-                : ""
+                : `<div class="pdpS3__videoFallback"></div>`
             }
-            <div class="pdpS3__play"></div>
+            <div class="pdpS3__videoShade"></div>
+            <div class="pdpS3__playWrap">
+              <div class="pdpS3__play"></div>
+            </div>
           </div>
-          <div class="pdpS3__videoTitle">${esc(slot.title || "")}</div>
+
+          <div class="pdpS3__videoMeta">
+            <div class="pdpS3__videoTitle">${esc(
+              slot.title || t(lang, "Video", "Video")
+            )}</div>
+            <div class="pdpS3__videoSub ${
+              sub ? "" : "pdpS3__videoSub--empty"
+            }">${esc(sub || "\u00A0")}</div>
+          </div>
         </a>
       `;
     }
@@ -878,11 +1260,18 @@ export function pageDiagnosis(args: {
     return `
       <div class="pdpS3__videoCard pdpS3__videoCard--empty">
         <div class="pdpS3__videoThumb pdpS3__videoThumb--empty">
-          <div class="pdpS3__play pdpS3__play--disabled"></div>
+          <div class="pdpS3__videoShade"></div>
+          <div class="pdpS3__playWrap">
+            <div class="pdpS3__play pdpS3__play--disabled"></div>
+          </div>
         </div>
-        <div class="pdpS3__videoTitle">${esc(
-          t(lang, "Geen video", "No video")
-        )}</div>
+
+        <div class="pdpS3__videoMeta">
+          <div class="pdpS3__videoTitle">${esc(
+            t(lang, "Geen video geüpload", "No video uploaded")
+          )}</div>
+          <div class="pdpS3__videoSub pdpS3__videoSub--empty">&nbsp;</div>
+        </div>
       </div>
     `;
   };
@@ -891,43 +1280,52 @@ export function pageDiagnosis(args: {
 <section class="page pdpS3" style="--accent:${esc(accentHex)};">
   ${wmHtml}
   <div class="pdpS3__wash" aria-hidden="true"></div>
+  <div class="pdpS3__vignette" aria-hidden="true"></div>
+  <div class="pdpS3__grain" aria-hidden="true"></div>
   <div class="pdpS3__axis" aria-hidden="true"></div>
 
-  <div class="pdpS3__inner">
-    <div class="pdpS3__top">
-      <div class="pdpS3__kicker">${esc(t(lang, "REALITEIT", "REALITY"))}</div>
+  <div class="pdpS3__top">
+    <div class="pdpS3__kicker">${esc(t(lang, "REALITEIT", "REALITY"))}</div>
+    <div class="pdpS3__title">${esc(
+      t(lang, "WAAR STAAN WE NU", "WHERE ARE WE NOW")
+    )}</div>
+    <div class="pdpS3__titleMarker" aria-hidden="true"></div>
+  </div>
 
-      <div class="pdpS3__title">
-        ${esc(t(lang, "WAAR STAAN WE NU", "WHERE ARE WE NOW"))}
-      </div>
-
-      <div class="pdpS3__intro">${esc(intro)}</div>
-    </div>
-
-    <div class="pdpS3__analysisRow">
-      <div class="pdpS3__card pdpS3__card--obs">
-        <div class="pdpS3__head">${esc(t(lang, "WAT ZIEN WE", "WHAT WE SEE"))}</div>
-        ${bulletList(observations)}
-      </div>
-
-      <div class="pdpS3__card pdpS3__card--ctx">
-        <div class="pdpS3__head">${esc(
-          t(lang, "WANNEER ZIEN WE DIT", "WHEN DO WE SEE THIS")
-        )}</div>
-        ${bulletList(contexts)}
-      </div>
-    </div>
-
-    <div class="pdpS3__card pdpS3__card--effect">
+  <div class="pdpS3__midRow">
+    <div class="pdpS3__card pdpS3__card--moment">
       <div class="pdpS3__head">${esc(
-        t(lang, "EFFECT OP HET SPEL", "EFFECT ON THE GAME")
+        t(lang, "WANNEER ZIEN WE DIT", "WHEN DO WE SEE THIS")
       )}</div>
-      ${bulletList(effects, "pdpS3__li--effect")}
+      ${bulletList(contexts)}
     </div>
 
-    <div class="pdpS3__videoRow">
+    <div class="pdpS3__card pdpS3__card--behaviour">
+      <div class="pdpS3__head">${esc(
+        t(lang, "WAT DOET HIJ NU", "CURRENT BEHAVIOUR")
+      )}</div>
+      <div class="pdpS3__behaviourBody">
+        <div class="pdpS3__behaviourRail"></div>
+        <div class="pdpS3__behaviourText">
+          ${bulletList(observations, "pdpS3__li--behaviour")}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pdpS3__effectCard">
+    <div class="pdpS3__head">${esc(
+      t(lang, "EFFECT OP HET SPEL", "EFFECT ON THE GAME")
+    )}</div>
+    ${bulletList(effects, "pdpS3__li--effect")}
+  </div>
+
+  <div class="pdpS3__videoStrip">
+    <div class="pdpS3__videoStripHead">${esc(stripHead)}</div>
+    <div class="pdpS3__videoGrid">
       ${videoCard(videos[0])}
       ${videoCard(videos[1])}
+      ${videoCard(videos[2])}
     </div>
   </div>
 
@@ -947,13 +1345,14 @@ export function pageDiagnosis(args: {
 
     .pdpS3__wm{
       position:absolute;
-      right:-16mm;
-      bottom:-14mm;
-      width:126mm;
-      height:126mm;
+      right:-18mm;
+      bottom:-18mm;
+      width:136mm;
+      height:136mm;
       opacity:.038;
       z-index:0;
       pointer-events:none;
+      filter:blur(.2px);
     }
 
     .pdpS3__wm img{
@@ -966,132 +1365,262 @@ export function pageDiagnosis(args: {
       position:absolute;
       inset:0;
       background:
-        radial-gradient(circle at 80% 20%, color-mix(in srgb, var(--accent-primary, var(--accent)) 8%, black) 0%, transparent 30%),
-        radial-gradient(circle at 20% 80%, color-mix(in srgb, var(--accent-secondary, var(--accent)) 8%, black) 0%, transparent 30%);
+        radial-gradient(
+          circle at 16% 18%,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 11%, black 8%) 0%,
+          transparent 34%
+        ),
+        radial-gradient(
+          circle at 84% 78%,
+          color-mix(in srgb, var(--accent-secondary, var(--accent)) 7%, black 18%) 0%,
+          transparent 28%
+        ),
+        linear-gradient(
+          145deg,
+          color-mix(in srgb, var(--accent-mix, var(--accent)) 6%, black 14%) 0%,
+          transparent 60%
+        );
+      z-index:0;
+      pointer-events:none;
+    }
+
+    .pdpS3__vignette{
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at center, transparent 46%, rgba(0,0,0,.18) 100%),
+        linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.16));
+      z-index:0;
+      pointer-events:none;
+    }
+
+    .pdpS3__grain{
+      position:absolute;
+      inset:0;
+      opacity:.022;
+      background-image:
+        linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
+      background-size:5px 5px, 5px 5px;
+      z-index:0;
+      pointer-events:none;
     }
 
     .pdpS3__axis{
       position:absolute;
       left:18mm;
       top:16mm;
-      bottom:12mm;
-      width:3px;
-      background:var(--accent-primary, var(--accent));
-    }
-
-    .pdpS3__inner{
-      position:relative;
-      z-index:2;
-      padding:18mm 16mm 16mm 26mm;
-      height:100%;
-      display:grid;
-      grid-template-rows:auto minmax(0,1fr) auto auto;
-      gap:12px;
+      bottom:16mm;
+      width:4px;
+      border-radius:999px;
+      background:
+        linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 96%, #fff 4%) 0%,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 78%, transparent) 58%,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 16%, transparent) 100%
+        );
+      box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, transparent),
+        0 0 14px color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, transparent),
+        0 0 28px color-mix(in srgb, var(--accent-primary, var(--accent)) 10%, transparent);
+      opacity:.98;
+      z-index:1;
     }
 
     .pdpS3__top{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
+      position:absolute;
+      left:26mm;
+      right:16mm;
+      top:18mm;
+      height:27mm;
+      z-index:2;
+      overflow:hidden;
     }
 
     .pdpS3__kicker{
-      font-size:10pt;
-      letter-spacing:.26em;
+      font-size:9.5pt;
+      letter-spacing:.22em;
       text-transform:uppercase;
       color:rgba(255,255,255,.72);
+      font-weight:640;
+      line-height:1.1;
+      margin-bottom:6px;
     }
 
     .pdpS3__title{
-      font-size:26pt;
+      font-size:22pt;
       line-height:1.02;
-      font-weight:860;
       letter-spacing:-0.02em;
-      max-width:20ch;
+      font-weight:840;
       text-transform:uppercase;
+      color:#fff;
+      max-width:20ch;
+      text-shadow:0 8px 24px rgba(0,0,0,.18);
     }
 
-    .pdpS3__intro{
-      font-size:15.2pt;
-      line-height:1.34;
-      opacity:.9;
-      max-width:28ch;
-      display:-webkit-box;
-      -webkit-line-clamp:3;
-      -webkit-box-orient:vertical;
-      overflow:hidden;
+    .pdpS3__titleMarker{
+      width:22mm;
+      height:2px;
+      margin-top:6px;
+      border-radius:999px;
+      background:
+        linear-gradient(
+          90deg,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 94%, #fff 2%) 0%,
+          transparent 100%
+        );
+      opacity:.82;
+      box-shadow:0 0 10px color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, transparent);
     }
 
-    .pdpS3__analysisRow{
+    .pdpS3__midRow{
+      position:absolute;
+      left:26mm;
+      right:16mm;
+      top:40mm;
+      height:76mm;
+      z-index:2;
       display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:14px;
-      align-items:stretch;
-      min-height:0;
+      grid-template-columns:1fr 1.18fr;
+      gap:10px;
     }
 
-    .pdpS3__card{
-      border-radius:16px;
-      padding:14px;
-      border:1px solid rgba(255,255,255,.1);
-      overflow:hidden;
-    }
-
-    .pdpS3__card--obs{
-      background:rgba(255,255,255,.04);
-    }
-
-    .pdpS3__card--ctx{
-      background:rgba(255,255,255,.03);
-    }
-
-    .pdpS3__card--effect{
+    .pdpS3__effectCard{
+      position:absolute;
+      left:26mm;
+      right:16mm;
+      top:122mm;
+      height:56mm;
+      z-index:2;
+      border:1px solid color-mix(in srgb, var(--accent-secondary, var(--accent)) 22%, rgba(255,255,255,.08));
+      border-radius:18px;
+      padding:13px 14px;
       background:
         linear-gradient(
           145deg,
-          rgba(0,0,0,.2),
-          color-mix(in srgb, var(--accent-secondary, var(--accent)) 12%, black)
+          rgba(0,0,0,.18) 0%,
+          color-mix(in srgb, var(--accent-secondary, var(--accent)) 9%, rgba(0,0,0,.12)) 100%
         );
-      border:1px solid color-mix(in srgb, var(--accent-secondary, var(--accent)) 25%, rgba(255,255,255,.1));
+      overflow:hidden;
+      box-shadow:
+        0 12px 32px rgba(0,0,0,.28),
+        inset 0 0 0 1px rgba(255,255,255,.02);
+    }
+
+    .pdpS3__videoStrip{
+      position:absolute;
+      left:26mm;
+      right:16mm;
+      top:184mm;
+      bottom:14mm;
+      z-index:2;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:18px;
+      padding:10px 10px 9px;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255,255,255,.035) 0%,
+          rgba(255,255,255,.02) 100%
+        );
+      overflow:hidden;
+      box-shadow:
+        0 12px 32px rgba(0,0,0,.26),
+        inset 0 0 0 1px rgba(255,255,255,.018);
+    }
+
+    .pdpS3__videoStripHead{
+      font-size:8.6pt;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.50);
+      font-weight:720;
+      line-height:1.1;
+      margin-bottom:6px;
+    }
+
+    .pdpS3__videoGrid{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:8px;
+      height:calc(100% - 14px);
+      align-items:stretch;
+    }
+
+    .pdpS3__card{
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:18px;
+      overflow:hidden;
       min-height:0;
+      padding:13px 14px;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255,255,255,.04) 0%,
+          rgba(255,255,255,.025) 100%
+        );
+      box-shadow:
+        0 12px 32px rgba(0,0,0,.28),
+        inset 0 0 0 1px rgba(255,255,255,.02);
+    }
+
+    .pdpS3__card--behaviour{
+      border:1px solid color-mix(in srgb, var(--accent-primary, var(--accent)) 22%, rgba(255,255,255,.08));
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255,255,255,.05) 0%,
+          color-mix(in srgb, var(--accent-mix, var(--accent)) 9%, rgba(255,255,255,.025)) 100%
+        );
+      box-shadow:
+        0 18px 40px rgba(0,0,0,.34),
+        inset 0 0 0 1px rgba(255,255,255,.03);
     }
 
     .pdpS3__head{
-      font-size:9pt;
-      letter-spacing:.24em;
+      font-size:8.8pt;
+      letter-spacing:.22em;
       text-transform:uppercase;
-      opacity:.6;
+      color:rgba(255,255,255,.50);
+      font-weight:720;
       margin-bottom:8px;
+      line-height:1.1;
     }
 
     .pdpS3__list{
+      list-style:none;
+      margin:0;
+      padding:0;
       display:flex;
       flex-direction:column;
-      gap:9px;
-      padding:0;
-      margin:0;
-      list-style:none;
+      gap:8px;
     }
 
     .pdpS3__li{
       display:flex;
-      gap:8px;
+      gap:9px;
       align-items:flex-start;
       min-width:0;
     }
 
     .pdpS3__dot{
-      width:6px;
-      height:6px;
+      width:7px;
+      height:7px;
       border-radius:999px;
       background:var(--accent-mix, var(--accent));
-      margin-top:6px;
+      margin-top:4px;
       flex:0 0 auto;
+      box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--accent-mix, var(--accent)) 22%, transparent),
+        0 0 10px color-mix(in srgb, var(--accent-mix, var(--accent)) 14%, transparent);
     }
 
     .pdpS3__li span:last-child{
-      font-size:12.8pt;
-      line-height:1.34;
+      font-size:12pt;
+      line-height:1.28;
+      color:rgba(255,255,255,.80);
+      font-weight:500;
       display:-webkit-box;
       -webkit-line-clamp:2;
       -webkit-box-orient:vertical;
@@ -1100,40 +1629,95 @@ export function pageDiagnosis(args: {
     }
 
     .pdpS3__li--effect span:last-child{
-      font-size:14pt;
-      line-height:1.36;
-      font-weight:520;
+      font-size:12.5pt;
+      line-height:1.3;
+      color:rgba(255,255,255,.86);
+      font-weight:560;
     }
 
-    .pdpS3__videoRow{
-      display:grid;
-      grid-template-columns:1fr 1fr;
+    .pdpS3__behaviourBody{
+      display:flex;
       gap:10px;
-      align-items:stretch;
+      align-items:flex-start;
+      min-height:0;
     }
 
+    .pdpS3__behaviourRail{
+      width:2px;
+      height:38mm;
+      border-radius:999px;
+      background:
+        linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 58%, rgba(255,255,255,.16)) 0%,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 14%, transparent) 100%
+        );
+      box-shadow:0 0 10px color-mix(in srgb, var(--accent-primary, var(--accent)) 14%, transparent);
+      flex:0 0 auto;
+      opacity:.98;
+    }
+
+    .pdpS3__behaviourText{
+      min-width:0;
+      flex:1 1 auto;
+    }
+
+    .pdpS3__li--behaviour span:last-child{
+      font-size:13.4pt;
+      line-height:1.28;
+      color:rgba(255,255,255,.90);
+      font-weight:600;
+      letter-spacing:.003em;
+    }
+
+    .pdpS3__empty{
+      min-height:10px;
+    }
+
+    /* KEY FIX: fixed inner layout so thumbnail and text never fight */
     .pdpS3__videoCard{
+      display:grid;
+      grid-template-rows:45mm minmax(12mm, 1fr);
+      gap:3.2mm;
+      width:100%;
+      height:100%;
       border-radius:14px;
       overflow:hidden;
-      border:1px solid rgba(255,255,255,.1);
-      padding:10px;
-      background:rgba(0,0,0,.12);
-      min-height:0;
+      border:1px solid rgba(255,255,255,.08);
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255,255,255,.04) 0%,
+          rgba(255,255,255,.025) 100%
+        );
       text-decoration:none;
       color:inherit;
+      padding:8px 8px 10px;
+      position:relative;
+      min-height:0;
+      box-shadow:
+        0 10px 24px rgba(0,0,0,.22),
+        inset 0 0 0 1px rgba(255,255,255,.018);
     }
 
     .pdpS3__videoCard--active{
-      border:1px solid var(--accent-primary, var(--accent));
-      box-shadow:0 0 10px color-mix(in srgb, var(--accent-primary, var(--accent)) 20%, transparent);
+      border:1px solid color-mix(in srgb, var(--accent-primary, var(--accent)) 26%, rgba(255,255,255,.08));
+      box-shadow:
+        0 14px 34px rgba(0,0,0,.35),
+        0 0 0 1px color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, transparent),
+        inset 0 0 0 1px rgba(255,255,255,.018);
+      transform:translateY(-1px);
     }
 
     .pdpS3__videoThumb{
-      aspect-ratio:16/9;
-      background:#111;
-      border-radius:10px;
       position:relative;
+      height:100%;
+      border-radius:9px;
       overflow:hidden;
+      background:#121418;
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.03),
+        0 8px 20px rgba(0,0,0,.22);
     }
 
     .pdpS3__videoThumb img{
@@ -1142,34 +1726,117 @@ export function pageDiagnosis(args: {
       object-fit:cover;
     }
 
-    .pdpS3__play{
+    .pdpS3__videoFallback{
+      width:100%;
+      height:100%;
+      background:
+        radial-gradient(circle at 30% 35%, rgba(255,255,255,.07), transparent 30%),
+        linear-gradient(145deg, rgba(255,255,255,.04), rgba(0,0,0,.16));
+    }
+
+    .pdpS3__videoThumb--empty{
+      background:
+        radial-gradient(circle at 30% 35%, rgba(255,255,255,.07), transparent 30%),
+        linear-gradient(145deg, rgba(255,255,255,.04), rgba(0,0,0,.16));
+    }
+
+    .pdpS3__videoShade{
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.04), rgba(0,0,0,.34)),
+        linear-gradient(90deg, rgba(0,0,0,.08), rgba(0,0,0,.20));
+      z-index:1;
+    }
+
+    .pdpS3__playWrap{
       position:absolute;
       inset:0;
       display:flex;
       align-items:center;
       justify-content:center;
+      z-index:3;
+      pointer-events:none;
     }
 
-    .pdpS3__play:before{
-      content:"";
-      border-left:10px solid white;
-      border-top:6px solid transparent;
-      border-bottom:6px solid transparent;
+    .pdpS3__play{
+  width:11mm;
+  height:11mm;
+  border-radius:999px;
+  position:relative;
+  background:rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.32);
+  box-shadow:
+    0 8px 18px rgba(0,0,0,.30),
+    inset 0 0 0 1px rgba(255,255,255,.06);
+  opacity:1;
+}
+
+    .pdpS3__play::before{
+  content:"";
+  position:absolute;
+  left:4.1mm;
+  top:3.1mm;
+  border-left:3mm solid rgba(255,255,255,.96);
+  border-top:1.9mm solid transparent;
+  border-bottom:1.9mm solid transparent;
+}
+
+    .pdpS3__play--disabled{
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.26);
+  box-shadow:
+    0 8px 18px rgba(0,0,0,.28),
+    inset 0 0 0 1px rgba(255,255,255,.04);
+  opacity:1;
+}
+
+.pdpS3__play--disabled::before{
+  border-left-color:rgba(255,255,255,.90);
+}
+
+    .pdpS3__play--disabled::before{
+      border-left-color:rgba(255,255,255,.88);
     }
 
-    .pdpS3__play--disabled:before{
-      border-left-color:rgba(255,255,255,.3);
+    /* KEY FIX: dedicated text zone with breathing room for descenders */
+    .pdpS3__videoMeta{
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-start;
+      gap:1.4mm;
+      padding:0 2px 4px;
+      overflow:visible;
     }
 
     .pdpS3__videoTitle{
-      font-size:11pt;
-      line-height:1.28;
-      margin-top:6px;
-      opacity:.8;
+      font-size:8.8pt;
+      line-height:1.22;
+      color:rgba(255,255,255,.92);
+      font-weight:600;
       display:-webkit-box;
       -webkit-line-clamp:2;
       -webkit-box-orient:vertical;
       overflow:hidden;
+      min-height:0;
+      padding-bottom:1px;
+    }
+
+    .pdpS3__videoSub{
+      font-size:7.3pt;
+      line-height:1.22;
+      color:rgba(255,255,255,.58);
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      min-height:0;
+      padding-bottom:2px;
+    }
+
+    .pdpS3__videoSub--empty{
+      opacity:0;
     }
   </style>
 </section>
@@ -1221,55 +1888,100 @@ export function pageDevelopmentRoute(args: {
       )}" alt="${esc(clubName)} watermark" /></div>`
     : ``;
 
-  const planCard = (titleTxt: string, body: string) => `
-    <div class="pdpS4__card pdpS4__card--plan">
-      <div class="pdpS4__cardHead">${esc(titleTxt)}</div>
-      <div class="pdpS4__cardBody pdpS4__cardBody--plan">${esc(body)}</div>
-    </div>
-  `;
+  const executionOwner = String(playerText || "").trim();
+  const guidanceOwner = [coachText, analystText, staffText]
+    .map((x) => String(x || "").trim())
+    .filter(Boolean)
+    .join(" / ");
 
-  const roleCard = (titleTxt: string, body: string) => `
-    <div class="pdpS4__card pdpS4__card--role">
-      <div class="pdpS4__cardHead">${esc(titleTxt)}</div>
-      <div class="pdpS4__cardBody pdpS4__cardBody--role">${esc(body)}</div>
-    </div>
-  `;
+  const safeOwn = String(playerOwnText || "").trim();
+  const safeTraining = String(trainingText || "").trim();
+  const safeMatch = String(matchText || "").trim();
+  const safeVideo = String(videoText || "").trim();
+  const safeOffField = String(offFieldText || "").trim();
 
   return `
 <section class="page pdpS4" style="--accent:${esc(accentHex)};">
   ${wmHtml}
   <div class="pdpS4__wash" aria-hidden="true"></div>
+  <div class="pdpS4__vignette" aria-hidden="true"></div>
+  <div class="pdpS4__grain" aria-hidden="true"></div>
   <div class="pdpS4__axis" aria-hidden="true"></div>
 
-  <div class="pdpS4__inner">
-    <div class="pdpS4__top">
-      <div class="pdpS4__kicker">${esc(t(lang, "AANPAK", "APPROACH"))}</div>
-      <div class="pdpS4__title">
-        ${esc(t(lang, "HOE WE HIERAAN WERKEN", "HOW WE WORK ON THIS"))}
+  <div class="pdpS4__top">
+    <div class="pdpS4__kicker">${esc(t(lang, "AANPAK", "APPROACH"))}</div>
+    <div class="pdpS4__title">
+      ${esc(t(lang, "HOE WE HIERAAN WERKEN", "HOW WE WORK ON THIS"))}
+    </div>
+    <div class="pdpS4__titleMarker" aria-hidden="true"></div>
+  </div>
+
+  <div class="pdpS4__heroCard">
+    <div class="pdpS4__heroHead">
+      ${esc(t(lang, "ZO GAAN WE DIT DOEN", "THIS IS HOW WE DO IT"))}
+    </div>
+
+    <div class="pdpS4__heroBody">
+      <div class="pdpS4__heroRail"></div>
+      <div class="pdpS4__heroText">${esc(safeOwn)}</div>
+    </div>
+  </div>
+
+  <div class="pdpS4__midGrid">
+    <div class="pdpS4__clusterCard pdpS4__clusterCard--left">
+      <div class="pdpS4__clusterHead">
+        ${esc(t(lang, "TRAINING + BEELDEN", "TRAINING + VIDEO"))}
+      </div>
+
+      <div class="pdpS4__subStack">
+        <div class="pdpS4__subPanel">
+          <div class="pdpS4__subHead">${esc(t(lang, "TRAINING", "TRAINING"))}</div>
+          <div class="pdpS4__subText">${esc(safeTraining)}</div>
+        </div>
+
+        <div class="pdpS4__subPanel pdpS4__subPanel--secondary">
+          <div class="pdpS4__subHead">${esc(t(lang, "BEELDEN", "VIDEO"))}</div>
+          <div class="pdpS4__subText">${esc(safeVideo)}</div>
+        </div>
       </div>
     </div>
 
-    <div class="pdpS4__card pdpS4__card--self">
-      <div class="pdpS4__sectionHead">
-        ${esc(t(lang, "WAT JIJ DOET", "WHAT YOU DO"))}
+    <div class="pdpS4__clusterCard pdpS4__clusterCard--right">
+      <div class="pdpS4__clusterHead">
+        ${esc(t(lang, "WEDSTRIJD + OFF-FIELD", "MATCH + OFF-FIELD"))}
       </div>
-      <div class="pdpS4__cardBody pdpS4__cardBody--self">
-        ${esc(playerOwnText)}
+
+      <div class="pdpS4__subStack">
+        <div class="pdpS4__subPanel">
+          <div class="pdpS4__subHead">${esc(t(lang, "WEDSTRIJD", "MATCH"))}</div>
+          <div class="pdpS4__subText">${esc(safeMatch)}</div>
+        </div>
+
+        <div class="pdpS4__subPanel pdpS4__subPanel--secondary">
+          <div class="pdpS4__subHead">${esc(t(lang, "OFF-FIELD", "OFF-FIELD"))}</div>
+          <div class="pdpS4__subText">${esc(safeOffField)}</div>
+        </div>
       </div>
     </div>
+  </div>
 
-    <div class="pdpS4__grid pdpS4__grid--plan">
-      ${planCard(t(lang, "TRAINING", "TRAINING"), trainingText)}
-      ${planCard(t(lang, "WEDSTRIJD", "MATCH"), matchText)}
-      ${planCard(t(lang, "VIDEO", "VIDEO"), videoText)}
-      ${planCard(t(lang, "BUITEN HET VELD", "OFF FIELD"), offFieldText)}
+  <div class="pdpS4__ownerStrip">
+    <div class="pdpS4__ownerCol">
+      <div class="pdpS4__ownerLabel">${esc(
+        t(lang, "WIE VOERT HET UIT", "WHO EXECUTES")
+      )}</div>
+      <div class="pdpS4__ownerValue">${esc(executionOwner)}</div>
     </div>
 
-    <div class="pdpS4__grid pdpS4__grid--roles">
-      ${roleCard(t(lang, "SPELER", "PLAYER"), playerText)}
-      ${roleCard(t(lang, "TRAINER", "COACH"), coachText)}
-      ${roleCard(t(lang, "ANALIST", "ANALYST"), analystText)}
-      ${roleCard(t(lang, "STAF", "STAFF"), staffText)}
+    <div class="pdpS4__ownerDivider" aria-hidden="true"></div>
+
+    <div class="pdpS4__ownerCol">
+      <div class="pdpS4__ownerLabel">${esc(
+        t(lang, "WIE STUURT DIT AAN", "WHO DRIVES THIS")
+      )}</div>
+      <div class="pdpS4__ownerValue pdpS4__ownerValue--secondary">${esc(
+        guidanceOwner
+      )}</div>
     </div>
   </div>
 
@@ -1293,9 +2005,10 @@ export function pageDevelopmentRoute(args: {
       bottom:-14mm;
       width:132mm;
       height:132mm;
-      opacity:.038;
+      opacity:.036;
       z-index:0;
       pointer-events:none;
+      filter:blur(.2px);
     }
 
     .pdpS4__wm img{
@@ -1308,143 +2021,369 @@ export function pageDevelopmentRoute(args: {
       position:absolute;
       inset:0;
       background:
-        radial-gradient(circle at 20% 80%, color-mix(in srgb, var(--accent-primary, var(--accent)) 10%, black) 0%, transparent 34%),
-        radial-gradient(circle at 80% 20%, color-mix(in srgb, var(--accent-secondary, var(--accent)) 8%, black) 0%, transparent 30%);
+        radial-gradient(
+          circle at 18% 82%,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 10%, black 10%) 0%,
+          transparent 34%
+        ),
+        radial-gradient(
+          circle at 84% 18%,
+          color-mix(in srgb, var(--accent-secondary, var(--accent)) 8%, black 18%) 0%,
+          transparent 28%
+        ),
+        linear-gradient(
+          145deg,
+          color-mix(in srgb, var(--accent-mix, var(--accent)) 6%, black 14%) 0%,
+          transparent 60%
+        );
+      z-index:0;
+      pointer-events:none;
+    }
+
+    .pdpS4__vignette{
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at center, transparent 46%, rgba(0,0,0,.18) 100%),
+        linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.15));
+      z-index:0;
+      pointer-events:none;
+    }
+
+    .pdpS4__grain{
+      position:absolute;
+      inset:0;
+      opacity:.022;
+      background-image:
+        linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
+      background-size:5px 5px, 5px 5px;
+      z-index:0;
+      pointer-events:none;
     }
 
     .pdpS4__axis{
       position:absolute;
       left:18mm;
       top:16mm;
-      bottom:12mm;
-      width:3px;
-      background:var(--accent-primary, var(--accent));
-    }
-
-    .pdpS4__inner{
-      position:relative;
-      z-index:2;
-      padding:18mm 16mm 16mm 26mm;
-      height:100%;
-      display:grid;
-      grid-template-rows:auto auto minmax(0,1fr) auto;
-      gap:12px;
-      align-content:start;
+      bottom:16mm;
+      width:4px;
+      border-radius:999px;
+      background:
+        linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 96%, #fff 4%) 0%,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 78%, transparent) 58%,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 16%, transparent) 100%
+        );
+      box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, transparent),
+        0 0 14px color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, transparent),
+        0 0 28px color-mix(in srgb, var(--accent-primary, var(--accent)) 10%, transparent);
+      opacity:.98;
+      z-index:1;
     }
 
     .pdpS4__top{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
+      position:absolute;
+      left:26mm;
+      right:16mm;
+      top:18mm;
+      height:24mm;
+      z-index:2;
+      overflow:hidden;
     }
 
     .pdpS4__kicker{
-      font-size:10pt;
-      letter-spacing:.26em;
+      font-size:9.5pt;
+      letter-spacing:.22em;
       text-transform:uppercase;
       color:rgba(255,255,255,.72);
+      font-weight:640;
+      line-height:1.1;
+      margin-bottom:6px;
     }
 
     .pdpS4__title{
-      font-size:26pt;
+      font-size:19.8pt;
       line-height:1.02;
-      font-weight:860;
       letter-spacing:-0.02em;
-      max-width:21ch;
+      font-weight:840;
       text-transform:uppercase;
+      color:#fff;
+      max-width:none;
+      white-space:nowrap;
+      text-shadow:0 8px 24px rgba(0,0,0,.18);
     }
 
-    .pdpS4__card--self{
+    .pdpS4__titleMarker{
+      width:22mm;
+      height:2px;
+      margin-top:6px;
+      border-radius:999px;
+      background:
+        linear-gradient(
+          90deg,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 94%, #fff 2%) 0%,
+          transparent 100%
+        );
+      opacity:.82;
+      box-shadow:0 0 10px color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, transparent);
+    }
+
+    .pdpS4__heroCard{
+      position:absolute;
+      left:26mm;
+      right:16mm;
+      top:40mm;
+      height:46mm;
+      z-index:2;
+      border-radius:18px;
+      padding:13px 15px;
+      overflow:hidden;
+      border:1px solid color-mix(in srgb, var(--accent-primary, var(--accent)) 24%, rgba(255,255,255,.10));
       background:
         linear-gradient(
           145deg,
-          rgba(0,0,0,.2),
-          color-mix(in srgb, var(--accent-mix, var(--accent)) 16%, black)
+          rgba(0,0,0,.18) 0%,
+          color-mix(in srgb, var(--accent-mix, var(--accent)) 12%, rgba(0,0,0,.14)) 100%
         );
-      border:1px solid color-mix(in srgb, var(--accent-mix, var(--accent)) 30%, rgba(255,255,255,.1));
-      padding:14px 16px;
-      border-radius:16px;
-      box-shadow:0 0 18px color-mix(in srgb, var(--accent-mix, var(--accent)) 18%, transparent);
-      overflow:hidden;
+      box-shadow:
+        0 16px 38px rgba(0,0,0,.34),
+        inset 0 0 0 1px rgba(255,255,255,.025);
     }
 
-    .pdpS4__cardBody--self{
-      font-size:15.2pt;
-      line-height:1.38;
-      font-weight:520;
+    .pdpS4__heroHead{
+      font-size:8.7pt;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.54);
+      font-weight:720;
+      margin-bottom:9px;
+      line-height:1.1;
+    }
+
+    .pdpS4__heroBody{
+      display:flex;
+      gap:11px;
+      align-items:flex-start;
+      min-height:0;
+    }
+
+    .pdpS4__heroRail{
+      width:2px;
+      height:24mm;
+      border-radius:999px;
+      background:
+        linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 60%, rgba(255,255,255,.18)) 0%,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 14%, transparent) 100%
+        );
+      box-shadow:0 0 10px color-mix(in srgb, var(--accent-primary, var(--accent)) 14%, transparent);
+      flex:0 0 auto;
+      opacity:.98;
+    }
+
+    .pdpS4__heroText{
+      font-size:13.2pt;
+      line-height:1.28;
+      color:rgba(255,255,255,.92);
+      font-weight:600;
+      letter-spacing:.002em;
       display:-webkit-box;
       -webkit-line-clamp:3;
       -webkit-box-orient:vertical;
       overflow:hidden;
+      min-width:0;
+      max-width:44ch;
     }
 
-    .pdpS4__grid--plan{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-      align-items:stretch;
-      min-height:0;
-    }
-
-    .pdpS4__card--plan{
-      background:rgba(255,255,255,.04);
-      padding:12px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.08);
-      overflow:hidden;
-      min-height:0;
-    }
-
-    .pdpS4__cardBody--plan{
-      font-size:12.5pt;
-      line-height:1.34;
-      opacity:.85;
-      display:-webkit-box;
-      -webkit-line-clamp:4;
-      -webkit-box-orient:vertical;
-      overflow:hidden;
-    }
-
-    .pdpS4__grid--roles{
+    .pdpS4__midGrid{
+      position:absolute;
+      left:26mm;
+      right:16mm;
+      top:92mm;
+      bottom:48mm;
+      z-index:2;
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:10px;
-      align-items:stretch;
     }
 
-    .pdpS4__card--role{
-      background:rgba(0,0,0,.14);
-      border:1px solid rgba(255,255,255,.06);
-      padding:10px;
-      border-radius:12px;
+    .pdpS4__clusterCard{
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:18px;
       overflow:hidden;
       min-height:0;
+      padding:13px 14px;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255,255,255,.04) 0%,
+          rgba(255,255,255,.025) 100%
+        );
+      box-shadow:
+        0 12px 32px rgba(0,0,0,.28),
+        inset 0 0 0 1px rgba(255,255,255,.02);
+      display:flex;
+      flex-direction:column;
     }
 
-    .pdpS4__cardBody--role{
-      font-size:11.2pt;
+    .pdpS4__clusterCard--left{
+      border:1px solid color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, rgba(255,255,255,.08));
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255,255,255,.045) 0%,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 7%, rgba(255,255,255,.025)) 100%
+        );
+    }
+
+    .pdpS4__clusterCard--right{
+      border:1px solid color-mix(in srgb, var(--accent-secondary, var(--accent)) 18%, rgba(255,255,255,.08));
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255,255,255,.045) 0%,
+          color-mix(in srgb, var(--accent-secondary, var(--accent)) 7%, rgba(255,255,255,.025)) 100%
+        );
+    }
+
+    .pdpS4__clusterHead{
+      font-size:8.8pt;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.52);
+      font-weight:720;
+      margin-bottom:10px;
+      line-height:1.1;
+      flex:0 0 auto;
+    }
+
+    .pdpS4__subStack{
+      display:grid;
+      grid-template-rows:1fr 1fr;
+      gap:10px;
+      min-height:0;
+      flex:1 1 auto;
+    }
+
+    .pdpS4__subPanel{
+      min-height:0;
+      border-radius:14px;
+      padding:11px 11px 10px;
+      border:1px solid rgba(255,255,255,.06);
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255,255,255,.03) 0%,
+          rgba(255,255,255,.015) 100%
+        );
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.012);
+      overflow:hidden;
+    }
+
+    .pdpS4__subPanel--secondary{
+      background:
+        linear-gradient(
+          145deg,
+          rgba(0,0,0,.10) 0%,
+          rgba(255,255,255,.012) 100%
+        );
+    }
+
+    .pdpS4__subHead{
+      font-size:8pt;
+      letter-spacing:.20em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.42);
+      font-weight:760;
+      margin-bottom:7px;
+      line-height:1.1;
+    }
+
+    .pdpS4__subText{
+      font-size:11.3pt;
       line-height:1.28;
-      opacity:.75;
+      color:rgba(255,255,255,.84);
+      font-weight:520;
       display:-webkit-box;
-      -webkit-line-clamp:3;
+      -webkit-line-clamp:5;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      min-width:0;
+    }
+
+    .pdpS4__ownerStrip{
+      position:absolute;
+      left:26mm;
+      right:16mm;
+      bottom:14mm;
+      height:28mm;
+      z-index:2;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:18px;
+      overflow:hidden;
+      padding:10px 14px;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255,255,255,.035) 0%,
+          rgba(255,255,255,.02) 100%
+        );
+      box-shadow:
+        0 12px 30px rgba(0,0,0,.24),
+        inset 0 0 0 1px rgba(255,255,255,.018);
+      display:grid;
+      grid-template-columns:1fr 1px 1fr;
+      gap:12px;
+      align-items:center;
+    }
+
+    .pdpS4__ownerCol{
+      min-width:0;
+    }
+
+    .pdpS4__ownerDivider{
+      width:1px;
+      align-self:stretch;
+      background:
+        linear-gradient(
+          180deg,
+          rgba(255,255,255,.04) 0%,
+          color-mix(in srgb, var(--accent-primary, var(--accent)) 14%, rgba(255,255,255,.08)) 50%,
+          rgba(255,255,255,.04) 100%
+        );
+      border-radius:999px;
+      opacity:.9;
+    }
+
+    .pdpS4__ownerLabel{
+      font-size:7.9pt;
+      letter-spacing:.20em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.46);
+      font-weight:760;
+      margin-bottom:5px;
+      line-height:1.1;
+    }
+
+    .pdpS4__ownerValue{
+      font-size:10.9pt;
+      line-height:1.20;
+      color:rgba(255,255,255,.92);
+      font-weight:620;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
       -webkit-box-orient:vertical;
       overflow:hidden;
     }
 
-    .pdpS4__cardHead{
-      font-size:9pt;
-      letter-spacing:.22em;
-      text-transform:uppercase;
-      opacity:.6;
-      margin-bottom:6px;
-    }
-
-    .pdpS4__sectionHead{
-      font-size:9pt;
-      letter-spacing:.24em;
-      text-transform:uppercase;
-      opacity:.6;
-      margin-bottom:6px;
+    .pdpS4__ownerValue--secondary{
+      color:rgba(255,255,255,.80);
+      font-weight:560;
     }
   </style>
 </section>
@@ -1452,45 +2391,42 @@ export function pageDevelopmentRoute(args: {
 }
 
 /** ---------------- SLIDE 6 ---------------- */
-export function pageSuccessDefinition(args: {
+export function pageSuccess(args: {
   lang: Lang;
   accentHex: string;
   clubName: string;
   logoUrl?: string;
 
-  inGameItems: string[];
-  behaviourItems: string[];
-  signalItems: string[];
+  inGame: string[];
+  behaviour: string[];
+  signals: string[];
 }) {
   const {
     lang,
     accentHex,
     clubName,
     logoUrl,
-    inGameItems,
-    behaviourItems,
-    signalItems,
+    inGame,
+    behaviour,
+    signals,
   } = args;
 
   const wm = (logoUrl || "").trim();
   const wmHtml = wm
-    ? `<div class="pdpS6__wm" aria-hidden="true"><img src="${esc(
-        wm
-      )}" alt="${esc(clubName)} watermark" /></div>`
+    ? `<div class="pdpS6__wm"><img src="${esc(wm)}" /></div>`
     : ``;
 
-  const bulletList = (items: string[], itemClass = "pdpS6__li") =>
+  const bullets = (items: string[], variant = "") =>
     items.length
       ? `<ul class="pdpS6__list">
           ${items
-            .slice(0, 3)
+            .slice(0, 4)
             .map(
               (x) => `
-                <li class="${itemClass}">
-                  <span class="pdpS6__dot"></span>
-                  <span>${esc(x)}</span>
-                </li>
-              `
+              <li class="pdpS6__li ${variant}">
+                <span class="pdpS6__dot"></span>
+                <span>${esc(x)}</span>
+              </li>`
             )
             .join("")}
         </ul>`
@@ -1499,70 +2435,71 @@ export function pageSuccessDefinition(args: {
   return `
 <section class="page pdpS6" style="--accent:${esc(accentHex)};">
   ${wmHtml}
-  <div class="pdpS6__wash" aria-hidden="true"></div>
-  <div class="pdpS6__axis" aria-hidden="true"></div>
+  <div class="pdpS6__wash"></div>
+  <div class="pdpS6__vignette"></div>
+  <div class="pdpS6__grain"></div>
+  <div class="pdpS6__axis"></div>
 
-  <div class="pdpS6__inner">
-    <div class="pdpS6__top">
-      <div class="pdpS6__kicker">${esc(
-        t(lang, "SUCCESDEFINITIE", "SUCCESS DEFINITION")
-      )}</div>
+  <!-- TOP -->
+  <div class="pdpS6__top">
+    <div class="pdpS6__kicker">${esc(t(lang, "SUCCES", "SUCCESS"))}</div>
+    <div class="pdpS6__title">
+      ${esc(t(lang, "WANNEER IS DIT GOED", "WHEN IS THIS GOOD"))}
+    </div>
+    <div class="pdpS6__titleMarker"></div>
+  </div>
 
-      <div class="pdpS6__hero">
-        <div class="pdpS6__title">${esc(
-          t(lang, "WANNEER IS DIT GOED", "WHEN IS THIS GOOD")
-        )}</div>
+  <!-- MID -->
+  <div class="pdpS6__midRow">
+    <div class="pdpS6__card">
+      <div class="pdpS6__head">
+        ${esc(t(lang, "IN HET SPEL", "IN THE GAME"))}
       </div>
+      ${bullets(inGame)}
     </div>
 
-    <div class="pdpS6__topGrid">
-      <div class="pdpS6__card pdpS6__card--top">
-        <div class="pdpS6__head">${esc(
-          t(lang, "IN HET SPEL", "IN THE GAME")
-        )}</div>
-        ${bulletList(inGameItems, "pdpS6__li pdpS6__li--game")}
+    <div class="pdpS6__card pdpS6__card--accent">
+      <div class="pdpS6__head">
+        ${esc(t(lang, "IN GEDRAG", "IN BEHAVIOUR"))}
       </div>
+      ${bullets(behaviour, "pdpS6__li--strong")}
+    </div>
+  </div>
 
-      <div class="pdpS6__card pdpS6__card--top">
-        <div class="pdpS6__head">${esc(
-          t(lang, "IN GEDRAG", "IN BEHAVIOUR")
-        )}</div>
-        ${bulletList(behaviourItems, "pdpS6__li pdpS6__li--behaviour")}
-      </div>
+  <!-- BOTTOM -->
+  <div class="pdpS6__signalsCard">
+    <div class="pdpS6__head">
+      ${esc(
+        t(
+          lang,
+          "EERSTE SIGNALEN DAT HET LANDT",
+          "EARLY SIGNALS IT IS LANDING"
+        )
+      )}
     </div>
 
-    <div class="pdpS6__card pdpS6__card--bottom">
-      <div class="pdpS6__head">${esc(
-        t(lang, "EERSTE SIGNALEN DAT HET LANDT", "FIRST SIGNS THAT IT IS LANDING")
-      )}</div>
-      ${bulletList(signalItems, "pdpS6__li pdpS6__li--signal")}
-    </div>
+    ${bullets(signals, "pdpS6__li--signal")}
   </div>
 
   <style>
     .pdpS6{
       position:relative;
       height:100%;
-      border-radius:18px;
-      overflow:hidden;
       background:#0B0D10;
       color:#fff;
+      border-radius:18px;
+      overflow:hidden;
     }
 
-    .pdpS6 *{
-      box-sizing:border-box;
-    }
+    .pdpS6 *{ box-sizing:border-box; }
 
     .pdpS6__wm{
       position:absolute;
       right:-18mm;
-      bottom:-16mm;
-      width:136mm;
-      height:136mm;
-      opacity:.038;
-      filter:blur(.15px);
-      z-index:0;
-      pointer-events:none;
+      bottom:-18mm;
+      width:130mm;
+      height:130mm;
+      opacity:.035;
     }
 
     .pdpS6__wm img{
@@ -1575,116 +2512,109 @@ export function pageSuccessDefinition(args: {
       position:absolute;
       inset:0;
       background:
-        radial-gradient(
-          circle at 80% 78%,
-          color-mix(in srgb, var(--accent-primary, var(--accent)) 8%, black 12%) 0%,
-          transparent 34%
-        ),
-        radial-gradient(
-          circle at 20% 20%,
-          color-mix(in srgb, var(--accent-secondary, var(--accent)) 7%, black 18%) 0%,
-          transparent 28%
-        ),
-        linear-gradient(
-          145deg,
-          color-mix(in srgb, var(--accent-mix, var(--accent)) 5%, black 14%) 0%,
-          transparent 58%
-        );
-      z-index:0;
-      pointer-events:none;
+        radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--accent) 10%, black) 0%, transparent 35%),
+        radial-gradient(circle at 80% 80%, color-mix(in srgb, var(--accent) 8%, black) 0%, transparent 30%);
+    }
+
+    .pdpS6__vignette{
+      position:absolute;
+      inset:0;
+      background:radial-gradient(circle, transparent 50%, rgba(0,0,0,.2));
+    }
+
+    .pdpS6__grain{
+      position:absolute;
+      inset:0;
+      opacity:.02;
+      background-image:
+        linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px);
+      background-size:4px 4px;
     }
 
     .pdpS6__axis{
       position:absolute;
       left:18mm;
       top:16mm;
-      bottom:12mm;
+      bottom:16mm;
       width:3px;
-      border-radius:3px;
-      background:var(--accent-primary, var(--accent));
-      opacity:.95;
-      z-index:1;
-    }
-
-    .pdpS6__inner{
-      position:relative;
-      z-index:2;
-      padding:18mm 16mm;
-      padding-left:26mm;
-      height:100%;
-      display:grid;
-      grid-template-rows:auto minmax(66mm, auto) minmax(0,1fr);
-      gap:16px;
+      background:var(--accent);
+      opacity:.9;
     }
 
     .pdpS6__top{
-      display:flex;
-      flex-direction:column;
-      gap:14px;
-      padding-top:.5mm;
+      position:absolute;
+      left:26mm;
+      right:16mm;
+      top:18mm;
+      height:22mm;
     }
 
     .pdpS6__kicker{
-      font-size:10.2pt;
-      letter-spacing:.26em;
+      font-size:9pt;
+      letter-spacing:.25em;
       text-transform:uppercase;
-      color:rgba(255,255,255,.72);
-    }
-
-    .pdpS6__hero{
-      display:flex;
-      flex-direction:column;
-      gap:0;
+      color:rgba(255,255,255,.7);
     }
 
     .pdpS6__title{
-      font-size:26pt;
-      line-height:1.02;
-      letter-spacing:-0.02em;
-      font-weight:860;
+      font-size:22pt;
+      font-weight:840;
       text-transform:uppercase;
-      max-width:22ch;
-      text-wrap:balance;
+      white-space:nowrap;
     }
 
-    .pdpS6__topGrid{
+    .pdpS6__titleMarker{
+      width:22mm;
+      height:2px;
+      margin-top:6px;
+      background:var(--accent);
+    }
+
+    .pdpS6__midRow{
+      position:absolute;
+      left:26mm;
+      right:16mm;
+      top:40mm;
+      height:78mm;
       display:grid;
       grid-template-columns:1fr 1fr;
-      gap:16px;
-      align-items:stretch;
-      min-height:0;
+      gap:10px;
     }
 
     .pdpS6__card{
-      border:1px solid rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.08);
       border-radius:18px;
-      padding:14px 16px;
-      overflow:hidden;
-      height:100%;
+      padding:14px;
+      background:rgba(255,255,255,.03);
     }
 
-    .pdpS6__card--top{
-      background:rgba(255,255,255,.04);
-      min-height:66mm;
+    .pdpS6__card--accent{
+      border:1px solid color-mix(in srgb, var(--accent) 20%, rgba(255,255,255,.08));
+      background:rgba(255,255,255,.05);
     }
 
-    .pdpS6__card--bottom{
+    .pdpS6__signalsCard{
+      position:absolute;
+      left:26mm;
+      right:16mm;
+      top:122mm;
+      bottom:16mm;
+      border-radius:18px;
+      padding:14px;
+      border:1px solid color-mix(in srgb, var(--accent) 22%, rgba(255,255,255,.08));
       background:
         linear-gradient(
           145deg,
-          rgba(0,0,0,.14) 0%,
-          color-mix(in srgb, var(--accent-secondary, var(--accent)) 10%, rgba(0,0,0,.16)) 100%
+          rgba(0,0,0,.2),
+          color-mix(in srgb, var(--accent) 10%, rgba(0,0,0,.2))
         );
-      min-height:0;
-      border:1px solid color-mix(in srgb, var(--accent-secondary, var(--accent)) 20%, rgba(255,255,255,.10));
     }
 
     .pdpS6__head{
-      font-size:9.3pt;
-      letter-spacing:.26em;
+      font-size:8.5pt;
+      letter-spacing:.22em;
       text-transform:uppercase;
-      color:rgba(255,255,255,.46);
-      font-weight:720;
+      color:rgba(255,255,255,.5);
       margin-bottom:10px;
     }
 
@@ -1694,47 +2624,36 @@ export function pageSuccessDefinition(args: {
       margin:0;
       display:flex;
       flex-direction:column;
-      gap:10px;
+      gap:8px;
     }
 
     .pdpS6__li{
       display:flex;
-      gap:10px;
-      align-items:flex-start;
-      min-width:0;
+      gap:8px;
     }
 
     .pdpS6__dot{
-      width:7px;
-      height:7px;
-      border-radius:999px;
-      background:var(--accent-mix, var(--accent));
-      box-shadow:0 0 0 1px color-mix(in srgb, var(--accent-mix, var(--accent)) 18%, transparent);
-      margin-top:9px;
-      flex:0 0 auto;
+      width:6px;
+      height:6px;
+      border-radius:50%;
+      background:var(--accent);
+      margin-top:6px;
     }
 
     .pdpS6__li span:last-child{
-      font-size:13.8pt;
-      line-height:1.38;
-      color:rgba(255,255,255,.80);
-      font-weight:500;
-      display:-webkit-box;
-      -webkit-line-clamp:2;
-      -webkit-box-orient:vertical;
-      overflow:hidden;
-      min-width:0;
+      font-size:12pt;
+      line-height:1.3;
+      color:rgba(255,255,255,.85);
+    }
+
+    .pdpS6__li--strong span:last-child{
+      font-weight:600;
+      color:#fff;
     }
 
     .pdpS6__li--signal span:last-child{
-      font-size:14.6pt;
-      line-height:1.40;
-      color:rgba(255,255,255,.84);
-      font-weight:520;
-    }
-
-    .pdpS6__empty{
-      min-height:20px;
+      color:rgba(255,255,255,.9);
+      font-weight:500;
     }
   </style>
 </section>

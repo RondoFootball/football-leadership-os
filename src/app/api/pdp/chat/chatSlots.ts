@@ -4,31 +4,44 @@ export type ChatSlotKey =
   | "developmentPoint"
   | "targetBehaviour"
   | "matchSituation"
-  | "roleContext"
-  | "gameMoments"
-  | "zones"
-  | "principles"
+  | "roleRequirements"
+  | "decisiveTeamPhases"
+  | "teamImpact"
   | "observations"
   | "whenObserved"
   | "effectOnGame"
-  | "playerActions"
-  | "staffResponsibilities"
+  | "playerExecution"
+  | "trainingVideoPlan"
+  | "matchOffFieldPlan"
+  | "ownership"
+  | "successInGame"
+  | "successBehaviour"
   | "successSignals";
 
 export type ChatSlotDefinition = {
   key: ChatSlotKey;
   label: string;
   description: string;
-  slide: "cover" | "agreement" | "context" | "reality" | "approach" | "success";
+  slide:
+    | "cover"
+    | "agreement"
+    | "role_context"
+    | "reality"
+    | "approach"
+    | "success";
   requiredForFirstDraft: boolean;
   requiredForStrongDraft: boolean;
 };
 
 export const CHAT_SLOTS: ChatSlotDefinition[] = [
+  /**
+   * SLIDE 2 — AFSPRAAK
+   */
   {
     key: "developmentPoint",
     label: "Ontwikkelpunt",
-    description: "Wat is het concrete ontwikkelpunt van de speler?",
+    description:
+      "Wat is het dominante en concrete ontwikkelpunt van deze speler?",
     slide: "agreement",
     requiredForFirstDraft: true,
     requiredForStrongDraft: true,
@@ -36,7 +49,8 @@ export const CHAT_SLOTS: ChatSlotDefinition[] = [
   {
     key: "targetBehaviour",
     label: "Gewenst gedrag",
-    description: "Welk observeerbaar gedrag willen we straks wél zien?",
+    description:
+      "Welk observeerbaar gedrag willen we straks wél terugzien?",
     slide: "agreement",
     requiredForFirstDraft: true,
     requiredForStrongDraft: true,
@@ -44,47 +58,52 @@ export const CHAT_SLOTS: ChatSlotDefinition[] = [
   {
     key: "matchSituation",
     label: "Wedstrijdmoment",
-    description: "In welke wedstrijdsituatie komt dit ontwikkelpunt vooral terug?",
+    description:
+      "In welke wedstrijdsituatie of spelsituatie komt dit ontwikkelpunt het duidelijkst terug?",
     slide: "agreement",
     requiredForFirstDraft: true,
     requiredForStrongDraft: true,
   },
+
+  /**
+   * SLIDE 3 — ROLCONTEXT
+   */
   {
-    key: "roleContext",
-    label: "Rolcontext",
-    description: "Wat betekent dit ontwikkelpunt binnen de rol van de speler in het team?",
-    slide: "context",
+    key: "roleRequirements",
+    label: "Wat de rol vraagt",
+    description:
+      "Wat vraagt de positie of rol van de speler in dit team op dit punt?",
+    slide: "role_context",
     requiredForFirstDraft: false,
     requiredForStrongDraft: true,
   },
   {
-    key: "gameMoments",
-    label: "Spelmomenten",
-    description: "Wanneer in het spel is dit relevant?",
-    slide: "context",
+    key: "decisiveTeamPhases",
+    label: "Beslissende teamfases",
+    description:
+      "In welke teamfases of spelmomenten wordt dit gedrag echt beslissend?",
+    slide: "role_context",
     requiredForFirstDraft: false,
     requiredForStrongDraft: true,
   },
   {
-    key: "zones",
-    label: "Zones",
-    description: "Waar op het veld speelt dit probleem of gedrag zich vooral af?",
-    slide: "context",
+    key: "teamImpact",
+    label: "Teamimpact",
+    description:
+      "Wat wint of verliest het team als dit gedrag wel of niet lukt?",
+    slide: "role_context",
     requiredForFirstDraft: false,
     requiredForStrongDraft: true,
   },
-  {
-    key: "principles",
-    label: "Principes",
-    description: "Welke teamprincipes of rolprincipes zijn hier relevant?",
-    slide: "context",
-    requiredForFirstDraft: false,
-    requiredForStrongDraft: true,
-  },
+
+  /**
+   * SLIDE 4 — REALITEIT
+   */
   {
     key: "observations",
-    label: "Wat zien we",
-    description: "Wat zien we concreet terug in gedrag of uitvoering?",
+    label: "Wat zien we nu",
+    description:
+      "Wat zien we concreet terug in gedrag, uitvoering of keuzes van de speler?",
     slide: "reality",
     requiredForFirstDraft: true,
     requiredForStrongDraft: true,
@@ -92,39 +111,88 @@ export const CHAT_SLOTS: ChatSlotDefinition[] = [
   {
     key: "whenObserved",
     label: "Wanneer zien we dit",
-    description: "Onder welke omstandigheden of triggers zien we dit?",
+    description:
+      "Onder welke triggers, omstandigheden of wedstrijdmomenten zien we dit terug?",
     slide: "reality",
     requiredForFirstDraft: false,
     requiredForStrongDraft: true,
   },
   {
     key: "effectOnGame",
-    label: "Effect op spel",
-    description: "Wat is het gevolg van dit gedrag voor het team of spel?",
+    label: "Effect op het spel",
+    description:
+      "Wat is het gevolg van dit gedrag voor het team of voor het spel?",
     slide: "reality",
     requiredForFirstDraft: true,
     requiredForStrongDraft: true,
   },
+
+  /**
+   * SLIDE 5 — AANPAK
+   */
   {
-    key: "playerActions",
-    label: "Speleracties",
-    description: "Wat moet de speler zelf concreet doen in het plan?",
+    key: "playerExecution",
+    label: "Speleruitvoering",
+    description:
+      "Wat moet de speler zelf concreet anders doen vanaf nu?",
     slide: "approach",
     requiredForFirstDraft: false,
     requiredForStrongDraft: true,
   },
   {
-    key: "staffResponsibilities",
-    label: "Verantwoordelijkheden staf",
-    description: "Wie doet wat in begeleiding, training, video en opvolging?",
+    key: "trainingVideoPlan",
+    label: "Training en beelden",
+    description:
+      "Hoe werken we hieraan in training en in het bekijken van beelden?",
     slide: "approach",
+    requiredForFirstDraft: false,
+    requiredForStrongDraft: true,
+  },
+  {
+    key: "matchOffFieldPlan",
+    label: "Wedstrijd en off-field",
+    description:
+      "Hoe moet dit zichtbaar worden in de wedstrijd en wat doet de speler buiten het veld?",
+    slide: "approach",
+    requiredForFirstDraft: false,
+    requiredForStrongDraft: true,
+  },
+  {
+    key: "ownership",
+    label: "Eigenaarschap",
+    description:
+      "Wie voert dit uit en wie stuurt dit aan?",
+    slide: "approach",
+    requiredForFirstDraft: false,
+    requiredForStrongDraft: true,
+  },
+
+  /**
+   * SLIDE 6 — SUCCES
+   */
+  {
+    key: "successInGame",
+    label: "Succes in het spel",
+    description:
+      "Waaraan zien we in het spel dat dit ontwikkelpunt begint te landen?",
+    slide: "success",
+    requiredForFirstDraft: false,
+    requiredForStrongDraft: true,
+  },
+  {
+    key: "successBehaviour",
+    label: "Succes in gedrag",
+    description:
+      "Welk gedrag van de speler laat zien dat het ontwikkelpunt echt landt?",
+    slide: "success",
     requiredForFirstDraft: false,
     requiredForStrongDraft: true,
   },
   {
     key: "successSignals",
-    label: "Succesdefinitie",
-    description: "Wanneer weten we dat het plan begint te landen?",
+    label: "Eerste signalen",
+    description:
+      "Wat zijn vroege geloofwaardige signalen dat dit plan begint te werken?",
     slide: "success",
     requiredForFirstDraft: false,
     requiredForStrongDraft: true,

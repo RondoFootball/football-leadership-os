@@ -7,12 +7,9 @@ import { LogoMarquee } from "@/components/LogoMarquee";
 
 type Lang = "en" | "de" | "es" | "fr" | "it" | "nl";
 
-const ENABLE_VIDEO = true;
-
 const COPY_EN = {
   brand: "FOOTBALL LEADERSHIP",
   requestAccess: "Request access",
-  explore: "Explore",
   headlineA: "Clarity for the people",
   headlineB: "who carry the decisions.",
   sub: "A decision platform for professional football clubs — and the people who lead them.",
@@ -28,12 +25,35 @@ const COPY_EN = {
     "Governance reviews",
   ],
   footer: "A product company. Built to become the standard.",
+  tracksTitle: "Three core environments.",
+  tracks: [
+    {
+      href: "/vision",
+      n: "01",
+      title: "Vision",
+      desc: "Turn club identity, performance direction and governance into one coherent line.",
+      meta: "VISION SYSTEM",
+    },
+    {
+      href: "/recruitment",
+      n: "02",
+      title: "Recruitment",
+      desc: "Build role-based recruitment logic, priorities and window decision structure.",
+      meta: "RECRUITMENT SYSTEM",
+    },
+    {
+      href: "/development",
+      n: "03",
+      title: "Development",
+      desc: "Upgrade observations and assessments into role-based development plans and tools.",
+      meta: "DEVELOPMENT SYSTEM",
+    },
+  ],
 };
 
 const COPY_NL = {
   brand: "FOOTBALL LEADERSHIP",
   requestAccess: "Toegang aanvragen",
-  explore: "Verkennen",
   headlineA: "Helderheid voor mensen",
   headlineB: "die beslissingen moeten dragen.",
   sub: "Een besluitplatform voor profclubs — en de mensen die richting geven.",
@@ -49,6 +69,30 @@ const COPY_NL = {
     "Governance-evaluaties",
   ],
   footer: "Productbedrijf. Gebouwd om de standaard te worden.",
+  tracksTitle: "Drie kernomgevingen.",
+  tracks: [
+    {
+      href: "/vision",
+      n: "01",
+      title: "Vision",
+      desc: "Vertaal clubidentiteit, prestatierichting en governance naar één samenhangende lijn.",
+      meta: "VISION SYSTEM",
+    },
+    {
+      href: "/recruitment",
+      n: "02",
+      title: "Recruitment",
+      desc: "Bouw rolgerichte recruitmentlogica, prioriteiten en besluitstructuur voor windows.",
+      meta: "RECRUITMENT SYSTEM",
+    },
+    {
+      href: "/development",
+      n: "03",
+      title: "Development",
+      desc: "Zet observaties en beoordelingen om in rolgebonden ontwikkelplannen en tools.",
+      meta: "DEVELOPMENT SYSTEM",
+    },
+  ],
 };
 
 const COPY: Record<Lang, typeof COPY_EN> = {
@@ -99,8 +143,8 @@ export default function Home() {
   ];
 
   return (
-    <main className="h-screen overflow-hidden overflow-x-hidden bg-black text-white selection:bg-white selection:text-black">
-      <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col px-6 overflow-x-hidden">
+    <main className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
+      <div className="relative z-10 mx-auto max-w-7xl px-6">
         <header className="flex items-center justify-between py-10">
           <div className="text-xs tracking-[0.22em] text-white/70">
             {t.brand}
@@ -130,7 +174,7 @@ export default function Home() {
           </div>
         </header>
 
-        <section className="flex flex-1 items-center">
+        <section className="pt-6 pb-20">
           <div className="max-w-4xl">
             <h1 className="font-medium tracking-tight leading-[1.05] text-[34px] sm:text-[44px] md:text-[84px] break-words">
               {t.headlineA}
@@ -142,55 +186,95 @@ export default function Home() {
             <p className="mt-6 text-[16px] sm:text-[18px] md:text-xl text-white/60 max-w-[42ch]">
               {t.sub}
             </p>
+          </div>
 
-            <div className="mt-10">
-              <Button asChild className="bg-white text-black hover:bg-white/90">
-                <Link href="/explore">{t.explore}</Link>
-              </Button>
+          <div className="mt-16">
+            <div className="text-xs tracking-[0.18em] text-white/45">
+              {t.tracksTitle}
             </div>
 
-            <div className="mt-12">
-              <div className="text-xs tracking-[0.18em] text-white/45">
-                {t.usesLabel}
-              </div>
-              <div className="mt-5 flex flex-wrap gap-x-8 gap-y-3 text-sm text-white/60">
-                {t.uses.map((u) => (
-                  <span key={u}>{u}</span>
-                ))}
-              </div>
+            <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {t.tracks.map((x) => (
+                <Link
+                  key={x.href}
+                  href={x.href}
+                  className={[
+                    "group relative overflow-hidden rounded-3xl",
+                    "border border-white/10 bg-white/[0.025]",
+                    "p-7 md:p-8",
+                    "transition-all duration-300 ease-out",
+                    "hover:bg-white/[0.045] hover:-translate-y-0.5",
+                  ].join(" ")}
+                >
+                  <div className="pointer-events-none absolute inset-0 rounded-3xl border border-transparent group-hover:border-white/15 transition duration-300" />
+
+                  <div className="relative flex items-start justify-between gap-4">
+                    <div className="text-xs tracking-[0.18em] text-white/45">
+                      {x.n}
+                    </div>
+
+                    <div className="text-xs tracking-[0.18em] text-white/30">
+                      {x.meta}
+                    </div>
+                  </div>
+
+                  <div className="relative mt-5 text-lg font-medium">
+                    {x.title}
+                  </div>
+
+                  <p className="relative mt-3 text-sm leading-relaxed text-white/60">
+                    {x.desc}
+                  </p>
+
+                  <div className="relative mt-8 text-sm text-white/55 group-hover:text-white transition">
+                    Open
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-16">
+            <div className="text-xs tracking-[0.18em] text-white/45">
+              {t.usesLabel}
+            </div>
+            <div className="mt-5 flex flex-wrap gap-x-8 gap-y-3 text-sm text-white/60">
+              {t.uses.map((u) => (
+                <span key={u}>{u}</span>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-16 mb-2">
+            <div className="mb-4 text-xs tracking-[0.22em] text-white/35">
+              SELECTED CLUBS (PRIVATE BETA)
             </div>
 
-            <div className="mt-16 mb-2">
-              <div className="mb-4 text-xs tracking-[0.22em] text-white/35">
-                SELECTED CLUBS (PRIVATE BETA)
-              </div>
-
-              <div className="hidden sm:block">
-                <LogoMarquee
-                  logos={logos}
-                  height={28}
-                  gapPx={120}
-                  durationSeconds={110}
-                  windowInsetPercent={45}
-                />
-              </div>
-
-              <div className="block sm:hidden">
-                <LogoMarquee
-                  logos={logos}
-                  height={22}
-                  gapPx={84}
-                  durationSeconds={85}
-                  windowInsetPercent={47}
-                />
-              </div>
+            <div className="hidden sm:block">
+              <LogoMarquee
+                logos={logos}
+                height={28}
+                gapPx={120}
+                durationSeconds={110}
+                windowInsetPercent={45}
+              />
             </div>
 
-            <div className="mt-10 text-xs text-white/35">{t.footer}</div>
-
-            <div className="mt-14 text-xs text-white/30">
-              © {new Date().getFullYear()} Football Leadership
+            <div className="block sm:hidden">
+              <LogoMarquee
+                logos={logos}
+                height={22}
+                gapPx={84}
+                durationSeconds={85}
+                windowInsetPercent={47}
+              />
             </div>
+          </div>
+
+          <div className="mt-10 text-xs text-white/35">{t.footer}</div>
+
+          <div className="mt-14 pb-10 text-xs text-white/30">
+            © {new Date().getFullYear()} Football Leadership
           </div>
         </section>
       </div>

@@ -69,55 +69,244 @@ function hasMeaningfulUserInput(messages: ChatMsg[]) {
 
 function buildGeneratePrompt(lang: Lang) {
   return `
-You generate a structured football Player Development Plan patch.
+You generate a high-quality football Player Development Plan patch.
 
-Your role:
-- Convert conversation evidence into a structured first draft
-- Only write what is supported by the conversation or current draft
-- Leave sections empty if there is not enough basis
+IMPORTANT:
+The conversation may be messy, informal, repetitive or incomplete.
+Your task is NOT to copy the user literally.
+Your task is to transform the user's meaning into a sharper, shorter, more usable development plan.
 
-Hard rules:
-- Return only valid JSON
-- Output only fields you are genuinely confident about
-- Do not invent football content
-- Do not add generic filler text
-- Do not create coaching plans, responsibilities or success criteria unless they are supported by the conversation
-- Do not guess missing match context, role context, actions, timelines or evaluation criteria
-- If the evidence is weak or incomplete, keep the patch partial
-- It is allowed to return an almost empty patch
-- Prefer omission over fabrication
+You must improve the wording while staying faithful to the conversation.
 
-Quality rules:
-- Be concrete, football-specific and observable
-- Keep one dominant development line if the conversation supports one
-- Responsibilities must be explicit only if actually discussed or directly inferable
-- Success criteria must be observable only if grounded in the conversation
-- This is an INDIVIDUAL player development plan in a team context
-- The player role and team effect matter, but may only be included if supported
+WHAT YOU ARE ALLOWED TO DO
+- rewrite rough user language into sharper professional football language
+- compress long explanations into short usable plan text
+- turn implicit meaning into explicit structured plan content
+- summarise repeated evidence into one stronger line
+- improve the Dutch or English so it reads naturally and professionally
+- make the output fit visual slide blocks
 
-Allowed output areas:
-- slide2
-- slideContext
-- slide3Baseline
-- slide3
-- slide4DevelopmentRoute
-- slide6SuccessDefinition
+WHAT YOU MAY NOT DO
+- invent facts that are not supported by the conversation
+- fabricate match situations, responsibilities or success criteria out of nowhere
+- exaggerate certainty
+- make the plan look more complete than the conversation allows
 
-Important distinction:
-- You may summarise what the user already made clear
-- You may not add new content just because it would make the plan look more complete
+QUALITY STANDARD
+The output should feel:
+- shorter
+- sharper
+- more football-specific
+- more methodically useful
+- more like a strong staff-written development plan
+- less like raw user input
+- less like ChatGPT language
+- less generic
+- less explanatory
 
-Language:
-${lang === "nl" ? "Write all content in Dutch." : "Write all content in English."}
+VERY IMPORTANT
+Do not mirror the user's wording too literally.
+Rewrite it into stronger plan language.
 
-Return exactly this JSON shape:
+This is the slide order:
+1. Agreement
+2. Role context
+3. Reality
+4. Approach
+5. Success
+
+SLIDE MEANING
+
+Agreement
+- What is the real development point?
+- What behaviour do we want instead?
+- In which situation does this show up most clearly?
+
+Role context
+- What does the role ask here?
+- In which team phase does this become decisive?
+- What does the team gain or lose?
+
+Reality
+- What do we currently see?
+- When do we see it?
+- What is the effect on the game or development?
+
+Approach
+- What should the player concretely start doing differently?
+- How do we work on this in training and video?
+- How should it become visible in match and off-field?
+- Who executes and who drives it?
+
+Success
+- What should become visible in the game?
+- What should become visible in behaviour?
+- What are the early signals that it is landing?
+
+SLIDE-FIT RULES
+Keep everything concise and visually usable.
+
+Use these limits:
+
+slide2.focusBehaviour:
+- max 9 words
+- should sound like a sharp development theme
+
+slide2.developmentGoal:
+- max 18 words
+- should describe desired visible behaviour
+
+slide2.matchSituation:
+- max 16 words
+- if there is no true match situation, translate to the clearest working context
+
+slide2.positionRole:
+- max 10 words
+
+slide2.roleDescription:
+- max 16 words
+
+slide2.teamContext:
+- max 18 words
+
+slideContext.gameMoments:
+- max 3 items
+- max 10 words each
+
+slideContext.zones:
+- max 3 items
+- max 8 words each
+- may be conceptual if not literal field zones
+
+slideContext.principles:
+- max 3 items
+- max 12 words each
+
+slide3Baseline.moments:
+- max 3 items
+- max 10 words each
+
+slide3Baseline.observations:
+- max 3 items
+- max 12 words each
+
+slide3Baseline.matchEffects:
+- max 3 items
+- max 12 words each
+
+slide4DevelopmentRoute.playerOwnText:
+- max 30 words
+- this should be the core behavioural route
+
+slide4DevelopmentRoute.developmentRoute.training:
+- max 22 words
+
+slide4DevelopmentRoute.developmentRoute.video:
+- max 22 words
+
+slide4DevelopmentRoute.developmentRoute.match:
+- max 22 words
+
+slide4DevelopmentRoute.developmentRoute.off_field:
+- max 22 words
+
+slide4DevelopmentRoute.responsibilities.player:
+- max 14 words
+
+slide4DevelopmentRoute.responsibilities.coach:
+- max 14 words
+
+slide4DevelopmentRoute.responsibilities.analyst:
+- max 14 words
+
+slide4DevelopmentRoute.responsibilities.staff:
+- max 14 words
+
+slide6SuccessDefinition.inGame:
+- max 3 items
+- max 12 words each
+
+slide6SuccessDefinition.behaviour:
+- max 3 items
+- max 12 words each
+
+slide6SuccessDefinition.signals:
+- max 3 items
+- max 12 words each
+
+SCHEMA FIELDS TO FILL
+
+Agreement:
+- slide2.focusBehaviour
+- slide2.developmentGoal
+- slide2.matchSituation
+- slide2.positionRole
+- slide2.roleDescription
+- slide2.teamContext
+
+Role context:
+- slideContext.gameMoments
+- slideContext.zones
+- slideContext.principles
+
+Reality:
+- slide3Baseline.moments
+- slide3Baseline.observations
+- slide3Baseline.matchEffects
+
+Approach:
+- slide4DevelopmentRoute.playerOwnText
+- slide4DevelopmentRoute.developmentRoute.training
+- slide4DevelopmentRoute.developmentRoute.video
+- slide4DevelopmentRoute.developmentRoute.match
+- slide4DevelopmentRoute.developmentRoute.off_field
+- slide4DevelopmentRoute.responsibilities.player
+- slide4DevelopmentRoute.responsibilities.coach
+- slide4DevelopmentRoute.responsibilities.analyst
+- slide4DevelopmentRoute.responsibilities.staff
+
+Success:
+- slide6SuccessDefinition.inGame
+- slide6SuccessDefinition.behaviour
+- slide6SuccessDefinition.signals
+
+IMPORTANT INTERPRETATION RULE
+If the user does not speak in exact schema language, translate the intent.
+
+Examples:
+- "he always has an excuse" can become:
+  "neemt verantwoordelijkheid te weinig zelf"
+- "he does enough but never more than asked" can become:
+  "toont te weinig proactief topsportgedrag"
+- "it is not really in matches but more in training and daily habits" can still produce:
+  - agreement
+  - role context
+  - reality
+  - approach
+  - success
+
+If the issue is mainly behavioural and not purely tactical:
+- still build a football development plan
+- translate general behaviour into football-development language
+- do not leave core slides empty just because the issue is not one exact match action
+
+LANGUAGE
+${lang === "nl" ? "Write everything in natural, sharp Dutch." : "Write everything in natural, sharp English."}
+
+For Dutch specifically:
+- avoid stiff AI Dutch
+- avoid consultant words
+- avoid vague terms like 'meer focus' unless made concrete
+- write like strong football staff language
+
+RETURN ONLY VALID JSON
+Return exactly this shape:
 {
   "message": "short user-facing note",
   "planPatch": {
     "slide2": {},
     "slideContext": {},
     "slide3Baseline": {},
-    "slide3": {},
     "slide4DevelopmentRoute": {},
     "slide6SuccessDefinition": {}
   }
@@ -162,7 +351,7 @@ export async function POST(req: Request) {
 
     const response = await client.responses.create({
       model: "gpt-4.1",
-      temperature: 0.3,
+      temperature: 0.2,
       input: [
         {
           role: "system",
@@ -177,8 +366,16 @@ ${JSON.stringify(draftPlan, null, 2)}
 Conversation so far:
 ${conversation}
 
-Build a first draft patch from supported evidence only.
-Do not fill unsupported fields.
+Build a strong first draft patch from this conversation.
+
+Important:
+- improve the wording significantly
+- keep the meaning faithful
+- do not merely repeat the user's phrasing
+- if the conversation supports a useful interpretation, use it
+- do not leave core slides empty if the meaning is clearly there
+- keep all output compact and slide-ready
+
 Return only valid JSON.
           `.trim(),
         },
@@ -208,8 +405,8 @@ Return only valid JSON.
       message:
         parsed.message ||
         (lang === "nl"
-          ? "Ik heb een eerste versie opgebouwd op basis van wat in het gesprek voldoende duidelijk was."
-          : "I built a first draft based on what was sufficiently clear in the conversation."),
+          ? "Ik heb op basis van het gesprek een eerste planversie opgebouwd en aangescherpt."
+          : "I built and sharpened a first draft plan based on the conversation."),
       plan: mergedPlan,
       derived: {
         planner,

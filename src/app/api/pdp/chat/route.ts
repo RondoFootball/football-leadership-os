@@ -65,52 +65,179 @@ function deepMergePlan(
   return merge(out, patch || {});
 }
 
-function mergePlannerState(
-  basePlanner: PlannerState,
-  slotPatch?: Record<string, boolean>
-): PlannerState {
-  if (!slotPatch || typeof slotPatch !== "object") {
-    return basePlanner;
-  }
+function hasMeaningfulUserInput(messages: ChatMsg[]) {
+  const userMessages = (messages || [])
+    .filter((m) => m.role === "user")
+    .map((m) => (m.content || "").trim())
+    .filter(Boolean);
 
-  const nextFilledSlots: Record<string, boolean> = {
-    ...(basePlanner.filledSlots || {}),
-  };
+  if (!userMessages.length) return false;
 
-  for (const [key, value] of Object.entries(slotPatch)) {
-    if (value === true) {
-      nextFilledSlots[key] = true;
-    }
-  }
+  const totalChars = userMessages.reduce((sum, msg) => sum + msg.length, 0);
+  return totalChars >= 12;
+}
 
-  const missingFirstDraft = (basePlanner.missingFirstDraft || []).filter(
-    (key) => !nextFilledSlots[key]
-  );
-
-  const missingStrongDraft = (basePlanner.missingStrongDraft || []).filter(
-    (key) => !nextFilledSlots[key]
-  );
-
-  let intent: PlannerState["intent"] = "ask";
-  if (missingStrongDraft.length === 0) {
-    intent = "strong_draft_ready";
-  } else if (missingFirstDraft.length === 0) {
-    intent = "draft_ready";
-  }
-
-  const nextPrioritySlot =
-    basePlanner.nextPrioritySlot && !nextFilledSlots[basePlanner.nextPrioritySlot]
-      ? basePlanner.nextPrioritySlot
-      : undefined;
+function sanitizePlannerState(
+  plannerState: ApiInput["plannerState"]
+): PlannerState | null {
+  if (!plannerState) return null;
 
   return {
-    ...basePlanner,
-    filledSlots: nextFilledSlots,
-    missingFirstDraft,
-    missingStrongDraft,
-    intent,
-    nextPrioritySlot,
+    filledSlots: (plannerState.filledSlots || {}) as PlannerState["filledSlots"],
+    missingFirstDraft: Array.isArray(plannerState.missingFirstDraft)
+      ? (plannerState.missingFirstDraft as PlannerState["missingFirstDraft"])
+      : [],
+    missingStrongDraft: Array.isArray(plannerState.missingStrongDraft)
+      ? (plannerState.missingStrongDraft as PlannerState["missingStrongDraft"])
+      : [],
+    intent:
+      plannerState.intent === "draft_ready" ||
+      plannerState.intent === "strong_draft_ready" ||
+      plannerState.intent === "summarise"
+        ? plannerState.intent
+        : "ask",
+    nextPrioritySlot: plannerState.nextPrioritySlot as
+      | PlannerState["nextPrioritySlot"]
+      | undefined,
   };
+}
+
+function buildFallbackQuestion(lang: Lang, planner: PlannerState) {
+  const slot = planner.nextPrioritySlot;
+
+  if (lang === "nl") {
+    if (slot === "developmentPoint") {
+      return "Wat is het concrete ontwikkelpunt dat je nu het duidelijkst ziet bij deze speler?";
+    }
+
+    if (slot === "matchSituation") {
+      return "In welk wedstrijdmoment of welke spelsituatie zie je dit ontwikkelpunt het duidelijkst terug?";
+    }
+
+    if (slot === "targetBehaviour") {
+      return "Welk observeerbaar gedrag wil je straks wél terugzien in die situatie?";
+    }
+
+    if (slot === "observations") {
+      return "Wat zien jullie nu concreet terug in gedrag, uitvoering of keuzes van de speler?";
+    }
+
+    if (slot === "whenObserved") {
+      return "Wanneer of onder welke trigger zie je dit vooral terug?";
+    }
+
+    if (slot === "effectOnGame") {
+      return "Wat is op dit moment het effect hiervan op het team of op het spel?";
+    }
+
+    if (slot === "roleRequirements") {
+      return "Wat vraagt de rol of positie van deze speler hier eigenlijk op dit punt?";
+    }
+
+    if (slot === "decisiveTeamPhases") {
+      return "In welke teamfase of welk spelmoment wordt dit echt beslissend?";
+    }
+
+    if (slot === "teamImpact") {
+      return "Wat wint of verliest het team als dit gedrag wel of niet lukt?";
+    }
+
+    if (slot === "playerExecution") {
+      return "Wat moet de speler zelf vanaf nu concreet anders gaan doen?";
+    }
+
+    if (slot === "trainingVideoPlan") {
+      return "Hoe willen jullie hier concreet aan werken in training en in beelden?";
+    }
+
+    if (slot === "matchOffFieldPlan") {
+      return "Hoe moet dit zichtbaar worden in de wedstrijd en wat kan de speler hier off-field mee doen?";
+    }
+
+    if (slot === "ownership") {
+      return "Wie voert dit uit en wie stuurt dit in de praktijk aan?";
+    }
+
+    if (slot === "successInGame") {
+      return "Waaraan zie je in het spel dat dit ontwikkelpunt begint te landen?";
+    }
+
+    if (slot === "successBehaviour") {
+      return "Welk gedrag van de speler laat straks zien dat dit echt beter wordt?";
+    }
+
+    if (slot === "successSignals") {
+      return "Wat zijn de eerste geloofwaardige signalen dat het plan begint te werken?";
+    }
+
+    return "Ik hoor de richting, maar wil het nog scherper maken. Wat zie je concreet gebeuren op het veld?";
+  }
+
+  if (slot === "developmentPoint") {
+    return "What is the clearest concrete development point you currently see in this player?";
+  }
+
+  if (slot === "matchSituation") {
+    return "In which match moment or game situation do you see this development point most clearly?";
+  }
+
+  if (slot === "targetBehaviour") {
+    return "What observable behaviour do you want to see instead in that situation?";
+  }
+
+  if (slot === "observations") {
+    return "What do you currently observe concretely in the player's behaviour, execution or choices?";
+  }
+
+  if (slot === "whenObserved") {
+    return "When or under which trigger do you mainly see this?";
+  }
+
+  if (slot === "effectOnGame") {
+    return "What is the current effect of this on the team or on the game?";
+  }
+
+  if (slot === "roleRequirements") {
+    return "What does the player's role or position actually require here?";
+  }
+
+  if (slot === "decisiveTeamPhases") {
+    return "In which team phase or game phase does this become decisive?";
+  }
+
+  if (slot === "teamImpact") {
+    return "What does the team gain or lose when this behaviour does or does not happen?";
+  }
+
+  if (slot === "playerExecution") {
+    return "What should the player concretely start doing differently from now on?";
+  }
+
+  if (slot === "trainingVideoPlan") {
+    return "How do you want to work on this in training and in video review?";
+  }
+
+  if (slot === "matchOffFieldPlan") {
+    return "How should this show up in the match, and what can the player do off the pitch?";
+  }
+
+  if (slot === "ownership") {
+    return "Who executes this, and who drives it in practice?";
+  }
+
+  if (slot === "successInGame") {
+    return "What would you see in the game that shows this is starting to land?";
+  }
+
+  if (slot === "successBehaviour") {
+    return "What player behaviour would show that this is genuinely improving?";
+  }
+
+  if (slot === "successSignals") {
+    return "What are the first credible signals that this plan is starting to work?";
+  }
+
+  return "I hear the direction, but I want to sharpen it further. What do you concretely see happening on the pitch?";
 }
 
 export async function POST(req: Request) {
@@ -132,8 +259,29 @@ export async function POST(req: Request) {
     const draftPlan = body.draftPlan || {};
     const lang: Lang = body.lang === "en" ? "en" : "nl";
 
-    const basePlanner = buildPlannerState(draftPlan);
-    const systemPrompt = buildPdpSystemPrompt({ lang, planner: basePlanner });
+    const plannerFromPlan = buildPlannerState(draftPlan);
+    const incomingPlanner = sanitizePlannerState(body.plannerState);
+
+    const basePlanner =
+      incomingPlanner && Object.keys(incomingPlanner.filledSlots || {}).length
+        ? incomingPlanner
+        : plannerFromPlan;
+
+    if (!hasMeaningfulUserInput(messages)) {
+      return NextResponse.json({
+        type: "question",
+        message: buildFallbackQuestion(lang, basePlanner),
+        done: false,
+        derived: {
+          planner: basePlanner,
+        },
+      });
+    }
+
+    const systemPrompt = buildPdpSystemPrompt({
+      lang,
+      planner: basePlanner,
+    });
 
     const conversation = messages
       .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
@@ -141,7 +289,7 @@ export async function POST(req: Request) {
 
     const response = await client.responses.create({
       model: "gpt-4.1",
-      temperature: 0.9,
+      temperature: 0.45,
       input: [
         {
           role: "system",
@@ -153,33 +301,31 @@ export async function POST(req: Request) {
 Current structured draft:
 ${JSON.stringify(draftPlan, null, 2)}
 
+Current planner state:
+${JSON.stringify(basePlanner, null, 2)}
+
 Conversation so far:
 ${conversation}
 
-Return only valid JSON.
+Rules:
+- Return only valid JSON
+- Ask at most one high-value next question
+- Prefer one sharp next question over broad summaries
+- Only mark slots as filled if the conversation clearly supports them at slide level
+- Do not invent plan content
+- Do not generate a finished plan unless the evidence is genuinely sufficient
+- A first usable draft needs a believable backbone, not a full plan
           `.trim(),
         },
       ],
     });
 
-    const text =
-      response.output_text?.trim() ||
-      `{"type":"question","message":"${
-        lang === "nl"
-          ? "Ik heb nog iets meer context nodig. Waar zie je dit ontwikkelpunt het duidelijkst terug in het spel?"
-          : "I need a bit more context. Where do you see this development point most clearly in the game?"
-      }","done":false,"slotPatch":{}}`;
+    const text = response.output_text?.trim();
 
-    let parsed: any;
-    try {
-      parsed = JSON.parse(text);
-    } catch {
+    if (!text) {
       return NextResponse.json({
         type: "question",
-        message:
-          lang === "nl"
-            ? "Ik hoor de richting, maar wil het nog iets scherper maken. In welk wedstrijdmoment zie je dit het duidelijkst terug?"
-            : "I hear the direction, but I want to sharpen it slightly. In which match moment do you see this most clearly?",
+        message: buildFallbackQuestion(lang, basePlanner),
         done: false,
         derived: {
           planner: basePlanner,
@@ -187,36 +333,55 @@ Return only valid JSON.
       });
     }
 
-    const mergedPlanner = mergePlannerState(basePlanner, parsed.slotPatch);
-
-    if (parsed.type === "plan") {
-      const mergedPlan = deepMergePlan(
-        draftPlan,
-        parsed.planPatch || {}
-      ) as DevelopmentPlanV1;
-
+    let parsed: any;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
       return NextResponse.json({
-        type: "plan",
-        message:
-          parsed.message ||
-          (lang === "nl"
-            ? "Ik heb een eerste versie van het plan opgebouwd."
-            : "I built a first version of the plan."),
-        plan: mergedPlan,
-        done: true,
+        type: "question",
+        message: buildFallbackQuestion(lang, basePlanner),
+        done: false,
         derived: {
-          planner: mergedPlanner,
+          planner: basePlanner,
         },
       });
     }
 
+    const patchedPlan = deepMergePlan(
+      draftPlan,
+      parsed.planPatch || {}
+    ) as Partial<DevelopmentPlanV1>;
+
+    const recomputedPlanner = buildPlannerState(patchedPlan);
+
+    if (parsed.type === "plan") {
+  return NextResponse.json({
+    type: "question",
+    message:
+      lang === "nl"
+        ? "De kern staat voldoende scherp om nu een eerste versie van het plan te maken."
+        : "The core is sharp enough to generate a first draft now.",
+    done: false,
+    derived: {
+      planner: {
+        ...recomputedPlanner,
+        intent: "draft_ready",
+      },
+    },
+  });
+}
+
     if (parsed.type === "draft_ready") {
       return NextResponse.json({
         type: "question",
-        message: parsed.message,
+        message:
+          parsed.message ||
+          (lang === "nl"
+            ? "De kern staat voldoende scherp voor een eerste versie. Je kunt nu een eerste plan maken of nog één laag verder aanscherpen."
+            : "The core is sharp enough for a first version. You can now build a first draft or sharpen it one layer further."),
         done: false,
         derived: {
-          planner: mergedPlanner,
+          planner: recomputedPlanner,
         },
       });
     }
@@ -224,13 +389,10 @@ Return only valid JSON.
     return NextResponse.json({
       type: "question",
       message:
-        parsed.message ||
-        (lang === "nl"
-          ? "Laten we het ontwikkelpunt nog iets scherper maken."
-          : "Let’s sharpen the development point a bit more."),
+        parsed.message || buildFallbackQuestion(lang, recomputedPlanner),
       done: false,
       derived: {
-        planner: mergedPlanner,
+        planner: recomputedPlanner,
       },
     });
   } catch (error: any) {

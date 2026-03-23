@@ -15,7 +15,7 @@ import {
   pageContext,
   pageDiagnosis,
   pageDevelopmentRoute,
-  pageSuccessDefinition,
+  pageSuccess,
   type Lang,
   type Slide3VideoSlot,
 } from "./pages";
@@ -301,8 +301,8 @@ export function renderPdpHtmlPro(
       headline,
       systemLine:
         lang === "nl"
-          ? "PERSOONLIJK ONTWIKKELPLAN"
-          : "PERSONAL DEVELOPMENT PLAN",
+          ? "PERFORMANCE DEVELOPMENT SYSTEM"
+          : "PERFORMANCE DEVELOPMENT SYSTEM",
     }),
 
     pageAgreementContract({
@@ -369,14 +369,14 @@ export function renderPdpHtmlPro(
       staffText,
     }),
 
-    pageSuccessDefinition({
+    pageSuccess({
       lang,
       accentHex,
       clubName,
       logoUrl,
-      inGameItems: successInGame,
-      behaviourItems: successBehaviour,
-      signalItems: successSignals,
+      inGame: successInGame,
+      behaviour: successBehaviour,
+      signals: successSignals,
     }),
   ];
 
