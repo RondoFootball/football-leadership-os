@@ -71,56 +71,84 @@ export default function Home() {
   ] as const;
 
   const headlineA =
-    lang === "nl" ? "Helderheid voor mensen" : "Clarity for the people";
+    lang === "nl" ? "Plannen die echt" : "Plans that actually";
   const headlineB =
-    lang === "nl"
-      ? "die beslissingen moeten dragen."
-      : "who carry the decisions.";
+    lang === "nl" ? "uitgevoerd worden." : "get executed.";
+
   const sub =
     lang === "nl"
-      ? "Een besluitplatform voor profclubs — en de mensen die richting geven."
-      : "A decision platform for professional football clubs — and the people who lead them.";
+      ? "Gebouwd voor clubs waar helderheid, eigenaarschap en ritme ook onder druk moeten blijven staan."
+      : "Built for clubs where clarity, ownership and rhythm have to hold under pressure.";
+
   const tracksTitle =
     lang === "nl" ? "Drie kernomgevingen." : "Three core environments.";
+
   const selectedClubsLabel =
     lang === "nl"
       ? "GESELECTEERDE CLUBS (PRIVATE BETA)"
       : "SELECTED CLUBS (PRIVATE BETA)";
+
   const openLabel = t.homeOpenLabel;
   const copyrightLabel = `© ${new Date().getFullYear()} Football Leadership`;
 
+  const primaryCta = lang === "nl" ? "Open Development" : "Open Development";
+  const secondaryCta = lang === "nl" ? "Bekijk platform" : "View platform";
+  const heroEyebrow =
+    lang === "nl"
+      ? "BESLUITPLATFORM VOOR PROFCLUBS"
+      : "DECISION PLATFORM FOR PROFESSIONAL CLUBS";
+
   return (
     <main className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
+      <div className="pointer-events-none fixed inset-0">
+        <div className="absolute inset-0 bg-[#050505]" />
+        <div className="absolute inset-0 bg-[radial-gradient(900px_600px_at_72%_18%,rgba(255,255,255,0.08),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(700px_500px_at_18%_30%,rgba(255,255,255,0.04),transparent_65%)]" />
+      </div>
+
       <div className="relative z-10 mx-auto max-w-7xl px-6">
-        <SiteHeader
-          lang={lang}
-          setLang={setLang}
-        />
+        <SiteHeader lang={lang} setLang={setLang} />
 
-        <section className="pt-6 pb-20">
-          <div className="max-w-4xl">
-            <h1 className="font-medium tracking-tight leading-[1.05] text-[34px] sm:text-[44px] md:text-[84px] break-words">
-              {headlineA}
-              <span className="block text-white/55 break-words">
-                {headlineB}
-              </span>
-            </h1>
+        <section className="pt-6 pb-24">
+          <div className="grid gap-12 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+            <div className="max-w-2xl">
+              <div className="text-[11px] tracking-[0.22em] text-white/38">
+                {heroEyebrow}
+              </div>
 
-            <p className="mt-6 text-[16px] sm:text-[18px] md:text-xl text-white/60 max-w-[42ch]">
-              {sub}
-            </p>
+              <h1 className="mt-6 font-medium tracking-tight leading-[0.98] text-[42px] sm:text-[56px] md:text-[76px] lg:text-[88px]">
+                {headlineA}
+                <span className="block text-white/52">{headlineB}</span>
+              </h1>
 
-            <div className="mt-10">
-              <Button
-                asChild
-                className="bg-white text-black hover:bg-white/90"
-              >
-                <Link href="/request-access">{t.requestAccess}</Link>
-              </Button>
+              <p className="mt-7 max-w-[34ch] text-[16px] leading-relaxed text-white/62 sm:text-[18px] md:text-[19px]">
+                {sub}
+              </p>
+
+              <div className="mt-10 flex flex-wrap items-center gap-3">
+                <Button
+                  asChild
+                  className="bg-white text-black hover:bg-white/90"
+                >
+                  <Link href="/development">{primaryCta}</Link>
+                </Button>
+
+                <Button
+                  asChild
+                  variant="secondary"
+                  className="border border-white/15 bg-transparent text-white hover:bg-white/10"
+                >
+                  <Link href="#platform">{secondaryCta}</Link>
+                </Button>
+              </div>
+            </div>
+
+            <div className="lg:pl-6">
+              <HeroPlanPreview lang={lang} />
             </div>
           </div>
 
-          <div className="mt-16">
+          <div id="platform" className="mt-24">
             <div className="text-xs tracking-[0.18em] text-white/45">
               {tracksTitle}
             </div>
@@ -150,7 +178,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div className="relative mt-5 text-lg font-medium">
+                  <div className="relative mt-5 text-lg font-medium text-white/92">
                     {x.title}
                   </div>
 
@@ -158,7 +186,7 @@ export default function Home() {
                     {x.desc}
                   </p>
 
-                  <div className="relative mt-8 text-sm text-white/55 group-hover:text-white transition">
+                  <div className="relative mt-8 text-sm text-white/55 transition group-hover:text-white">
                     {openLabel}
                   </div>
                 </Link>
@@ -211,5 +239,184 @@ export default function Home() {
         </section>
       </div>
     </main>
+  );
+}
+
+function HeroPlanPreview({ lang }: { lang: "en" | "de" | "es" | "fr" | "it" | "nl" }) {
+  const isNl = lang === "nl";
+
+  return (
+    <div className="relative">
+      <div className="absolute -inset-6 rounded-[36px] bg-white/[0.03] blur-3xl" />
+
+      <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-[#0E1116] shadow-[0_30px_120px_rgba(0,0,0,0.45)]">
+        <div className="border-b border-white/8 px-5 py-4 sm:px-6">
+          <div className="flex flex-wrap items-center gap-2 text-[11px] tracking-[0.18em] text-white/34">
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-white/38">
+              Vision
+            </span>
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-white/38">
+              Recruitment
+            </span>
+            <span className="rounded-full border border-white/14 bg-white/[0.08] px-2.5 py-1 text-white/82">
+              Development
+            </span>
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <div className="text-[11px] tracking-[0.18em] text-white/36">
+                {isNl ? "ONTWIKKELING — INDIVIDUEEL PLAN" : "DEVELOPMENT — INDIVIDUAL PLAN"}
+              </div>
+              <div className="mt-2 text-[24px] font-medium tracking-tight text-white/94 sm:text-[28px]">
+                {isNl ? "Middenvelder #8" : "Midfielder #8"}
+              </div>
+            </div>
+
+            <div className="text-right text-[12px] text-white/42">
+              <div>{isNl ? "Cyclus: 6 weken" : "Cycle: 6 weeks"}</div>
+              <div className="mt-1">{isNl ? "Eigenaar: Middenveldcoach" : "Owner: Midfield coach"}</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-0 md:grid-cols-[1.15fr_0.85fr]">
+          <div className="px-5 py-5 sm:px-6 sm:py-6">
+            <PlanBlock
+              label={isNl ? "Focusgebied" : "Focus area"}
+              value={
+                isNl
+                  ? "Vooruit spelen onder druk"
+                  : "Forward passing under pressure"
+              }
+            />
+
+            <PlanBlock
+              label={isNl ? "Gedragsdoel" : "Behaviour target"}
+              value={
+                isNl
+                  ? "Open aannemen en binnen twee balcontacten vooruit spelen wanneer de as open is."
+                  : "Receive on the half-turn and play forward within two touches when the central lane is open."
+              }
+            />
+
+            <PlanList
+              label={isNl ? "Interventies" : "Interventions"}
+              items={
+                isNl
+                  ? [
+                      "Voororiëntatie vóór aanname",
+                      "Positie kiezen tussen linies",
+                      "Rondo met richting en tijdsdruk",
+                    ]
+                  : [
+                      "Pre-receive scanning behaviour",
+                      "Positioning between lines",
+                      "Rondo with directional and time pressure",
+                    ]
+              }
+            />
+
+            <PlanBlock
+              label={isNl ? "Wedstrijdtransfer" : "Match transfer"}
+              value={
+                isNl
+                  ? "Na balwinst in het midden direct eerst vooruit kijken en de eerste pass door de as zoeken."
+                  : "After regain in the middle third, look forward first and search for the first pass through the central lane."
+              }
+            />
+          </div>
+
+          <div className="border-t border-white/8 px-5 py-5 md:border-l md:border-t-0 sm:px-6 sm:py-6">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+              <div className="text-[11px] tracking-[0.18em] text-white/40">
+                {isNl ? "Ritme & beoordeling" : "Rhythm & review"}
+              </div>
+
+              <div className="mt-4 space-y-4">
+                <MetaRow
+                  k={isNl ? "Wekelijks ritme" : "Weekly rhythm"}
+                  v={isNl ? "MD+1 review / MD-2 transfer" : "MD+1 review / MD-2 transfer"}
+                />
+                <MetaRow
+                  k={isNl ? "Bewijs" : "Evidence"}
+                  v={isNl ? "Video + training clips" : "Video + training clips"}
+                />
+                <MetaRow
+                  k={isNl ? "Evaluatie" : "Evaluation"}
+                  v={isNl ? "Speler + coach + staf" : "Player + coach + staff"}
+                />
+              </div>
+            </div>
+
+            <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+              <div className="text-[11px] tracking-[0.18em] text-white/40">
+                {isNl ? "Uitvoeringssignalen" : "Execution signals"}
+              </div>
+
+              <div className="mt-4 space-y-3">
+                <Signal
+                  title={isNl ? "Scannen vóór aanname" : "Scans before receive"}
+                  note={isNl ? "zichtbaar frequenter" : "visibly more frequent"}
+                />
+                <Signal
+                  title={isNl ? "Open lichaamsstand" : "Open body shape"}
+                  note={isNl ? "eerder voorbereid" : "prepared earlier"}
+                />
+                <Signal
+                  title={isNl ? "Eerste blik vooruit" : "First look forward"}
+                  note={isNl ? "consistenter na balwinst" : "more consistent after regain"}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PlanBlock({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="border-b border-white/8 py-4 first:pt-0 last:border-b-0">
+      <div className="text-[11px] tracking-[0.18em] text-white/38">{label}</div>
+      <div className="mt-2 text-[15px] leading-relaxed text-white/86 sm:text-[16px]">
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function PlanList({ label, items }: { label: string; items: string[] }) {
+  return (
+    <div className="border-b border-white/8 py-4">
+      <div className="text-[11px] tracking-[0.18em] text-white/38">{label}</div>
+      <div className="mt-3 space-y-2">
+        {items.map((item) => (
+          <div key={item} className="flex items-start gap-3 text-[15px] text-white/84">
+            <span className="mt-[9px] h-[1px] w-4 shrink-0 bg-white/22" />
+            <span className="leading-relaxed">{item}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MetaRow({ k, v }: { k: string; v: string }) {
+  return (
+    <div className="flex items-start justify-between gap-4 border-b border-white/8 pb-3 last:border-b-0 last:pb-0">
+      <div className="text-[12px] text-white/45">{k}</div>
+      <div className="max-w-[58%] text-right text-[12px] text-white/78">{v}</div>
+    </div>
+  );
+}
+
+function Signal({ title, note }: { title: string; note: string }) {
+  return (
+    <div className="rounded-xl border border-white/8 bg-black/20 px-3 py-3">
+      <div className="text-[13px] text-white/86">{title}</div>
+      <div className="mt-1 text-[12px] text-white/46">{note}</div>
+    </div>
   );
 }
