@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { DevelopmentPlanV1, Lang } from "../lib/engineSchema";
 
 type ChatMsg = { role: "user" | "assistant"; content: string };
@@ -28,34 +28,6 @@ type ApiPlan = {
   derived?: { planner?: ChatPlannerState };
 };
 
-function uiStrings(lang: Lang) {
-  return {
-    title: lang === "nl" ? "Gesprek" : "Conversation",
-    initialAssistant:
-      lang === "nl"
-        ? "Wat zie je concreet gebeuren bij deze speler?"
-        : "What do you concretely see happening with this player?",
-    thinking: lang === "nl" ? "Denkt…" : "Thinking…",
-    buildingPlan: lang === "nl" ? "Bouwt plan…" : "Building plan…",
-    generateFirstDraft:
-      lang === "nl" ? "Maak eerste versie" : "Generate first draft",
-    generated: lang === "nl" ? "Plan gegenereerd ✔" : "Plan generated ✔",
-    viewPlan: lang === "nl" ? "Bekijk plan" : "View plan",
-    downloadPdf: lang === "nl" ? "Download PDF" : "Download PDF",
-    inputPlaceholder:
-      lang === "nl"
-        ? "Beschrijf gedrag, moment en effect..."
-        : "Describe behaviour, moment and effect...",
-    send: lang === "nl" ? "Verstuur" : "Send",
-    generateError:
-      lang === "nl"
-        ? "Er ging iets mis bij het genereren van het plan."
-        : "Something went wrong while generating the plan.",
-    genericError:
-      lang === "nl" ? "Fout bij genereren." : "Error while generating.",
-  };
-}
-
 export function PdpChat({
   lang,
   draftPlan,
@@ -71,12 +43,14 @@ export function PdpChat({
   onViewPlan?: () => void;
   onDownloadPdf?: (version: "player" | "staff") => Promise<void>;
 }) {
-  const s = useMemo(() => uiStrings(lang), [lang]);
+  const isNl = lang === "nl";
 
   const [messages, setMessages] = useState<ChatMsg[]>([
     {
       role: "assistant",
-      content: s.initialAssistant,
+      content: isNl
+        ? "Wat zie je concreet gebeuren bij deze speler?"
+        : "What do you concretely see happening with this player?",
     },
   ]);
 
@@ -90,7 +64,7 @@ export function PdpChat({
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, busy, generating, planReady]);
+  }, [messages, busy, generating]);
 
   useEffect(() => {
     onPlannerStateChange?.(planner);
@@ -100,7 +74,9 @@ export function PdpChat({
     setMessages([
       {
         role: "assistant",
-        content: s.initialAssistant,
+        content: isNl
+          ? "Wat zie je concreet gebeuren bij deze speler?"
+          : "What do you concretely see happening with this player?",
       },
     ]);
     setInput("");
@@ -108,19 +84,14 @@ export function PdpChat({
     setGenerating(false);
     setPlanReady(false);
     setPlanner(null);
-    onPlannerStateChange?.(null);
-  }, [s.initialAssistant, onPlannerStateChange]);
+  }, [isNl]);
 
   async function send() {
-    const trimmed = input.trim();
-    if (!trimmed || busy || generating) return;
+    if (!input.trim() || busy) return;
 
-    const nextMessages: ChatMsg[] = [
-      ...messages,
-      { role: "user", content: trimmed },
-    ];
+    const next = [...messages, { role: "user" as const, content: input }];
 
-    setMessages(nextMessages);
+    setMessages(next);
     setInput("");
     setBusy(true);
 
@@ -131,7 +102,7 @@ export function PdpChat({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          messages: nextMessages,
+          messages: next,
           draftPlan,
           lang,
           plannerState: planner,
@@ -140,37 +111,31 @@ export function PdpChat({
 
       const data = (await res.json()) as ApiQuestion | ApiPlan;
 
-      setMessages((current) => [
-        ...current,
-        {
-          role: "assistant",
-          content: data.message,
-        },
-      ]);
+      console.log("💬 CHAT RESPONSE", data);
 
-      if (data?.derived?.planner) {
-        setPlanner(data.derived.planner);
-      }
+      setMessages((m) => [...m, { role: "assistant", content: data.message }]);
+
+      if (data?.derived?.planner) setPlanner(data.derived.planner);
 
       if (data.type === "plan") {
         if (!data.plan) {
-          console.error("PLAN MISSING IN CHAT RESPONSE", data);
+          console.error("❌ PLAN MISSING IN CHAT RESPONSE", data);
           return;
         }
+
+        console.log("✅ PLAN RECEIVED FROM CHAT", data.plan);
 
         onPlanGenerated(data.plan);
         setPlanReady(true);
       }
-    } catch (error) {
-      console.error("CHAT ERROR", error);
+    } catch (e) {
+      console.error("❌ CHAT ERROR", e);
     } finally {
       setBusy(false);
     }
   }
 
   async function generate() {
-    if (busy || generating) return;
-
     setGenerating(true);
 
     try {
@@ -188,31 +153,27 @@ export function PdpChat({
 
       const data = await res.json();
 
+      console.log("⚙️ GENERATE RESPONSE", data);
+
       if (!data || !data.plan) {
-        console.error("GENERATE FAILED — NO PLAN", data);
-        alert(s.generateError);
+        console.error("❌ GENERATE FAILED — NO PLAN", data);
+        alert(
+          isNl
+            ? "Er ging iets mis bij het genereren van het plan."
+            : "Something went wrong while generating the plan."
+        );
         return;
       }
+
+      console.log("✅ PLAN RECEIVED FROM GENERATE", data.plan);
 
       onPlanGenerated(data.plan);
       setPlanReady(true);
 
-      if (data?.derived?.planner) {
-        setPlanner(data.derived.planner);
-      }
-
-      if (typeof data?.message === "string" && data.message.trim()) {
-        setMessages((current) => [
-          ...current,
-          {
-            role: "assistant",
-            content: data.message.trim(),
-          },
-        ]);
-      }
-    } catch (error) {
-      console.error("GENERATE ERROR", error);
-      alert(s.genericError);
+      if (data?.derived?.planner) setPlanner(data.derived.planner);
+    } catch (e) {
+      console.error("❌ GENERATE ERROR", e);
+      alert(isNl ? "Fout bij genereren." : "Error while generating.");
     } finally {
       setGenerating(false);
     }
@@ -220,23 +181,31 @@ export function PdpChat({
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-      <div className="text-sm text-white/90">{s.title}</div>
+      <div className="text-sm text-white/90">
+        {isNl ? "Gesprek" : "Conversation"}
+      </div>
 
-      <div className="mt-4 max-h-[420px] space-y-3 overflow-auto pr-1">
-        {messages.map((message, index) => (
+      <div className="mt-4 max-h-[420px] space-y-3 overflow-auto">
+        {messages.map((m, i) => (
           <div
-            key={`${message.role}-${index}`}
+            key={i}
             className={`rounded-xl p-3 text-sm ${
-              message.role === "assistant" ? "bg-black/30" : "bg-white/5"
+              m.role === "assistant" ? "bg-black/30" : "bg-white/5"
             }`}
           >
-            {message.content}
+            {m.content}
           </div>
         ))}
 
         {(busy || generating) && (
           <div className="text-sm text-white/50">
-            {busy ? s.thinking : s.buildingPlan}
+            {busy
+              ? isNl
+                ? "Denkt…"
+                : "Thinking…"
+              : isNl
+                ? "Bouwt plan…"
+                : "Building plan…"}
           </div>
         )}
 
@@ -246,40 +215,38 @@ export function PdpChat({
       {!planReady && (
         <div className="mt-4 flex justify-end">
           <button
-            type="button"
             onClick={generate}
-            disabled={busy || generating}
-            className="rounded-lg bg-white px-4 py-2 text-sm text-black disabled:cursor-not-allowed disabled:bg-white/30 disabled:text-black/60"
+            className="rounded-lg bg-white px-4 py-2 text-sm text-black"
           >
-            {s.generateFirstDraft}
+            {isNl ? "Maak eerste versie" : "Create first draft"}
           </button>
         </div>
       )}
 
       {planReady && (
         <div className="mt-4 space-y-2">
-          <div className="text-sm text-green-400">{s.generated}</div>
+          <div className="text-sm text-green-400">
+            {isNl ? "Plan gegenereerd ✔" : "Plan generated ✔"}
+          </div>
 
           <div className="flex gap-2">
-            {onViewPlan ? (
+            {onViewPlan && (
               <button
-                type="button"
                 onClick={onViewPlan}
                 className="rounded-lg border border-white/20 px-3 py-2 text-sm"
               >
-                {s.viewPlan}
+                {isNl ? "Bekijk plan" : "View plan"}
               </button>
-            ) : null}
+            )}
 
-            {onDownloadPdf ? (
+            {onDownloadPdf && (
               <button
-                type="button"
                 onClick={() => onDownloadPdf("player")}
                 className="rounded-lg bg-white px-3 py-2 text-sm text-black"
               >
-                {s.downloadPdf}
+                {isNl ? "Download PDF" : "Download PDF"}
               </button>
-            ) : null}
+            )}
           </div>
         </div>
       )}
@@ -288,23 +255,15 @@ export function PdpChat({
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder={s.inputPlaceholder}
+          placeholder={isNl ? "Beschrijf gedrag..." : "Describe behaviour..."}
           className="flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm"
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              send();
-            }
-          }}
         />
 
         <button
-          type="button"
           onClick={send}
-          disabled={busy || generating || !input.trim()}
-          className="rounded-lg bg-white px-4 text-black disabled:cursor-not-allowed disabled:bg-white/30 disabled:text-black/60"
+          className="rounded-lg bg-white px-4 text-black"
         >
-          {s.send}
+          {isNl ? "Verstuur" : "Send"}
         </button>
       </div>
     </div>

@@ -1265,15 +1265,16 @@ export default function PlayerDevelopmentPlanBuilder() {
                       </Hint>
                     </div>
 
-                    <PdpChat
-                      draftPlan={plan}
-                      onPlanGenerated={onPlanGenerated}
-                      onPlannerStateChange={setChatPlannerState}
-                      onViewPlan={() => {
-                        console.log("Current builder plan:", generatedPlan || plan);
-                      }}
-                      onDownloadPdf={(version) => download(version, lang)}
-                    />
+                   <PdpChat
+  lang={lang}
+  draftPlan={plan}
+  onPlanGenerated={onPlanGenerated}
+  onPlannerStateChange={setChatPlannerState}
+  onViewPlan={() => {
+    console.log("Current builder plan:", generatedPlan || plan);
+  }}
+  onDownloadPdf={(version) => download(version, lang)}
+/>
                   </>
                 ) : (
                   <>
