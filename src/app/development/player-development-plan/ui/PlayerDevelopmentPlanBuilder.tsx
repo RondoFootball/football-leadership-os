@@ -7,6 +7,7 @@ import {
 } from "./lib/engineSchema";
 import { clubPresets, getClubPresetByName } from "./lib/clubPresets";
 import { PdpChat, type ChatPlannerState } from "./components/PdpChat";
+import { useLang } from "@/lib/useLang";
 
 type Lang = "nl" | "en";
 type Mode = "chat" | "manual";
@@ -383,11 +384,13 @@ function plannerFilled(planner: ChatPlannerState | null, key: string) {
 }
 
 export default function PlayerDevelopmentPlanBuilder() {
+  const { lang: siteLang, setLang: setSiteLang } = useLang("en");
+  const lang: Lang = siteLang === "nl" ? "nl" : "en";
+
   const [plan, setPlan] = useState<DevelopmentPlanV1>(createInitialPlan());
   const [generatedPlan, setGeneratedPlan] =
     useState<DevelopmentPlanV1 | null>(null);
 
-  const [lang, setLang] = useState<Lang>("nl");
   const [mode, setMode] = useState<Mode>("chat");
   const [chatPlannerState, setChatPlannerState] =
     useState<ChatPlannerState | null>(null);
@@ -416,6 +419,16 @@ export default function PlayerDevelopmentPlanBuilder() {
     plan.meta.team,
     plan.meta.blockLengthWeeks,
   ]);
+
+  useEffect(() => {
+    setPlan((prev) => ({
+      ...prev,
+      meta: {
+        ...prev.meta,
+        lang,
+      },
+    }));
+  }, [lang]);
 
   const primary = clampHex(plan.brand.primaryColor, "#111111");
   const secondary = clampHex(plan.brand.secondaryColor, "#FFFFFF");
@@ -572,13 +585,6 @@ export default function PlayerDevelopmentPlanBuilder() {
     const merged = mergeGeneratedPlanWithLockedBasics(plan, next);
     setPlan(merged);
     setGeneratedPlan(merged);
-
-    console.log("✅ GENERATED PLAN BINNEN");
-    console.log("slide2", merged.slide2);
-    console.log("context", merged.slideContext);
-    console.log("baseline", merged.slide3Baseline);
-    console.log("approach", merged.slide4DevelopmentRoute);
-    console.log("success", merged.slide6SuccessDefinition);
   }
 
   function applyClubPreset(clubName: string) {
@@ -700,9 +706,6 @@ export default function PlayerDevelopmentPlanBuilder() {
   async function download(version: "player" | "staff", exportLang: Lang) {
     const exportPlan = generatedPlan || plan;
 
-    console.log("📤 EXPORT PLAN");
-    console.log(exportPlan);
-
     const res = await fetch(`/api/pdp/pdf`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -742,7 +745,11 @@ export default function PlayerDevelopmentPlanBuilder() {
           <div className="text-[15px] text-white/80 mt-1">{t.subtitle}</div>
         </div>
 
-        <LangPill lang={lang} setLang={setLang} t={t} />
+        <LangPill
+          lang={lang}
+          setLang={(next) => setSiteLang(next)}
+          t={t}
+        />
       </header>
 
       <div className="flex-1 overflow-y-auto">
@@ -1264,6 +1271,7 @@ export default function PlayerDevelopmentPlanBuilder() {
                       </div>
 
                       <PdpChat
+                        lang={lang}
                         draftPlan={plan}
                         onPlanGenerated={onPlanGenerated}
                         onPlannerStateChange={setChatPlannerState}

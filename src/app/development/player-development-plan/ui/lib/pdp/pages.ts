@@ -27,6 +27,16 @@ function t(lang: Lang, nl: string, en: string) {
   return lang === "nl" ? nl : en;
 }
 
+function safeText(input: unknown) {
+  return String(input ?? "").trim();
+}
+
+function notEmpty(items: unknown[]) {
+  return items
+    .map((x) => safeText(x))
+    .filter(Boolean);
+}
+
 /** ---------------- SLIDE 2 ---------------- */
 export function pageAgreementContract(args: {
   lang: Lang;
@@ -57,7 +67,7 @@ export function pageAgreementContract(args: {
     matchSituation,
   } = args;
 
-  const wm = (logoUrl || "").trim();
+  const wm = safeText(logoUrl);
   const wmHtml = wm
     ? `<div class="pdpS2__wm" aria-hidden="true"><img src="${esc(
         wm
@@ -67,7 +77,7 @@ export function pageAgreementContract(args: {
   const normalizeItems = (input: string | string[] | undefined | null) => {
     if (Array.isArray(input)) {
       return input
-        .map((x) => String(x || "").trim())
+        .map((x) => safeText(x))
         .filter(Boolean)
         .slice(0, 2);
     }
@@ -80,8 +90,8 @@ export function pageAgreementContract(args: {
   };
 
   const matchMoments = normalizeItems(matchSituation);
-  const focusText = String(focusBehaviour || "").trim();
-  const targetText = String(targetBehaviour || "").trim();
+  const focusText = safeText(focusBehaviour);
+  const targetText = safeText(targetBehaviour);
   const evalTxt = (evalLabel || t(lang, "EVALUATIE", "EVALUATION")).toUpperCase();
   const periodTxt = t(lang, "FOCUSPERIODE", "FOCUS PERIOD");
 
@@ -698,19 +708,18 @@ export function pageContext(args: {
     principles,
   } = args;
 
-  const wm = (logoUrl || "").trim();
+  const wm = safeText(logoUrl);
   const wmHtml = wm
     ? `<div class="pdpS5__wm" aria-hidden="true">
          <img src="${esc(wm)}" alt="${esc(clubName)} watermark" />
        </div>`
     : ``;
 
-  const roleItems = (gameMoments || []).slice(0, 3);
-  const phaseItems = (zones || []).slice(0, 3);
-
-  const impactAll = (principles || []).slice(0, 6);
-  const impactWins = impactAll.slice(0, 3);
-  const impactLosses = impactAll.slice(3, 6);
+  const roleItems = notEmpty(gameMoments).slice(0, 3);
+  const phaseItems = notEmpty(zones).slice(0, 3);
+  const principleItems = notEmpty(principles).slice(0, 6);
+  const principleLeft = principleItems.slice(0, 3);
+  const principleRight = principleItems.slice(3, 6);
 
   const bulletList = (
     items: string[],
@@ -757,7 +766,7 @@ export function pageContext(args: {
   <div class="pdpS5__gridTop">
     <div class="pdpS5__card pdpS5__card--role">
       <div class="pdpS5__cardHead">
-        ${esc(t(lang, "WAT DE ROL VRAAGT", "WHAT THE ROLE REQUIRES"))}
+        ${esc(t(lang, "SPELMOMENTEN", "GAME MOMENTS"))}
       </div>
       ${bulletList(roleItems)}
     </div>
@@ -767,8 +776,8 @@ export function pageContext(args: {
         ${esc(
           t(
             lang,
-            "IN WELKE TEAMFASE DIT BESLISSEND WORDT",
-            "IN WHICH TEAM PHASE THIS BECOMES DECISIVE"
+            "ZONES / CONTEXT",
+            "ZONES / CONTEXT"
           )
         )}
       </div>
@@ -781,8 +790,8 @@ export function pageContext(args: {
       ${esc(
         t(
           lang,
-          "WAT HET TEAM WINT / VERLIEST",
-          "WHAT THE TEAM WINS / LOSES"
+          "PRINCIPES DIE HIER GELDEN",
+          "PRINCIPLES THAT MATTER HERE"
         )
       )}
     </div>
@@ -790,18 +799,18 @@ export function pageContext(args: {
     <div class="pdpS5__impactGrid">
       <div class="pdpS5__impactCol pdpS5__impactCol--win">
         <div class="pdpS5__impactLabel">
-          ${esc(t(lang, "ALS HET LUKT", "IF THIS LANDS"))}
+          ${esc(t(lang, "PRINCIPES 1–3", "PRINCIPLES 1–3"))}
         </div>
-        ${bulletList(impactWins, "impact")}
+        ${bulletList(principleLeft, "impact")}
       </div>
 
       <div class="pdpS5__impactDivider" aria-hidden="true"></div>
 
       <div class="pdpS5__impactCol pdpS5__impactCol--loss">
         <div class="pdpS5__impactLabel">
-          ${esc(t(lang, "ALS HET NIET LUKT", "IF THIS DOES NOT LAND"))}
+          ${esc(t(lang, "PRINCIPES 4–6", "PRINCIPLES 4–6"))}
         </div>
-        ${bulletList(impactLosses, "impact")}
+        ${bulletList(principleRight, "impact")}
       </div>
     </div>
   </div>
@@ -951,7 +960,6 @@ export function pageContext(args: {
       box-shadow:0 0 10px color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, transparent);
     }
 
-    /* Same start height as slide 3 */
     .pdpS5__gridTop{
       position:absolute;
       left:26mm;
@@ -964,7 +972,6 @@ export function pageContext(args: {
       gap:10px;
     }
 
-    /* Slightly smaller than before so top blocks can breathe more */
     .pdpS5__impactCard{
       position:absolute;
       left:26mm;
@@ -1183,41 +1190,24 @@ export function pageDiagnosis(args: {
     videoSlots,
   } = args;
 
-  const wm = (logoUrl || "").trim();
+  const wm = safeText(logoUrl);
   const wmHtml = wm
     ? `<div class="pdpS3__wm" aria-hidden="true">
          <img src="${esc(wm)}" alt="${esc(clubName)} watermark" />
        </div>`
     : ``;
 
-  const observations = (whatWeSeeItems || []).slice(0, 3);
-  const contexts = (momentItems || []).slice(0, 3);
-  const effects = (effectItems || []).slice(0, 3);
+  const observations = notEmpty(whatWeSeeItems).slice(0, 3);
+  const contexts = notEmpty(momentItems).slice(0, 3);
+  const effects = notEmpty(effectItems).slice(0, 3);
 
   const videos = [...(videoSlots || []).slice(0, 3)];
   while (videos.length < 3) videos.push({ status: "pending" });
 
-  const safeVideoText = (v?: string) => String(v || "").trim();
-
-  const bulletList = (items: string[], variant = "") =>
-    items.length
-      ? `<ul class="pdpS3__list">
-          ${items
-            .map(
-              (x) => `
-                <li class="pdpS3__li ${variant}">
-                  <span class="pdpS3__dot"></span>
-                  <span>${esc(x)}</span>
-                </li>`
-            )
-            .join("")}
-        </ul>`
-      : `<div class="pdpS3__empty"></div>`;
-
   const videoMetaLine = (slot: Slide3VideoSlot) => {
     const parts = [
-      safeVideoText(slot.match_or_session),
-      safeVideoText(slot.timestamp),
+      safeText(slot.match_or_session),
+      safeText(slot.timestamp),
     ].filter(Boolean);
 
     return parts.length ? parts.join(" • ") : "";
@@ -1276,6 +1266,21 @@ export function pageDiagnosis(args: {
     `;
   };
 
+  const bulletList = (items: string[], variant = "") =>
+    items.length
+      ? `<ul class="pdpS3__list">
+          ${items
+            .map(
+              (x) => `
+                <li class="pdpS3__li ${variant}">
+                  <span class="pdpS3__dot"></span>
+                  <span>${esc(x)}</span>
+                </li>`
+            )
+            .join("")}
+        </ul>`
+      : `<div class="pdpS3__empty"></div>`;
+
   return `
 <section class="page pdpS3" style="--accent:${esc(accentHex)};">
   ${wmHtml}
@@ -1302,7 +1307,7 @@ export function pageDiagnosis(args: {
 
     <div class="pdpS3__card pdpS3__card--behaviour">
       <div class="pdpS3__head">${esc(
-        t(lang, "WAT DOET HIJ NU", "CURRENT BEHAVIOUR")
+        t(lang, "WAT ZIEN WE NU", "WHAT WE SEE NOW")
       )}</div>
       <div class="pdpS3__behaviourBody">
         <div class="pdpS3__behaviourRail"></div>
@@ -1674,7 +1679,6 @@ export function pageDiagnosis(args: {
       min-height:10px;
     }
 
-    /* KEY FIX: fixed inner layout so thumbnail and text never fight */
     .pdpS3__videoCard{
       display:grid;
       grid-template-rows:45mm minmax(12mm, 1fr);
@@ -1760,46 +1764,41 @@ export function pageDiagnosis(args: {
     }
 
     .pdpS3__play{
-  width:11mm;
-  height:11mm;
-  border-radius:999px;
-  position:relative;
-  background:rgba(255,255,255,.16);
-  border:1px solid rgba(255,255,255,.32);
-  box-shadow:
-    0 8px 18px rgba(0,0,0,.30),
-    inset 0 0 0 1px rgba(255,255,255,.06);
-  opacity:1;
-}
-
-    .pdpS3__play::before{
-  content:"";
-  position:absolute;
-  left:4.1mm;
-  top:3.1mm;
-  border-left:3mm solid rgba(255,255,255,.96);
-  border-top:1.9mm solid transparent;
-  border-bottom:1.9mm solid transparent;
-}
-
-    .pdpS3__play--disabled{
-  background:rgba(255,255,255,.12);
-  border:1px solid rgba(255,255,255,.26);
-  box-shadow:
-    0 8px 18px rgba(0,0,0,.28),
-    inset 0 0 0 1px rgba(255,255,255,.04);
-  opacity:1;
-}
-
-.pdpS3__play--disabled::before{
-  border-left-color:rgba(255,255,255,.90);
-}
-
-    .pdpS3__play--disabled::before{
-      border-left-color:rgba(255,255,255,.88);
+      width:11mm;
+      height:11mm;
+      border-radius:999px;
+      position:relative;
+      background:rgba(255,255,255,.16);
+      border:1px solid rgba(255,255,255,.32);
+      box-shadow:
+        0 8px 18px rgba(0,0,0,.30),
+        inset 0 0 0 1px rgba(255,255,255,.06);
+      opacity:1;
     }
 
-    /* KEY FIX: dedicated text zone with breathing room for descenders */
+    .pdpS3__play::before{
+      content:"";
+      position:absolute;
+      left:4.1mm;
+      top:3.1mm;
+      border-left:3mm solid rgba(255,255,255,.96);
+      border-top:1.9mm solid transparent;
+      border-bottom:1.9mm solid transparent;
+    }
+
+    .pdpS3__play--disabled{
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.26);
+      box-shadow:
+        0 8px 18px rgba(0,0,0,.28),
+        inset 0 0 0 1px rgba(255,255,255,.04);
+      opacity:1;
+    }
+
+    .pdpS3__play--disabled::before{
+      border-left-color:rgba(255,255,255,.90);
+    }
+
     .pdpS3__videoMeta{
       min-height:0;
       display:flex;
@@ -1881,24 +1880,24 @@ export function pageDevelopmentRoute(args: {
     staffText,
   } = args;
 
-  const wm = (logoUrl || "").trim();
+  const wm = safeText(logoUrl);
   const wmHtml = wm
     ? `<div class="pdpS4__wm" aria-hidden="true"><img src="${esc(
         wm
       )}" alt="${esc(clubName)} watermark" /></div>`
     : ``;
 
-  const executionOwner = String(playerText || "").trim();
+  const executionOwner = safeText(playerText);
   const guidanceOwner = [coachText, analystText, staffText]
-    .map((x) => String(x || "").trim())
+    .map((x) => safeText(x))
     .filter(Boolean)
     .join(" / ");
 
-  const safeOwn = String(playerOwnText || "").trim();
-  const safeTraining = String(trainingText || "").trim();
-  const safeMatch = String(matchText || "").trim();
-  const safeVideo = String(videoText || "").trim();
-  const safeOffField = String(offFieldText || "").trim();
+  const safeOwn = safeText(playerOwnText);
+  const safeTraining = safeText(trainingText);
+  const safeMatch = safeText(matchText);
+  const safeVideo = safeText(videoText);
+  const safeOffField = safeText(offFieldText);
 
   return `
 <section class="page pdpS4" style="--accent:${esc(accentHex)};">
@@ -2411,16 +2410,19 @@ export function pageSuccess(args: {
     signals,
   } = args;
 
-  const wm = (logoUrl || "").trim();
+  const wm = safeText(logoUrl);
   const wmHtml = wm
-    ? `<div class="pdpS6__wm"><img src="${esc(wm)}" /></div>`
+    ? `<div class="pdpS6__wm"><img src="${esc(wm)}" alt="${esc(
+        clubName
+      )} watermark" /></div>`
     : ``;
 
-  const bullets = (items: string[], variant = "") =>
-    items.length
+  const bullets = (items: string[], variant = "") => {
+    const cleaned = notEmpty(items).slice(0, 4);
+
+    return cleaned.length
       ? `<ul class="pdpS6__list">
-          ${items
-            .slice(0, 4)
+          ${cleaned
             .map(
               (x) => `
               <li class="pdpS6__li ${variant}">
@@ -2431,6 +2433,7 @@ export function pageSuccess(args: {
             .join("")}
         </ul>`
       : `<div class="pdpS6__empty"></div>`;
+  };
 
   return `
 <section class="page pdpS6" style="--accent:${esc(accentHex)};">
@@ -2440,7 +2443,6 @@ export function pageSuccess(args: {
   <div class="pdpS6__grain"></div>
   <div class="pdpS6__axis"></div>
 
-  <!-- TOP -->
   <div class="pdpS6__top">
     <div class="pdpS6__kicker">${esc(t(lang, "SUCCES", "SUCCESS"))}</div>
     <div class="pdpS6__title">
@@ -2449,7 +2451,6 @@ export function pageSuccess(args: {
     <div class="pdpS6__titleMarker"></div>
   </div>
 
-  <!-- MID -->
   <div class="pdpS6__midRow">
     <div class="pdpS6__card">
       <div class="pdpS6__head">
@@ -2466,7 +2467,6 @@ export function pageSuccess(args: {
     </div>
   </div>
 
-  <!-- BOTTOM -->
   <div class="pdpS6__signalsCard">
     <div class="pdpS6__head">
       ${esc(
@@ -2638,6 +2638,7 @@ export function pageSuccess(args: {
       border-radius:50%;
       background:var(--accent);
       margin-top:6px;
+      flex:0 0 auto;
     }
 
     .pdpS6__li span:last-child{
@@ -2654,6 +2655,10 @@ export function pageSuccess(args: {
     .pdpS6__li--signal span:last-child{
       color:rgba(255,255,255,.9);
       font-weight:500;
+    }
+
+    .pdpS6__empty{
+      min-height:10px;
     }
   </style>
 </section>

@@ -1,5 +1,3 @@
-// src/app/api/pdp/chat/route.ts
-
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
@@ -65,6 +63,10 @@ function deepMergePlan(
   return merge(out, patch || {});
 }
 
+function localMessage(lang: Lang, nl: string, en: string) {
+  return lang === "nl" ? nl : en;
+}
+
 function hasMeaningfulUserInput(messages: ChatMsg[]) {
   const userMessages = (messages || [])
     .filter((m) => m.role === "user")
@@ -118,18 +120,6 @@ function buildFallbackQuestion(lang: Lang, planner: PlannerState) {
       return "Welk observeerbaar gedrag wil je straks wél terugzien in die situatie?";
     }
 
-    if (slot === "observations") {
-      return "Wat zien jullie nu concreet terug in gedrag, uitvoering of keuzes van de speler?";
-    }
-
-    if (slot === "whenObserved") {
-      return "Wanneer of onder welke trigger zie je dit vooral terug?";
-    }
-
-    if (slot === "effectOnGame") {
-      return "Wat is op dit moment het effect hiervan op het team of op het spel?";
-    }
-
     if (slot === "roleRequirements") {
       return "Wat vraagt de rol of positie van deze speler hier eigenlijk op dit punt?";
     }
@@ -140,6 +130,18 @@ function buildFallbackQuestion(lang: Lang, planner: PlannerState) {
 
     if (slot === "teamImpact") {
       return "Wat wint of verliest het team als dit gedrag wel of niet lukt?";
+    }
+
+    if (slot === "observations") {
+      return "Wat zien jullie nu concreet terug in gedrag, uitvoering of keuzes van de speler?";
+    }
+
+    if (slot === "whenObserved") {
+      return "Wanneer of onder welke trigger zie je dit vooral terug?";
+    }
+
+    if (slot === "effectOnGame") {
+      return "Wat is op dit moment het effect hiervan op het team of op het spel?";
     }
 
     if (slot === "playerExecution") {
@@ -185,18 +187,6 @@ function buildFallbackQuestion(lang: Lang, planner: PlannerState) {
     return "What observable behaviour do you want to see instead in that situation?";
   }
 
-  if (slot === "observations") {
-    return "What do you currently observe concretely in the player's behaviour, execution or choices?";
-  }
-
-  if (slot === "whenObserved") {
-    return "When or under which trigger do you mainly see this?";
-  }
-
-  if (slot === "effectOnGame") {
-    return "What is the current effect of this on the team or on the game?";
-  }
-
   if (slot === "roleRequirements") {
     return "What does the player's role or position actually require here?";
   }
@@ -207,6 +197,18 @@ function buildFallbackQuestion(lang: Lang, planner: PlannerState) {
 
   if (slot === "teamImpact") {
     return "What does the team gain or lose when this behaviour does or does not happen?";
+  }
+
+  if (slot === "observations") {
+    return "What do you currently observe concretely in the player's behaviour, execution or choices?";
+  }
+
+  if (slot === "whenObserved") {
+    return "When or under which trigger do you mainly see this?";
+  }
+
+  if (slot === "effectOnGame") {
+    return "What is the current effect of this on the team or on the game?";
   }
 
   if (slot === "playerExecution") {
@@ -246,7 +248,11 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           type: "error",
-          message: "OPENAI_API_KEY ontbreekt in je lokale environment.",
+          message: localMessage(
+            "nl",
+            "OPENAI_API_KEY ontbreekt in je lokale environment.",
+            "OPENAI_API_KEY is missing in your local environment."
+          ),
           done: false,
         },
         { status: 500 }
@@ -355,33 +361,42 @@ Rules:
     const recomputedPlanner = buildPlannerState(patchedPlan);
 
     if (parsed.type === "plan") {
-  return NextResponse.json({
-    type: "question",
-    message:
-      lang === "nl"
-        ? "De kern staat voldoende scherp om nu een eerste versie van het plan te maken."
-        : "The core is sharp enough to generate a first draft now.",
-    done: false,
-    derived: {
-      planner: {
-        ...recomputedPlanner,
-        intent: "draft_ready",
-      },
-    },
-  });
-}
+      return NextResponse.json({
+        type: "question",
+        message: localMessage(
+          lang,
+          "De kern staat voldoende scherp om nu een eerste versie van het plan te maken.",
+          "The core is sharp enough to generate a first draft now."
+        ),
+        done: false,
+        derived: {
+          planner: {
+            ...recomputedPlanner,
+            intent: "draft_ready",
+          },
+        },
+      });
+    }
 
     if (parsed.type === "draft_ready") {
       return NextResponse.json({
         type: "question",
         message:
           parsed.message ||
-          (lang === "nl"
-            ? "De kern staat voldoende scherp voor een eerste versie. Je kunt nu een eerste plan maken of nog één laag verder aanscherpen."
-            : "The core is sharp enough for a first version. You can now build a first draft or sharpen it one layer further."),
+          localMessage(
+            lang,
+            "De kern staat voldoende scherp voor een eerste versie. Je kunt nu een eerste plan maken of nog één laag verder aanscherpen.",
+            "The core is sharp enough for a first version. You can now build a first draft or sharpen it one layer further."
+          ),
         done: false,
         derived: {
-          planner: recomputedPlanner,
+          planner: {
+            ...recomputedPlanner,
+            intent:
+              recomputedPlanner.intent === "strong_draft_ready"
+                ? "strong_draft_ready"
+                : "draft_ready",
+          },
         },
       });
     }
@@ -403,7 +418,11 @@ Rules:
         type: "error",
         message:
           error?.message ||
-          "Er ging iets mis tijdens het verwerken van het gesprek.",
+          localMessage(
+            "nl",
+            "Er ging iets mis tijdens het verwerken van het gesprek.",
+            "Something went wrong while processing the conversation."
+          ),
         done: false,
       },
       { status: 500 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { DevelopmentPlanV1, Lang } from "../lib/engineSchema";
 
 type ChatMsg = { role: "user" | "assistant"; content: string };
@@ -28,27 +28,55 @@ type ApiPlan = {
   derived?: { planner?: ChatPlannerState };
 };
 
+function uiStrings(lang: Lang) {
+  return {
+    title: lang === "nl" ? "Gesprek" : "Conversation",
+    initialAssistant:
+      lang === "nl"
+        ? "Wat zie je concreet gebeuren bij deze speler?"
+        : "What do you concretely see happening with this player?",
+    thinking: lang === "nl" ? "Denkt…" : "Thinking…",
+    buildingPlan: lang === "nl" ? "Bouwt plan…" : "Building plan…",
+    generateFirstDraft:
+      lang === "nl" ? "Maak eerste versie" : "Generate first draft",
+    generated: lang === "nl" ? "Plan gegenereerd ✔" : "Plan generated ✔",
+    viewPlan: lang === "nl" ? "Bekijk plan" : "View plan",
+    downloadPdf: lang === "nl" ? "Download PDF" : "Download PDF",
+    inputPlaceholder:
+      lang === "nl"
+        ? "Beschrijf gedrag, moment en effect..."
+        : "Describe behaviour, moment and effect...",
+    send: lang === "nl" ? "Verstuur" : "Send",
+    generateError:
+      lang === "nl"
+        ? "Er ging iets mis bij het genereren van het plan."
+        : "Something went wrong while generating the plan.",
+    genericError:
+      lang === "nl" ? "Fout bij genereren." : "Error while generating.",
+  };
+}
+
 export function PdpChat({
+  lang,
   draftPlan,
   onPlanGenerated,
   onPlannerStateChange,
   onViewPlan,
   onDownloadPdf,
 }: {
+  lang: Lang;
   draftPlan: Partial<DevelopmentPlanV1>;
   onPlanGenerated: (plan: DevelopmentPlanV1) => void;
   onPlannerStateChange?: (planner: ChatPlannerState | null) => void;
-
-  // ✅ TERUGGEZET
   onViewPlan?: () => void;
   onDownloadPdf?: (version: "player" | "staff") => Promise<void>;
 }) {
-  const [lang] = useState<Lang>("nl");
+  const s = useMemo(() => uiStrings(lang), [lang]);
 
   const [messages, setMessages] = useState<ChatMsg[]>([
     {
       role: "assistant",
-      content: "Wat zie je concreet gebeuren bij deze speler?",
+      content: s.initialAssistant,
     },
   ]);
 
@@ -62,20 +90,37 @@ export function PdpChat({
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, busy, generating]);
+  }, [messages, busy, generating, planReady]);
 
   useEffect(() => {
     onPlannerStateChange?.(planner);
   }, [planner, onPlannerStateChange]);
 
-  /** ---------------- SEND ---------------- */
+  useEffect(() => {
+    setMessages([
+      {
+        role: "assistant",
+        content: s.initialAssistant,
+      },
+    ]);
+    setInput("");
+    setBusy(false);
+    setGenerating(false);
+    setPlanReady(false);
+    setPlanner(null);
+    onPlannerStateChange?.(null);
+  }, [s.initialAssistant, onPlannerStateChange]);
 
   async function send() {
-    if (!input.trim() || busy) return;
+    const trimmed = input.trim();
+    if (!trimmed || busy || generating) return;
 
-    const next = [...messages, { role: "user" as const, content: input }];
+    const nextMessages: ChatMsg[] = [
+      ...messages,
+      { role: "user", content: trimmed },
+    ];
 
-    setMessages(next);
+    setMessages(nextMessages);
     setInput("");
     setBusy(true);
 
@@ -86,7 +131,7 @@ export function PdpChat({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          messages: next,
+          messages: nextMessages,
           draftPlan,
           lang,
           plannerState: planner,
@@ -95,36 +140,37 @@ export function PdpChat({
 
       const data = (await res.json()) as ApiQuestion | ApiPlan;
 
-      console.log("💬 CHAT RESPONSE", data);
-
-      setMessages((m) => [
-        ...m,
-        { role: "assistant", content: data.message },
+      setMessages((current) => [
+        ...current,
+        {
+          role: "assistant",
+          content: data.message,
+        },
       ]);
 
-      if (data?.derived?.planner) setPlanner(data.derived.planner);
+      if (data?.derived?.planner) {
+        setPlanner(data.derived.planner);
+      }
 
       if (data.type === "plan") {
         if (!data.plan) {
-          console.error("❌ PLAN MISSING IN CHAT RESPONSE", data);
+          console.error("PLAN MISSING IN CHAT RESPONSE", data);
           return;
         }
-
-        console.log("✅ PLAN RECEIVED FROM CHAT", data.plan);
 
         onPlanGenerated(data.plan);
         setPlanReady(true);
       }
-    } catch (e) {
-      console.error("❌ CHAT ERROR", e);
+    } catch (error) {
+      console.error("CHAT ERROR", error);
     } finally {
       setBusy(false);
     }
   }
 
-  /** ---------------- GENERATE ---------------- */
-
   async function generate() {
+    if (busy || generating) return;
+
     setGenerating(true);
 
     try {
@@ -142,110 +188,123 @@ export function PdpChat({
 
       const data = await res.json();
 
-      console.log("⚙️ GENERATE RESPONSE", data);
-
       if (!data || !data.plan) {
-        console.error("❌ GENERATE FAILED — NO PLAN", data);
-        alert("Er ging iets mis bij het genereren van het plan.");
+        console.error("GENERATE FAILED — NO PLAN", data);
+        alert(s.generateError);
         return;
       }
-
-      console.log("✅ PLAN RECEIVED FROM GENERATE", data.plan);
 
       onPlanGenerated(data.plan);
       setPlanReady(true);
 
-      if (data?.derived?.planner) setPlanner(data.derived.planner);
-    } catch (e) {
-      console.error("❌ GENERATE ERROR", e);
-      alert("Fout bij genereren.");
+      if (data?.derived?.planner) {
+        setPlanner(data.derived.planner);
+      }
+
+      if (typeof data?.message === "string" && data.message.trim()) {
+        setMessages((current) => [
+          ...current,
+          {
+            role: "assistant",
+            content: data.message.trim(),
+          },
+        ]);
+      }
+    } catch (error) {
+      console.error("GENERATE ERROR", error);
+      alert(s.genericError);
     } finally {
       setGenerating(false);
     }
   }
 
-  /** ---------------- UI ---------------- */
-
   return (
     <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-      <div className="text-sm text-white/90">Gesprek</div>
+      <div className="text-sm text-white/90">{s.title}</div>
 
-      <div className="mt-4 space-y-3 max-h-[420px] overflow-auto">
-        {messages.map((m, i) => (
+      <div className="mt-4 max-h-[420px] space-y-3 overflow-auto pr-1">
+        {messages.map((message, index) => (
           <div
-            key={i}
-            className={`p-3 rounded-xl text-sm ${
-              m.role === "assistant" ? "bg-black/30" : "bg-white/5"
+            key={`${message.role}-${index}`}
+            className={`rounded-xl p-3 text-sm ${
+              message.role === "assistant" ? "bg-black/30" : "bg-white/5"
             }`}
           >
-            {m.content}
+            {message.content}
           </div>
         ))}
 
         {(busy || generating) && (
-          <div className="text-white/50 text-sm">
-            {busy ? "Denkt…" : "Bouwt plan…"}
+          <div className="text-sm text-white/50">
+            {busy ? s.thinking : s.buildingPlan}
           </div>
         )}
 
         <div ref={endRef} />
       </div>
 
-      {/* GENERATE */}
       {!planReady && (
         <div className="mt-4 flex justify-end">
           <button
+            type="button"
             onClick={generate}
-            className="bg-white text-black px-4 py-2 rounded-lg text-sm"
+            disabled={busy || generating}
+            className="rounded-lg bg-white px-4 py-2 text-sm text-black disabled:cursor-not-allowed disabled:bg-white/30 disabled:text-black/60"
           >
-            Maak eerste versie
+            {s.generateFirstDraft}
           </button>
         </div>
       )}
 
-      {/* READY STATE */}
       {planReady && (
         <div className="mt-4 space-y-2">
-          <div className="text-sm text-green-400">
-            Plan gegenereerd ✔
-          </div>
+          <div className="text-sm text-green-400">{s.generated}</div>
 
           <div className="flex gap-2">
-            {onViewPlan && (
+            {onViewPlan ? (
               <button
+                type="button"
                 onClick={onViewPlan}
-                className="border border-white/20 px-3 py-2 rounded-lg text-sm"
+                className="rounded-lg border border-white/20 px-3 py-2 text-sm"
               >
-                Bekijk plan
+                {s.viewPlan}
               </button>
-            )}
+            ) : null}
 
-            {onDownloadPdf && (
+            {onDownloadPdf ? (
               <button
+                type="button"
                 onClick={() => onDownloadPdf("player")}
-                className="bg-white text-black px-3 py-2 rounded-lg text-sm"
+                className="rounded-lg bg-white px-3 py-2 text-sm text-black"
               >
-                Download PDF
+                {s.downloadPdf}
               </button>
-            )}
+            ) : null}
           </div>
         </div>
       )}
 
-      {/* INPUT */}
       <div className="mt-4 flex gap-2">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Beschrijf gedrag..."
-          className="flex-1 bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm"
+          placeholder={s.inputPlaceholder}
+          className="flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              send();
+            }
+          }}
         />
 
         <button
+          type="button"
           onClick={send}
-          className="bg-white text-black px-4 rounded-lg"
+          disabled={busy || generating || !input.trim()}
+          className="rounded-lg bg-white px-4 text-black disabled:cursor-not-allowed disabled:bg-white/30 disabled:text-black/60"
         >
-          Verstuur
+          {s.send}
         </button>
       </div>
     </div>

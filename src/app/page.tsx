@@ -1,111 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { LogoMarquee } from "@/components/LogoMarquee";
-
-type Lang = "en" | "de" | "es" | "fr" | "it" | "nl";
-
-const COPY_EN = {
-  brand: "FOOTBALL LEADERSHIP",
-  requestAccess: "Request access",
-  headlineA: "Clarity for the people",
-  headlineB: "who carry the decisions.",
-  sub: "A decision platform for professional football clubs — and the people who lead them.",
-  usesLabel: "Use it for:",
-  uses: [
-    "Club vision",
-    "Sporting strategy",
-    "Recruitment plans",
-    "Squad planning",
-    "Assessments",
-    "Development plans",
-    "Performance structure",
-    "Governance reviews",
-  ],
-  footer: "A product company. Built to become the standard.",
-  tracksTitle: "Three core environments.",
-  tracks: [
-    {
-      href: "/vision",
-      n: "01",
-      title: "Vision",
-      desc: "Turn club identity, performance direction and governance into one coherent line.",
-      meta: "VISION SYSTEM",
-    },
-    {
-      href: "/recruitment",
-      n: "02",
-      title: "Recruitment",
-      desc: "Build role-based recruitment logic, priorities and window decision structure.",
-      meta: "RECRUITMENT SYSTEM",
-    },
-    {
-      href: "/development",
-      n: "03",
-      title: "Development",
-      desc: "Upgrade observations and assessments into role-based development plans and tools.",
-      meta: "DEVELOPMENT SYSTEM",
-    },
-  ],
-};
-
-const COPY_NL = {
-  brand: "FOOTBALL LEADERSHIP",
-  requestAccess: "Toegang aanvragen",
-  headlineA: "Helderheid voor mensen",
-  headlineB: "die beslissingen moeten dragen.",
-  sub: "Een besluitplatform voor profclubs — en de mensen die richting geven.",
-  usesLabel: "Voorbeelden:",
-  uses: [
-    "Clubvisie",
-    "Sportieve strategie",
-    "Recruitmentplannen",
-    "Selectieplanning",
-    "Assessments",
-    "Ontwikkelplannen",
-    "Prestatie-structuur",
-    "Governance-evaluaties",
-  ],
-  footer: "Productbedrijf. Gebouwd om de standaard te worden.",
-  tracksTitle: "Drie kernomgevingen.",
-  tracks: [
-    {
-      href: "/vision",
-      n: "01",
-      title: "Vision",
-      desc: "Vertaal clubidentiteit, prestatierichting en governance naar één samenhangende lijn.",
-      meta: "VISION SYSTEM",
-    },
-    {
-      href: "/recruitment",
-      n: "02",
-      title: "Recruitment",
-      desc: "Bouw rolgerichte recruitmentlogica, prioriteiten en besluitstructuur voor windows.",
-      meta: "RECRUITMENT SYSTEM",
-    },
-    {
-      href: "/development",
-      n: "03",
-      title: "Development",
-      desc: "Zet observaties en beoordelingen om in rolgebonden ontwikkelplannen en tools.",
-      meta: "DEVELOPMENT SYSTEM",
-    },
-  ],
-};
-
-const COPY: Record<Lang, typeof COPY_EN> = {
-  en: COPY_EN,
-  nl: COPY_NL,
-  de: COPY_EN,
-  es: COPY_EN,
-  fr: COPY_EN,
-  it: COPY_EN,
-};
+import { SiteHeader } from "@/components/SiteHeader";
+import { COPY } from "@/lib/copy";
+import { useLang } from "@/lib/useLang";
 
 export default function Home() {
-  const [lang, setLang] = useState<Lang>("en");
+  const { lang, setLang } = useLang("en");
   const t = useMemo(() => COPY[lang], [lang]);
 
   const logos = [
@@ -142,59 +46,89 @@ export default function Home() {
     { src: "/logos/club31.png", alt: "Club 31" },
   ];
 
+  const tracks = [
+    {
+      href: "/vision",
+      n: "01",
+      title: t.tracks[0].title,
+      desc: t.tracks[0].desc,
+      meta: "VISION SYSTEM",
+    },
+    {
+      href: "/recruitment",
+      n: "02",
+      title: t.tracks[1].title,
+      desc: t.tracks[1].desc,
+      meta: "RECRUITMENT SYSTEM",
+    },
+    {
+      href: "/development",
+      n: "03",
+      title: t.tracks[2].title,
+      desc: t.tracks[2].desc,
+      meta: "DEVELOPMENT SYSTEM",
+    },
+  ] as const;
+
+  const headlineA =
+    lang === "nl" ? "Helderheid voor mensen" : "Clarity for the people";
+  const headlineB =
+    lang === "nl"
+      ? "die beslissingen moeten dragen."
+      : "who carry the decisions.";
+  const sub =
+    lang === "nl"
+      ? "Een besluitplatform voor profclubs — en de mensen die richting geven."
+      : "A decision platform for professional football clubs — and the people who lead them.";
+  const tracksTitle =
+    lang === "nl" ? "Drie kernomgevingen." : "Three core environments.";
+  const selectedClubsLabel =
+    lang === "nl"
+      ? "GESELECTEERDE CLUBS (PRIVATE BETA)"
+      : "SELECTED CLUBS (PRIVATE BETA)";
+  const openLabel = t.homeOpenLabel;
+  const copyrightLabel = `© ${new Date().getFullYear()} Football Leadership`;
+
   return (
     <main className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
       <div className="relative z-10 mx-auto max-w-7xl px-6">
-        <header className="flex items-center justify-between py-10">
-          <div className="text-xs tracking-[0.22em] text-white/70">
-            {t.brand}
-          </div>
-
-          <div className="flex items-center gap-4">
-            <select
-              value={lang}
-              onChange={(e) => setLang(e.target.value as Lang)}
-              className="h-10 rounded-md border border-white/15 bg-transparent px-3 text-sm text-white/80 outline-none hover:bg-white/10"
-            >
-              <option className="bg-black" value="en">EN</option>
-              <option className="bg-black" value="de">DE</option>
-              <option className="bg-black" value="es">ES</option>
-              <option className="bg-black" value="fr">FR</option>
-              <option className="bg-black" value="it">IT</option>
-              <option className="bg-black" value="nl">NL</option>
-            </select>
-
-            <Button
-              asChild
-              variant="secondary"
-              className="bg-transparent text-white hover:bg-white/10 border border-white/15"
-            >
-              <Link href="/request-access">{t.requestAccess}</Link>
-            </Button>
-          </div>
-        </header>
+        <SiteHeader
+          lang={lang}
+          setLang={setLang}
+          requestAccessLabel={t.requestAccess}
+          brandLabel={t.brand}
+        />
 
         <section className="pt-6 pb-20">
           <div className="max-w-4xl">
             <h1 className="font-medium tracking-tight leading-[1.05] text-[34px] sm:text-[44px] md:text-[84px] break-words">
-              {t.headlineA}
+              {headlineA}
               <span className="block text-white/55 break-words">
-                {t.headlineB}
+                {headlineB}
               </span>
             </h1>
 
             <p className="mt-6 text-[16px] sm:text-[18px] md:text-xl text-white/60 max-w-[42ch]">
-              {t.sub}
+              {sub}
             </p>
+
+            <div className="mt-10">
+              <Button
+                asChild
+                className="bg-white text-black hover:bg-white/90"
+              >
+                <Link href="/request-access">{t.requestAccess}</Link>
+              </Button>
+            </div>
           </div>
 
           <div className="mt-16">
             <div className="text-xs tracking-[0.18em] text-white/45">
-              {t.tracksTitle}
+              {tracksTitle}
             </div>
 
             <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {t.tracks.map((x) => (
+              {tracks.map((x) => (
                 <Link
                   key={x.href}
                   href={x.href}
@@ -227,7 +161,7 @@ export default function Home() {
                   </p>
 
                   <div className="relative mt-8 text-sm text-white/55 group-hover:text-white transition">
-                    Open
+                    {openLabel}
                   </div>
                 </Link>
               ))}
@@ -236,10 +170,10 @@ export default function Home() {
 
           <div className="mt-16">
             <div className="text-xs tracking-[0.18em] text-white/45">
-              {t.usesLabel}
+              {t.whatYouGet}
             </div>
             <div className="mt-5 flex flex-wrap gap-x-8 gap-y-3 text-sm text-white/60">
-              {t.uses.map((u) => (
+              {t.whatYouGetBullets.map((u) => (
                 <span key={u}>{u}</span>
               ))}
             </div>
@@ -247,7 +181,7 @@ export default function Home() {
 
           <div className="mt-16 mb-2">
             <div className="mb-4 text-xs tracking-[0.22em] text-white/35">
-              SELECTED CLUBS (PRIVATE BETA)
+              {selectedClubsLabel}
             </div>
 
             <div className="hidden sm:block">
@@ -271,10 +205,10 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-10 text-xs text-white/35">{t.footer}</div>
+          <div className="mt-10 text-xs text-white/35">{t.footerLine}</div>
 
           <div className="mt-14 pb-10 text-xs text-white/30">
-            © {new Date().getFullYear()} Football Leadership
+            {copyrightLabel}
           </div>
         </section>
       </div>

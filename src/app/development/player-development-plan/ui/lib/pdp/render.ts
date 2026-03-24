@@ -76,11 +76,19 @@ function pad2(n: number) {
   return String(n).padStart(2, "0");
 }
 
-function formatDateNL(d: Date) {
-  const dd = pad2(d.getDate());
-  const mm = pad2(d.getMonth() + 1);
-  const yyyy = d.getFullYear();
-  return `${dd}-${mm}-${yyyy}`;
+function formatDateByLang(d: Date, lang: Lang) {
+  if (lang === "nl") {
+    const dd = pad2(d.getDate());
+    const mm = pad2(d.getMonth() + 1);
+    const yyyy = d.getFullYear();
+    return `${dd}-${mm}-${yyyy}`;
+  }
+
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(d);
 }
 
 function normalizeVideoSlots(
@@ -231,8 +239,8 @@ export function renderPdpHtmlPro(
   const startDate = parseDateLoose(rawStart) || new Date();
   const endDate = parseDateLoose(rawEnd) || addDays(startDate, safeWeeks * 7);
 
-  const startDateLabel = formatDateNL(startDate);
-  const endDateLabel = formatDateNL(endDate);
+  const startDateLabel = formatDateByLang(startDate, lang);
+  const endDateLabel = formatDateByLang(endDate, lang);
 
   /**
    * Slide 2
@@ -293,17 +301,15 @@ export function renderPdpHtmlPro(
 
   const pages = [
     pageCoverLocked({
-      clubName,
-      logoUrl,
-      accentHex,
-      playerName,
-      headshotUrl,
-      headline,
-      systemLine:
-        lang === "nl"
-          ? "PERFORMANCE DEVELOPMENT SYSTEM"
-          : "PERFORMANCE DEVELOPMENT SYSTEM",
-    }),
+  lang,
+  clubName,
+  logoUrl,
+  accentHex,
+  playerName,
+  headshotUrl,
+  headline,
+  systemLine: "PERFORMANCE DEVELOPMENT SYSTEM",
+}),
 
     pageAgreementContract({
       lang,
@@ -483,7 +489,6 @@ export function renderPdpHtmlPro(
       font-weight: 600;
     }
 
-    /* Print stability helpers */
     .avoid-break {
       break-inside: avoid;
       page-break-inside: avoid;

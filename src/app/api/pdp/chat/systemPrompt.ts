@@ -1,5 +1,3 @@
-// src/app/api/pdp/chat/systemPrompt.ts
-
 import type { Lang } from "@/app/development/player-development-plan/ui/lib/engineSchema";
 import type { PlannerState } from "./chatPlanner";
 
@@ -11,7 +9,7 @@ export function buildPdpSystemPrompt(args: {
 
   const languageInstruction =
     lang === "nl"
-      ? "Antwoord volledig in het Nederlands."
+      ? "Respond fully in Dutch."
       : "Respond fully in English.";
 
   return `
@@ -244,7 +242,7 @@ Draft-ready response:
   }
 }
 
-Do NOT generate the final plan inside this chat step.
+Do not generate the final plan inside this chat step.
 Your task in this route is only:
 - ask the next best question
 - or indicate that enough exists for a first draft
@@ -252,11 +250,6 @@ Your task in this route is only:
 So in this route, return only:
 - "question"
 - or "draft_ready"
-
-IMPORTANT RESTRICTION ON PLAN RESPONSES
-- Use "plan" only if the conversation already contains genuinely sufficient evidence for a meaningful partial plan patch
-- Do not use "plan" merely because the user has answered several questions
-- If in doubt, return "question" or "draft_ready" instead
 
 PLANNER STATE
 ${JSON.stringify(planner, null, 2)}

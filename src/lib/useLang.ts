@@ -5,22 +5,35 @@ import type { Lang } from "@/lib/copy";
 
 const KEY = "ftbll_lang";
 
+function isValidLang(value: string | null): value is Lang {
+  return (
+    value === "en" ||
+    value === "nl" ||
+    value === "de" ||
+    value === "es" ||
+    value === "fr" ||
+    value === "it"
+  );
+}
+
 export function useLang(defaultLang: Lang = "en") {
   const [lang, setLangState] = useState<Lang>(defaultLang);
   const [ready, setReady] = useState(false);
 
-  // Load saved language once on first render
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(KEY) as Lang | null;
-      if (saved) setLangState(saved);
+      const saved = localStorage.getItem(KEY);
+      if (isValidLang(saved)) {
+        setLangState(saved);
+      }
     } catch {}
+
     setReady(true);
   }, []);
 
-  // Persist language
   function setLang(next: Lang) {
     setLangState(next);
+
     try {
       localStorage.setItem(KEY, next);
     } catch {}

@@ -1,5 +1,3 @@
-// src/app/api/pdp/generate/route.ts
-
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
@@ -55,6 +53,10 @@ function deepMergePlan(
   return merge(out, patch || {});
 }
 
+function localMessage(lang: Lang, nl: string, en: string) {
+  return lang === "nl" ? nl : en;
+}
+
 function hasMeaningfulUserInput(messages: ChatMsg[]) {
   const userMessages = (messages || [])
     .filter((m) => m.role === "user")
@@ -71,10 +73,10 @@ function buildGeneratePrompt(lang: Lang) {
   return `
 You generate a high-quality football Player Development Plan patch.
 
-IMPORTANT:
+IMPORTANT
 The conversation may be messy, informal, repetitive or incomplete.
-Your task is NOT to copy the user literally.
-Your task is to transform the user's meaning into a sharper, shorter, more usable development plan.
+Your task is not to copy the user literally.
+Your task is to turn the user's meaning into sharper, shorter, more usable development-plan language.
 
 You must improve the wording while staying faithful to the conversation.
 
@@ -100,8 +102,7 @@ The output should feel:
 - more methodically useful
 - more like a strong staff-written development plan
 - less like raw user input
-- less like ChatGPT language
-- less generic
+- less like generic AI language
 - less explanatory
 
 VERY IMPORTANT
@@ -319,7 +320,11 @@ export async function POST(req: Request) {
     if (!client) {
       return NextResponse.json(
         {
-          message: "OPENAI_API_KEY ontbreekt in je lokale environment.",
+          message: localMessage(
+            "nl",
+            "OPENAI_API_KEY ontbreekt in je lokale environment.",
+            "OPENAI_API_KEY is missing in your local environment."
+          ),
         },
         { status: 500 }
       );
@@ -334,10 +339,11 @@ export async function POST(req: Request) {
       const planner = buildPlannerState(draftPlan);
 
       return NextResponse.json({
-        message:
-          lang === "nl"
-            ? "Er is nog te weinig gesprekinput om een eerste versie van het plan op te bouwen."
-            : "There is not enough conversation input yet to build a first draft of the plan.",
+        message: localMessage(
+          lang,
+          "Er is nog te weinig gesprekinput om een eerste versie van het plan op te bouwen.",
+          "There is not enough conversation input yet to build a first draft of the plan."
+        ),
         plan: draftPlan,
         derived: {
           planner,
@@ -384,14 +390,26 @@ Return only valid JSON.
 
     const text = response.output_text?.trim();
     if (!text) {
-      throw new Error("No output returned from generate route.");
+      throw new Error(
+        localMessage(
+          lang,
+          "Geen output ontvangen uit de generate route.",
+          "No output returned from the generate route."
+        )
+      );
     }
 
     let parsed: any;
     try {
       parsed = JSON.parse(text);
     } catch {
-      throw new Error("Generate route returned invalid JSON.");
+      throw new Error(
+        localMessage(
+          lang,
+          "De generate route gaf geen geldige JSON terug.",
+          "The generate route returned invalid JSON."
+        )
+      );
     }
 
     const mergedPlan = deepMergePlan(
@@ -404,9 +422,11 @@ Return only valid JSON.
     return NextResponse.json({
       message:
         parsed.message ||
-        (lang === "nl"
-          ? "Ik heb op basis van het gesprek een eerste planversie opgebouwd en aangescherpt."
-          : "I built and sharpened a first draft plan based on the conversation."),
+        localMessage(
+          lang,
+          "Ik heb op basis van het gesprek een eerste planversie opgebouwd en aangescherpt.",
+          "I built and sharpened a first draft plan based on the conversation."
+        ),
       plan: mergedPlan,
       derived: {
         planner,
@@ -419,7 +439,11 @@ Return only valid JSON.
       {
         message:
           error?.message ||
-          "Er ging iets mis tijdens het opbouwen van de eerste versie.",
+          localMessage(
+            "nl",
+            "Er ging iets mis tijdens het opbouwen van de eerste versie.",
+            "Something went wrong while building the first draft."
+          ),
       },
       { status: 500 }
     );
