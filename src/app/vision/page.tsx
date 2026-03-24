@@ -33,8 +33,6 @@ export default function VisionPage() {
         <SiteHeader
           lang={lang}
           setLang={setLang}
-          requestAccessLabel={t.requestAccess}
-          brandLabel={t.brand}
         />
 
         <section className="pt-16 pb-28">
