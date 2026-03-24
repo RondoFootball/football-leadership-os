@@ -7,7 +7,6 @@ import {
 } from "./lib/engineSchema";
 import { clubPresets, getClubPresetByName } from "./lib/clubPresets";
 import { PdpChat, type ChatPlannerState } from "./components/PdpChat";
-import { useLang } from "@/lib/useLang";
 
 type Lang = "nl" | "en";
 type Mode = "chat" | "manual";
@@ -19,7 +18,17 @@ type LocalVideoUpload = {
   objectUrl: string;
 };
 
-const ACADEMY_AGES = ["O13", "O14", "O15", "O16", "O17", "O18", "O19", "O21", "Jong"];
+const ACADEMY_AGES = [
+  "O13",
+  "O14",
+  "O15",
+  "O16",
+  "O17",
+  "O18",
+  "O19",
+  "O21",
+  "Jong",
+];
 
 const UI = {
   nl: {
@@ -384,13 +393,11 @@ function plannerFilled(planner: ChatPlannerState | null, key: string) {
 }
 
 export default function PlayerDevelopmentPlanBuilder() {
-  const { lang: siteLang, setLang: setSiteLang } = useLang("en");
-  const lang: Lang = siteLang === "nl" ? "nl" : "en";
-
   const [plan, setPlan] = useState<DevelopmentPlanV1>(createInitialPlan());
   const [generatedPlan, setGeneratedPlan] =
     useState<DevelopmentPlanV1 | null>(null);
 
+  const [lang, setLang] = useState<Lang>("nl");
   const [mode, setMode] = useState<Mode>("chat");
   const [chatPlannerState, setChatPlannerState] =
     useState<ChatPlannerState | null>(null);
@@ -419,16 +426,6 @@ export default function PlayerDevelopmentPlanBuilder() {
     plan.meta.team,
     plan.meta.blockLengthWeeks,
   ]);
-
-  useEffect(() => {
-    setPlan((prev) => ({
-      ...prev,
-      meta: {
-        ...prev.meta,
-        lang,
-      },
-    }));
-  }, [lang]);
 
   const primary = clampHex(plan.brand.primaryColor, "#111111");
   const secondary = clampHex(plan.brand.secondaryColor, "#FFFFFF");
@@ -585,6 +582,13 @@ export default function PlayerDevelopmentPlanBuilder() {
     const merged = mergeGeneratedPlanWithLockedBasics(plan, next);
     setPlan(merged);
     setGeneratedPlan(merged);
+
+    console.log("✅ GENERATED PLAN BINNEN");
+    console.log("slide2", merged.slide2);
+    console.log("context", merged.slideContext);
+    console.log("baseline", merged.slide3Baseline);
+    console.log("approach", merged.slide4DevelopmentRoute);
+    console.log("success", merged.slide6SuccessDefinition);
   }
 
   function applyClubPreset(clubName: string) {
@@ -706,6 +710,9 @@ export default function PlayerDevelopmentPlanBuilder() {
   async function download(version: "player" | "staff", exportLang: Lang) {
     const exportPlan = generatedPlan || plan;
 
+    console.log("📤 EXPORT PLAN");
+    console.log(exportPlan);
+
     const res = await fetch(`/api/pdp/pdf`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -736,27 +743,12 @@ export default function PlayerDevelopmentPlanBuilder() {
   }
 
   return (
-    <div className="min-h-dvh bg-[#0B0D10] text-white flex flex-col">
-      <header className="flex items-center justify-between px-8 py-5 border-b border-white/5">
-        <div>
-          <div className="text-[11px] tracking-[0.18em] text-white/40">
-            {t.eyebrow}
-          </div>
-          <div className="text-[15px] text-white/80 mt-1">{t.subtitle}</div>
-        </div>
-
-        <LangPill
-          lang={lang}
-          setLang={(next) => setSiteLang(next)}
-          t={t}
-        />
-      </header>
-
-      <div className="flex-1 overflow-y-auto">
-        <div className="px-10 py-8">
-          <div className="max-w-[1240px] mx-auto space-y-8">
-            <div className="flex justify-center">
-              <div className="bg-white/5 rounded-full p-1 flex gap-1">
+    <div className="bg-transparent text-white">
+      <div className="px-6 py-6 sm:px-8 sm:py-8">
+        <div className="mx-auto max-w-[1240px] space-y-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex justify-start sm:justify-center">
+              <div className="flex gap-1 rounded-full border border-white/10 bg-white/[0.04] p-1">
                 <ModeBtn active={mode === "chat"} onClick={() => setMode("chat")}>
                   {t.modeChat}
                 </ModeBtn>
@@ -766,733 +758,734 @@ export default function PlayerDevelopmentPlanBuilder() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch relative z-0">
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-visible h-full">
-                <button
-                  onClick={() => setBasicsOpen((v) => !v)}
-                  className="w-full flex items-center justify-between px-6 py-5 text-left"
-                >
-                  <div>
-                    <div className="text-[12px] tracking-[0.16em] uppercase text-white/40">
-                      {t.basicsTitle}
-                    </div>
-                    <div className="text-[13px] text-white/55 mt-1">
-                      {t.basicsSubtitle}
-                    </div>
+            <LangPill lang={lang} setLang={setLang} t={t} />
+          </div>
+
+          <div className="relative z-0 grid grid-cols-1 items-stretch gap-6 xl:grid-cols-2">
+            <div className="h-full overflow-visible rounded-[28px] border border-white/10 bg-white/[0.025]">
+              <button
+                onClick={() => setBasicsOpen((v) => !v)}
+                className="flex w-full items-center justify-between px-6 py-5 text-left"
+              >
+                <div>
+                  <div className="text-[12px] tracking-[0.16em] uppercase text-white/40">
+                    {t.basicsTitle}
                   </div>
+                  <div className="mt-1 text-[13px] text-white/55">
+                    {t.basicsSubtitle}
+                  </div>
+                </div>
 
-                  <div className="text-white/45 text-sm">{basicsOpen ? "▾" : "▸"}</div>
-                </button>
+                <div className="text-sm text-white/45">{basicsOpen ? "▾" : "▸"}</div>
+              </button>
 
-                {basicsOpen && (
-                  <div className="px-6 pb-6 space-y-5">
-                    <div className="rounded-[20px] border border-white/10 bg-black/20 p-5">
-                      <div className="mb-5">
-                        <div className="text-[11px] tracking-[0.18em] uppercase text-white/38">
-                          {t.step1Eyebrow}
-                        </div>
-
-                        <div className="text-[20px] leading-none text-white/92 mt-2">
-                          {t.step1Title}
-                        </div>
-
-                        <div className="text-[13px] text-white/50 mt-2 max-w-[46ch] leading-relaxed">
-                          {t.step1Body}
-                        </div>
+              {basicsOpen && (
+                <div className="space-y-5 px-6 pb-6">
+                  <div className="rounded-[20px] border border-white/10 bg-black/20 p-5">
+                    <div className="mb-5">
+                      <div className="text-[11px] tracking-[0.18em] uppercase text-white/38">
+                        {t.step1Eyebrow}
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-[110px_minmax(0,1fr)] gap-5 items-start">
-                        <div className="flex flex-col items-center md:items-start gap-3">
-                          <button
-                            type="button"
-                            onClick={() => setIdentityPhotoOpen((v) => !v)}
-                            className="group relative w-[96px] h-[96px] rounded-[22px] overflow-hidden border border-white/10 bg-white/[0.04] hover:border-white/20 transition"
-                          >
-                            {plan.player.headshotUrl ? (
-                              <img
-                                src={plan.player.headshotUrl}
-                                className="w-full h-full object-cover"
-                                alt={plan.player.name || ""}
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <div className="flex flex-col items-center gap-1">
-                                  <div className="w-8 h-8 rounded-full border border-white/15 flex items-center justify-center text-white/70 text-sm">
-                                    +
-                                  </div>
-                                  <div className="text-[9px] uppercase tracking-[0.18em] text-white/30">
-                                    {t.photoPill}
-                                  </div>
+                      <div className="mt-2 text-[20px] leading-none text-white/92">
+                        {t.step1Title}
+                      </div>
+
+                      <div className="mt-2 max-w-[46ch] text-[13px] leading-relaxed text-white/50">
+                        {t.step1Body}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-[110px_minmax(0,1fr)]">
+                      <div className="flex flex-col items-center gap-3 md:items-start">
+                        <button
+                          type="button"
+                          onClick={() => setIdentityPhotoOpen((v) => !v)}
+                          className="group relative h-[96px] w-[96px] overflow-hidden rounded-[22px] border border-white/10 bg-white/[0.04] transition hover:border-white/20"
+                        >
+                          {plan.player.headshotUrl ? (
+                            <img
+                              src={plan.player.headshotUrl}
+                              className="h-full w-full object-cover"
+                              alt={plan.player.name || ""}
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center">
+                              <div className="flex flex-col items-center gap-1">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 text-sm text-white/70">
+                                  +
                                 </div>
-                              </div>
-                            )}
-
-                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-2 py-1 opacity-0 group-hover:opacity-100 transition">
-                              <div className="text-[9px] uppercase tracking-[0.16em] text-white/70">
-                                {plan.player.headshotUrl ? t.avatarEdit : t.avatarAdd}
-                              </div>
-                            </div>
-                          </button>
-
-                          <div className="text-center md:text-left">
-                            <div className="text-[12px] text-white/75">
-                              {plan.player.name || t.newPlayer}
-                            </div>
-                            <div className="text-[11px] text-white/35 mt-1">
-                              {t.playerVisualIdentity}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="space-y-4">
-                          <Input
-                            label={t.playerName}
-                            value={plan.player.name}
-                            onChange={(v) =>
-                              setPlan((prev) => ({
-                                ...prev,
-                                player: { ...prev.player, name: v },
-                              }))
-                            }
-                          />
-
-                          <Input
-                            label={t.playerPosition}
-                            value={plan.player.role}
-                            onChange={(v) =>
-                              setPlan((prev) => ({
-                                ...prev,
-                                player: { ...prev.player, role: v },
-                              }))
-                            }
-                          />
-
-                          <div className="flex flex-wrap items-center gap-2 pt-1">
-                            <button
-                              type="button"
-                              onClick={() => setIdentityPhotoOpen((v) => !v)}
-                              className="rounded-full border border-white/12 bg-white/[0.04] px-3 py-1.5 text-[12px] text-white/78 hover:border-white/24 hover:text-white"
-                            >
-                              {plan.player.headshotUrl ? t.editPhoto : t.addPhoto}
-                            </button>
-
-                            {plan.player.headshotUrl && (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setPlan((prev) => ({
-                                    ...prev,
-                                    player: { ...prev.player, headshotUrl: "" },
-                                  }))
-                                }
-                                className="rounded-full border border-white/10 px-3 py-1.5 text-[12px] text-white/45 hover:text-white/75"
-                              >
-                                {t.removePhoto}
-                              </button>
-                            )}
-                          </div>
-
-                          {identityPhotoOpen && (
-                            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                              <Input
-                                label={t.playerPhoto}
-                                value={plan.player.headshotUrl}
-                                onChange={(v) =>
-                                  setPlan((prev) => ({
-                                    ...prev,
-                                    player: { ...prev.player, headshotUrl: v },
-                                  }))
-                                }
-                              />
-                              <div className="text-[11px] text-white/35 mt-2 leading-relaxed">
-                                {t.photoHelp}
+                                <div className="text-[9px] uppercase tracking-[0.18em] text-white/30">
+                                  {t.photoPill}
+                                </div>
                               </div>
                             </div>
                           )}
+
+                          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-2 py-1 opacity-0 transition group-hover:opacity-100">
+                            <div className="text-[9px] uppercase tracking-[0.16em] text-white/70">
+                              {plan.player.headshotUrl ? t.avatarEdit : t.avatarAdd}
+                            </div>
+                          </div>
+                        </button>
+
+                        <div className="text-center md:text-left">
+                          <div className="text-[12px] text-white/75">
+                            {plan.player.name || t.newPlayer}
+                          </div>
+                          <div className="mt-1 text-[11px] text-white/35">
+                            {t.playerVisualIdentity}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <SimpleDropdown
-                        label={t.country}
-                        value={selectedCountry}
-                        placeholder={t.chooseCountry}
-                        items={availableCountries.map((country) => ({
-                          value: country,
-                          label: countryLabel(country, lang),
-                          iconUrl: getCountryLogoUrl(country),
-                        }))}
-                        onChange={(value) => {
-                          setSelectedCountry(value);
-                          setSelectedLeague("");
-                          setClubMode("preset");
-                          setGeneratedPlan(null);
-                          setPlan((prev) => ({
-                            ...prev,
-                            brand: {
-                              ...prev.brand,
-                              clubName: "",
-                              logoUrl: "",
-                            },
-                            meta: {
-                              ...prev.meta,
-                              club: "",
-                            },
-                          }));
-                        }}
-                      />
+                      <div className="space-y-4">
+                        <Input
+                          label={t.playerName}
+                          value={plan.player.name}
+                          onChange={(v) =>
+                            setPlan((prev) => ({
+                              ...prev,
+                              player: { ...prev.player, name: v },
+                            }))
+                          }
+                        />
 
-                      <SimpleDropdown
-                        label={t.league}
-                        value={selectedLeague}
-                        placeholder={t.chooseLeague}
-                        items={availableLeagues.map((league) => ({
-                          value: league,
-                          label: league,
-                          iconUrl: getLeagueLogoUrl(selectedCountry, league),
-                        }))}
-                        onChange={(value) => {
-                          setSelectedLeague(value);
-                          setClubMode("preset");
-                          setGeneratedPlan(null);
-                          setPlan((prev) => ({
-                            ...prev,
-                            brand: {
-                              ...prev.brand,
-                              clubName: "",
-                              logoUrl: "",
-                            },
-                            meta: {
-                              ...prev.meta,
-                              club: "",
-                            },
-                          }));
-                        }}
-                      />
+                        <Input
+                          label={t.playerPosition}
+                          value={plan.player.role}
+                          onChange={(v) =>
+                            setPlan((prev) => ({
+                              ...prev,
+                              player: { ...prev.player, role: v },
+                            }))
+                          }
+                        />
 
-                      <div className="sm:col-span-2 rounded-2xl border border-white/10 bg-black/20 p-4">
-                        <div className="text-[11px] text-white/40 mb-3 uppercase tracking-wide">
-                          {t.club}
+                        <div className="flex flex-wrap items-center gap-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => setIdentityPhotoOpen((v) => !v)}
+                            className="rounded-full border border-white/12 bg-white/[0.04] px-3 py-1.5 text-[12px] text-white/78 hover:border-white/24 hover:text-white"
+                          >
+                            {plan.player.headshotUrl ? t.editPhoto : t.addPhoto}
+                          </button>
+
+                          {plan.player.headshotUrl && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setPlan((prev) => ({
+                                  ...prev,
+                                  player: { ...prev.player, headshotUrl: "" },
+                                }))
+                              }
+                              className="rounded-full border border-white/10 px-3 py-1.5 text-[12px] text-white/45 hover:text-white/75"
+                            >
+                              {t.removePhoto}
+                            </button>
+                          )}
                         </div>
 
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          <ChoicePill
-                            active={clubMode === "preset"}
-                            onClick={() => {
-                              setClubMode("preset");
-                              setGeneratedPlan(null);
-                              setPlan((prev) => ({
-                                ...prev,
-                                brand: {
-                                  ...prev.brand,
-                                  clubName: "",
-                                  logoUrl: "",
-                                },
-                                meta: {
-                                  ...prev.meta,
-                                  club: "",
-                                },
-                              }));
-                            }}
-                          >
-                            {t.clubModePreset}
-                          </ChoicePill>
-
-                          <ChoicePill
-                            active={clubMode === "custom"}
-                            onClick={() => {
-                              setClubMode("custom");
-                              setBrandingOpen(true);
-                              setGeneratedPlan(null);
-                              setPlan((prev) => ({
-                                ...prev,
-                                brand: {
-                                  ...prev.brand,
-                                  clubName: "",
-                                  logoUrl: "",
-                                },
-                                meta: {
-                                  ...prev.meta,
-                                  club: "",
-                                },
-                              }));
-                            }}
-                          >
-                            {t.clubModeCustom}
-                          </ChoicePill>
-                        </div>
-
-                        {clubMode === "preset" ? (
-                          <SimpleDropdown
-                            label=""
-                            value={plan.brand.clubName || ""}
-                            placeholder={t.chooseClub}
-                            items={availableClubs.map((club) => ({
-                              value: club.name,
-                              label: club.name,
-                              iconUrl: club.logoUrl,
-                            }))}
-                            onChange={(value) => {
-                              applyClubPreset(value);
-                            }}
-                            hideLabel
-                          />
-                        ) : (
-                          <div>
+                        {identityPhotoOpen && (
+                          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
                             <Input
-                              label={t.customClub}
-                              value={plan.meta.club || ""}
+                              label={t.playerPhoto}
+                              value={plan.player.headshotUrl}
                               onChange={(v) =>
                                 setPlan((prev) => ({
                                   ...prev,
-                                  meta: { ...prev.meta, club: v },
-                                  brand: { ...prev.brand, clubName: v },
+                                  player: { ...prev.player, headshotUrl: v },
                                 }))
                               }
                             />
-                            <div className="text-[11px] text-white/35 mt-2 leading-relaxed">
-                              {t.customClubHelp}
+                            <div className="mt-2 text-[11px] leading-relaxed text-white/35">
+                              {t.photoHelp}
                             </div>
                           </div>
                         )}
                       </div>
-
-                      <div>
-                        <SimpleDropdown
-                          label={t.teamType}
-                          value={teamType}
-                          placeholder={t.chooseTeamType}
-                          items={[
-                            { value: "academy", label: t.academy },
-                            { value: "first_team", label: t.firstTeam },
-                          ]}
-                          onChange={(value) =>
-                            setPlan((prev) => {
-                              const next = structuredClone(prev);
-                              setGeneratedPlan(null);
-
-                              (next.player as any).teamType = value as TeamType;
-
-                              if (value === "first_team") {
-                                (next.player as any).academyAgeCategory = "";
-                                next.player.team = t.firstTeam;
-                                next.meta.team = t.firstTeam;
-                              }
-
-                              if (value === "academy") {
-                                next.player.team = "";
-                                next.meta.team = "";
-                              }
-
-                              if (!value) {
-                                next.player.team = "";
-                                next.meta.team = "";
-                                (next.player as any).academyAgeCategory = "";
-                              }
-
-                              return next;
-                            })
-                          }
-                        />
-                      </div>
-
-                      {teamType === "academy" ? (
-                        <div>
-                          <SimpleDropdown
-                            label={t.ageCategory}
-                            value={academyAge}
-                            placeholder={t.chooseAgeCategory}
-                            items={ACADEMY_AGES.map((age) => ({
-                              value: age,
-                              label: age,
-                            }))}
-                            onChange={(value) =>
-                              setPlan((prev) => ({
-                                ...prev,
-                                player: {
-                                  ...prev.player,
-                                  academyAgeCategory: value,
-                                  team: value,
-                                } as any,
-                                meta: {
-                                  ...prev.meta,
-                                  team: value,
-                                },
-                              }))
-                            }
-                          />
-                        </div>
-                      ) : (
-                        <div />
-                      )}
-
-                      <Input
-                        label={t.periodWeeks}
-                        value={String(plan.meta.blockLengthWeeks || 8)}
-                        onChange={(v) =>
-                          setPlan((prev) => ({
-                            ...prev,
-                            meta: {
-                              ...prev.meta,
-                              blockLengthWeeks: Number(v) || 8,
-                            },
-                          }))
-                        }
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="rounded-2xl bg-white/[0.03] border border-white/8 p-5 h-full flex flex-col min-h-[760px]">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
-                      {t.brandingTitle}
-                    </div>
-                    <div className="text-[12px] text-white/45 mt-1">
-                      {t.coverPreviewSub}
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => setBrandingOpen((v) => !v)}
-                    className="text-[12px] text-white/45 hover:text-white/80"
-                  >
-                    {brandingOpen ? t.brandingCollapse : t.brandingEdit}
-                  </button>
-                </div>
-
-                <div className="mt-4 flex-1 min-h-0 flex items-center justify-center">
-                  <div className="h-full w-full flex items-center justify-center">
-                    <CoverPreviewCard
-                      clubName={plan.brand.clubName || t.club}
-                      logoUrl={plan.brand.logoUrl}
-                      playerName={plan.player.name || t.noPlayerYet}
-                      playerImageUrl={plan.player.headshotUrl}
-                      primary={primary}
-                      secondary={secondary}
-                      balance={balance}
-                      systemLine={t.coverSystemLine}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 mt-4 min-h-[20px]">
-                  <div className="text-[12px] text-white/50">
-                    {plan.brand.clubName || t.club}
-                  </div>
-
-                  {activePreset ? (
-                    <div className="text-[11px] text-white/28">
-                      • {t.presetActive}
-                    </div>
-                  ) : null}
-                </div>
-
-                {brandingOpen && (
-                  <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input
-                      label={t.primaryColor}
-                      value={plan.brand.primaryColor}
-                      onChange={(v) =>
-                        setPlan((prev) => ({
-                          ...prev,
-                          brand: { ...prev.brand, primaryColor: v },
-                        }))
-                      }
-                    />
-
-                    <Input
-                      label={t.secondaryColor}
-                      value={plan.brand.secondaryColor}
-                      onChange={(v) =>
-                        setPlan((prev) => ({
-                          ...prev,
-                          brand: { ...prev.brand, secondaryColor: v },
-                        }))
-                      }
-                    />
-
-                    <Input
-                      label={t.colorBalance}
-                      value={String(plan.brand.colorBalance || 70)}
-                      onChange={(v) =>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <SimpleDropdown
+                      label={t.country}
+                      value={selectedCountry}
+                      placeholder={t.chooseCountry}
+                      items={availableCountries.map((country) => ({
+                        value: country,
+                        label: countryLabel(country, lang),
+                        iconUrl: getCountryLogoUrl(country),
+                      }))}
+                      onChange={(value) => {
+                        setSelectedCountry(value);
+                        setSelectedLeague("");
+                        setClubMode("preset");
+                        setGeneratedPlan(null);
                         setPlan((prev) => ({
                           ...prev,
                           brand: {
                             ...prev.brand,
-                            colorBalance: Number(v),
+                            clubName: "",
+                            logoUrl: "",
                           },
-                        }))
-                      }
+                          meta: {
+                            ...prev.meta,
+                            club: "",
+                          },
+                        }));
+                      }}
                     />
 
-                    <Input
-                      label={t.logoUrl}
-                      value={plan.brand.logoUrl}
-                      onChange={(v) =>
+                    <SimpleDropdown
+                      label={t.league}
+                      value={selectedLeague}
+                      placeholder={t.chooseLeague}
+                      items={availableLeagues.map((league) => ({
+                        value: league,
+                        label: league,
+                        iconUrl: getLeagueLogoUrl(selectedCountry, league),
+                      }))}
+                      onChange={(value) => {
+                        setSelectedLeague(value);
+                        setClubMode("preset");
+                        setGeneratedPlan(null);
                         setPlan((prev) => ({
                           ...prev,
-                          brand: { ...prev.brand, logoUrl: v },
-                        }))
-                      }
+                          brand: {
+                            ...prev.brand,
+                            clubName: "",
+                            logoUrl: "",
+                          },
+                          meta: {
+                            ...prev.meta,
+                            club: "",
+                          },
+                        }));
+                      }}
                     />
-                  </div>
-                )}
-              </div>
-            </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-[3.25fr_1fr] gap-6 items-stretch">
-              <div className="flex flex-col gap-6 h-full">
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 min-h-[760px]">
-                  {mode === "chat" ? (
-                    <>
-                      <div className="max-w-[52ch] mb-6">
-                        <div className="text-[18px] leading-tight text-white/92 font-medium">
-                          {t.heroChatTitle}
-                        </div>
-                        <div className="text-[13px] text-white/52 mt-2 leading-relaxed">
-                          {t.heroChatBody}
-                        </div>
+                    <div className="rounded-2xl border border-white/10 bg-black/20 p-4 sm:col-span-2">
+                      <div className="mb-3 text-[11px] uppercase tracking-wide text-white/40">
+                        {t.club}
                       </div>
 
-                      <div className="flex gap-2 flex-wrap mb-6">
-                        <Hint onClick={() => insertPrompt("Beschrijf wat je concreet ziet in gedrag")}>
-                          {t.hintObservation}
-                        </Hint>
-                        <Hint onClick={() => insertPrompt("Beschrijf in welk wedstrijdmoment dit gebeurt")}>
-                          {t.hintMoment}
-                        </Hint>
-                        <Hint onClick={() => insertPrompt("Beschrijf wat het effect is op het spel")}>
-                          {t.hintGoal}
-                        </Hint>
-                      </div>
-
-                      <PdpChat
-                        lang={lang}
-                        draftPlan={plan}
-                        onPlanGenerated={onPlanGenerated}
-                        onPlannerStateChange={setChatPlannerState}
-                        onViewPlan={() => {
-                          console.log("Current builder plan:", generatedPlan || plan);
-                        }}
-                        onDownloadPdf={(version) => download(version, lang)}
-                      />
-                    </>
-                  ) : (
-                    <>
-                      <div className="text-[15px] text-white/88 max-w-[40ch]">
-                        {t.heroManualTitle}
-                      </div>
-                      <div className="text-[13px] text-white/55 max-w-[52ch] mt-2 mb-6">
-                        {t.heroManualBody}
-                      </div>
-
-                      <div className="max-w-[520px]">
-                        <Input
-                          label={t.developmentPoint}
-                          value={plan.slide2?.focusBehaviour}
-                          onChange={(v) =>
+                      <div className="mb-4 flex flex-wrap gap-2">
+                        <ChoicePill
+                          active={clubMode === "preset"}
+                          onClick={() => {
+                            setClubMode("preset");
+                            setGeneratedPlan(null);
                             setPlan((prev) => ({
                               ...prev,
-                              slide2: { ...prev.slide2, focusBehaviour: v },
+                              brand: {
+                                ...prev.brand,
+                                clubName: "",
+                                logoUrl: "",
+                              },
+                              meta: {
+                                ...prev.meta,
+                                club: "",
+                              },
+                            }));
+                          }}
+                        >
+                          {t.clubModePreset}
+                        </ChoicePill>
+
+                        <ChoicePill
+                          active={clubMode === "custom"}
+                          onClick={() => {
+                            setClubMode("custom");
+                            setBrandingOpen(true);
+                            setGeneratedPlan(null);
+                            setPlan((prev) => ({
+                              ...prev,
+                              brand: {
+                                ...prev.brand,
+                                clubName: "",
+                                logoUrl: "",
+                              },
+                              meta: {
+                                ...prev.meta,
+                                club: "",
+                              },
+                            }));
+                          }}
+                        >
+                          {t.clubModeCustom}
+                        </ChoicePill>
+                      </div>
+
+                      {clubMode === "preset" ? (
+                        <SimpleDropdown
+                          label=""
+                          value={plan.brand.clubName || ""}
+                          placeholder={t.chooseClub}
+                          items={availableClubs.map((club) => ({
+                            value: club.name,
+                            label: club.name,
+                            iconUrl: club.logoUrl,
+                          }))}
+                          onChange={(value) => {
+                            applyClubPreset(value);
+                          }}
+                          hideLabel
+                        />
+                      ) : (
+                        <div>
+                          <Input
+                            label={t.customClub}
+                            value={plan.meta.club || ""}
+                            onChange={(v) =>
+                              setPlan((prev) => ({
+                                ...prev,
+                                meta: { ...prev.meta, club: v },
+                                brand: { ...prev.brand, clubName: v },
+                              }))
+                            }
+                          />
+                          <div className="mt-2 text-[11px] leading-relaxed text-white/35">
+                            {t.customClubHelp}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <SimpleDropdown
+                        label={t.teamType}
+                        value={teamType}
+                        placeholder={t.chooseTeamType}
+                        items={[
+                          { value: "academy", label: t.academy },
+                          { value: "first_team", label: t.firstTeam },
+                        ]}
+                        onChange={(value) =>
+                          setPlan((prev) => {
+                            const next = structuredClone(prev);
+                            setGeneratedPlan(null);
+
+                            (next.player as any).teamType = value as TeamType;
+
+                            if (value === "first_team") {
+                              (next.player as any).academyAgeCategory = "";
+                              next.player.team = t.firstTeam;
+                              next.meta.team = t.firstTeam;
+                            }
+
+                            if (value === "academy") {
+                              next.player.team = "";
+                              next.meta.team = "";
+                            }
+
+                            if (!value) {
+                              next.player.team = "";
+                              next.meta.team = "";
+                              (next.player as any).academyAgeCategory = "";
+                            }
+
+                            return next;
+                          })
+                        }
+                      />
+                    </div>
+
+                    {teamType === "academy" ? (
+                      <div>
+                        <SimpleDropdown
+                          label={t.ageCategory}
+                          value={academyAge}
+                          placeholder={t.chooseAgeCategory}
+                          items={ACADEMY_AGES.map((age) => ({
+                            value: age,
+                            label: age,
+                          }))}
+                          onChange={(value) =>
+                            setPlan((prev) => ({
+                              ...prev,
+                              player: {
+                                ...prev.player,
+                                academyAgeCategory: value,
+                                team: value,
+                              } as any,
+                              meta: {
+                                ...prev.meta,
+                                team: value,
+                              },
                             }))
                           }
                         />
                       </div>
-                    </>
-                  )}
+                    ) : (
+                      <div />
+                    )}
+
+                    <Input
+                      label={t.periodWeeks}
+                      value={String(plan.meta.blockLengthWeeks || 8)}
+                      onChange={(v) =>
+                        setPlan((prev) => ({
+                          ...prev,
+                          meta: {
+                            ...prev.meta,
+                            blockLengthWeeks: Number(v) || 8,
+                          },
+                        }))
+                      }
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex h-full min-h-[760px] flex-col rounded-[28px] border border-white/8 bg-white/[0.025] p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
+                    {t.brandingTitle}
+                  </div>
+                  <div className="mt-1 text-[12px] text-white/45">
+                    {t.coverPreviewSub}
+                  </div>
                 </div>
 
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                  <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
-                    {t.videoTitle}
-                  </div>
-                  <div className="text-[13px] text-white/50 mt-2 max-w-[64ch] leading-relaxed">
-                    {t.videoBody}
-                  </div>
+                <button
+                  onClick={() => setBrandingOpen((v) => !v)}
+                  className="text-[12px] text-white/45 hover:text-white/80"
+                >
+                  {brandingOpen ? t.brandingCollapse : t.brandingEdit}
+                </button>
+              </div>
 
-                  <div className="mt-2 text-[11px] text-white/32 leading-relaxed">
-                    {t.videoUploadHelp}
-                  </div>
-
-                  <div className="mt-5 grid grid-cols-1 xl:grid-cols-3 gap-4">
-                    <VideoCardCompact
-                      title={t.videoClip1}
-                      clip={(plan as any)?.slide3Baseline?.videoClips?.[0]}
-                      upload={localVideoUploads[0]}
-                      t={t}
-                      onChange={(patch) => updateVideoClip(0, patch)}
-                      onUpload={(file) => handleVideoUpload(0, file)}
-                    />
-
-                    <VideoCardCompact
-                      title={t.videoClip2}
-                      clip={(plan as any)?.slide3Baseline?.videoClips?.[1]}
-                      upload={localVideoUploads[1]}
-                      t={t}
-                      onChange={(patch) => updateVideoClip(1, patch)}
-                      onUpload={(file) => handleVideoUpload(1, file)}
-                    />
-
-                    <VideoCardCompact
-                      title={t.videoClip3}
-                      clip={(plan as any)?.slide3Baseline?.videoClips?.[2]}
-                      upload={localVideoUploads[2]}
-                      t={t}
-                      onChange={(patch) => updateVideoClip(2, patch)}
-                      onUpload={(file) => handleVideoUpload(2, file)}
-                    />
-                  </div>
+              <div className="mt-4 flex min-h-0 flex-1 items-center justify-center">
+                <div className="flex h-full w-full items-center justify-center">
+                  <CoverPreviewCard
+                    clubName={plan.brand.clubName || t.club}
+                    logoUrl={plan.brand.logoUrl}
+                    playerName={plan.player.name || t.noPlayerYet}
+                    playerImageUrl={plan.player.headshotUrl}
+                    primary={primary}
+                    secondary={secondary}
+                    balance={balance}
+                    systemLine={t.coverSystemLine}
+                  />
                 </div>
               </div>
 
-              <div className="flex flex-col gap-6 h-full">
-                <div className="rounded-2xl border border-white/10 bg-white/[0.05] p-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
-                        {t.exportTitle}
-                      </div>
-                      <div className="mt-3 text-[22px] leading-tight text-white/92 font-medium">
-                        {t.exportAlways}
-                      </div>
-                      <div className="mt-2 text-[12px] text-white/50 leading-relaxed max-w-[26ch]">
-                        {t.exportStrong}
-                      </div>
-                    </div>
-
-                    <div className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] text-white/68">
-                      PDF
-                    </div>
-                  </div>
-
-                  <div className="mt-5 space-y-3">
-                    <button
-                      onClick={() => download("player", lang)}
-                      className="w-full bg-white text-black py-3 rounded-xl text-sm font-medium hover:bg-white/90"
-                    >
-                      {t.downloadPlayer}
-                    </button>
-
-                    <button
-                      onClick={() => download("staff", lang)}
-                      className="w-full border border-white/20 py-3 rounded-xl text-sm text-white/88 hover:border-white/30"
-                    >
-                      {t.downloadStaff}
-                    </button>
-
-                    <div className="pt-1 text-center text-[11px] text-white/35">
-                      {t.availableOther}
-                    </div>
-
-                    <button
-                      onClick={() => download("player", otherLang)}
-                      className="w-full rounded-xl border border-white/10 bg-white/[0.03] py-2.5 text-[12px] text-white/72 hover:text-white hover:border-white/20"
-                    >
-                      {t.downloadOther}
-                    </button>
-                  </div>
+              <div className="mt-4 flex min-h-[20px] items-center gap-2">
+                <div className="text-[12px] text-white/50">
+                  {plan.brand.clubName || t.club}
                 </div>
 
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                  <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
-                    {t.progressHeader}
+                {activePreset ? (
+                  <div className="text-[11px] text-white/28">
+                    • {t.presetActive}
                   </div>
+                ) : null}
+              </div>
 
-                  <div className="mt-4 flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <div className="text-[22px] leading-tight text-white/92 font-medium">
-                        {plan.player.name || t.noPlayerYet}
+              {brandingOpen && (
+                <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Input
+                    label={t.primaryColor}
+                    value={plan.brand.primaryColor}
+                    onChange={(v) =>
+                      setPlan((prev) => ({
+                        ...prev,
+                        brand: { ...prev.brand, primaryColor: v },
+                      }))
+                    }
+                  />
+
+                  <Input
+                    label={t.secondaryColor}
+                    value={plan.brand.secondaryColor}
+                    onChange={(v) =>
+                      setPlan((prev) => ({
+                        ...prev,
+                        brand: { ...prev.brand, secondaryColor: v },
+                      }))
+                    }
+                  />
+
+                  <Input
+                    label={t.colorBalance}
+                    value={String(plan.brand.colorBalance || 70)}
+                    onChange={(v) =>
+                      setPlan((prev) => ({
+                        ...prev,
+                        brand: {
+                          ...prev.brand,
+                          colorBalance: Number(v),
+                        },
+                      }))
+                    }
+                  />
+
+                  <Input
+                    label={t.logoUrl}
+                    value={plan.brand.logoUrl}
+                    onChange={(v) =>
+                      setPlan((prev) => ({
+                        ...prev,
+                        brand: { ...prev.brand, logoUrl: v },
+                      }))
+                    }
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 items-stretch gap-6 xl:grid-cols-[3.25fr_1fr]">
+            <div className="flex h-full flex-col gap-6">
+              <div className="min-h-[760px] rounded-[28px] border border-white/10 bg-white/[0.025] p-8">
+                {mode === "chat" ? (
+                  <>
+                    <div className="mb-6 max-w-[52ch]">
+                      <div className="text-[18px] font-medium leading-tight text-white/92">
+                        {t.heroChatTitle}
                       </div>
-
-                      <div className="text-[13px] text-white/48 mt-2">
-                        {plan.brand.clubName || t.club}
-                      </div>
-
-                      <div className="text-[12px] text-white/34 mt-1">
-                        {plan.meta.team || t.teamType}
+                      <div className="mt-2 text-[13px] leading-relaxed text-white/52">
+                        {t.heroChatBody}
                       </div>
                     </div>
 
-                    <div className="shrink-0">
-                      {plan.player.headshotUrl ? (
-                        <img
-                          src={plan.player.headshotUrl}
-                          className="w-12 h-12 rounded-full object-cover border border-white/10"
-                          alt=""
-                        />
-                      ) : (
-                        <div className="w-12 h-12 rounded-full border border-white/10 bg-white/[0.04]" />
-                      )}
+                    <div className="mb-6 flex flex-wrap gap-2">
+                      <Hint onClick={() => insertPrompt("Beschrijf wat je concreet ziet in gedrag")}>
+                        {t.hintObservation}
+                      </Hint>
+                      <Hint onClick={() => insertPrompt("Beschrijf in welk wedstrijdmoment dit gebeurt")}>
+                        {t.hintMoment}
+                      </Hint>
+                      <Hint onClick={() => insertPrompt("Beschrijf wat het effect is op het spel")}>
+                        {t.hintGoal}
+                      </Hint>
                     </div>
-                  </div>
 
-                  <div className="mt-5 h-[1px] w-full overflow-hidden rounded-full bg-white/6">
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: "42%",
-                        background: `linear-gradient(90deg, ${primary} 0%, ${secondary} 100%)`,
+                    <PdpChat
+                      draftPlan={plan}
+                      onPlanGenerated={onPlanGenerated}
+                      onPlannerStateChange={setChatPlannerState}
+                      onViewPlan={() => {
+                        console.log("Current builder plan:", generatedPlan || plan);
                       }}
+                      onDownloadPdf={(version) => download(version, lang)}
                     />
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                  <div className="flex items-end justify-between gap-4">
-                    <div>
-                      <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
-                        {t.totalProgress}
-                      </div>
-                      <div className="text-[30px] leading-none tracking-[-0.03em] text-white/92 font-semibold mt-3">
-                        {totalProgress}%
-                      </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="max-w-[40ch] text-[15px] text-white/88">
+                      {t.heroManualTitle}
+                    </div>
+                    <div className="mt-2 mb-6 max-w-[52ch] text-[13px] text-white/55">
+                      {t.heroManualBody}
                     </div>
 
-                    <div className="text-[12px] text-white/38">
-                      {sections.filter((s) => s.progress === 100).length}/{sections.length}
-                    </div>
-                  </div>
-
-                  <div className="mt-4 h-[8px] rounded-full bg-white/8 overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all"
-                      style={{
-                        width: `${totalProgress}%`,
-                        background: `linear-gradient(90deg, ${primary} 0%, ${secondary} 100%)`,
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 flex-1">
-                  <div className="text-[11px] tracking-[0.18em] text-white/40 mb-4 uppercase">
-                    {t.planProgress}
-                  </div>
-
-                  <div className="space-y-3">
-                    {sections.map((section) => (
-                      <ProgressRow
-                        key={section.key}
-                        label={section.label}
-                        progress={section.progress}
-                        filled={section.filled}
-                        total={section.total}
-                        primary={primary}
-                        secondary={secondary}
-                        readyLabel={t.ready}
+                    <div className="max-w-[520px]">
+                      <Input
+                        label={t.developmentPoint}
+                        value={plan.slide2?.focusBehaviour}
+                        onChange={(v) =>
+                          setPlan((prev) => ({
+                            ...prev,
+                            slide2: { ...prev.slide2, focusBehaviour: v },
+                          }))
+                        }
                       />
-                    ))}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="rounded-[28px] border border-white/10 bg-white/[0.025] p-5">
+                <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
+                  {t.videoTitle}
+                </div>
+                <div className="mt-2 max-w-[64ch] text-[13px] leading-relaxed text-white/50">
+                  {t.videoBody}
+                </div>
+
+                <div className="mt-2 text-[11px] leading-relaxed text-white/32">
+                  {t.videoUploadHelp}
+                </div>
+
+                <div className="mt-5 grid grid-cols-1 gap-4 xl:grid-cols-3">
+                  <VideoCardCompact
+                    title={t.videoClip1}
+                    clip={(plan as any)?.slide3Baseline?.videoClips?.[0]}
+                    upload={localVideoUploads[0]}
+                    t={t}
+                    onChange={(patch) => updateVideoClip(0, patch)}
+                    onUpload={(file) => handleVideoUpload(0, file)}
+                  />
+
+                  <VideoCardCompact
+                    title={t.videoClip2}
+                    clip={(plan as any)?.slide3Baseline?.videoClips?.[1]}
+                    upload={localVideoUploads[1]}
+                    t={t}
+                    onChange={(patch) => updateVideoClip(1, patch)}
+                    onUpload={(file) => handleVideoUpload(1, file)}
+                  />
+
+                  <VideoCardCompact
+                    title={t.videoClip3}
+                    clip={(plan as any)?.slide3Baseline?.videoClips?.[2]}
+                    upload={localVideoUploads[2]}
+                    t={t}
+                    onChange={(patch) => updateVideoClip(2, patch)}
+                    onUpload={(file) => handleVideoUpload(2, file)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex h-full flex-col gap-6">
+              <div className="rounded-[28px] border border-white/10 bg-white/[0.05] p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
+                      {t.exportTitle}
+                    </div>
+                    <div className="mt-3 text-[22px] font-medium leading-tight text-white/92">
+                      {t.exportAlways}
+                    </div>
+                    <div className="mt-2 max-w-[26ch] text-[12px] leading-relaxed text-white/50">
+                      {t.exportStrong}
+                    </div>
                   </div>
+
+                  <div className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] text-white/68">
+                    PDF
+                  </div>
+                </div>
+
+                <div className="mt-5 space-y-3">
+                  <button
+                    onClick={() => download("player", lang)}
+                    className="w-full rounded-xl bg-white py-3 text-sm font-medium text-black hover:bg-white/90"
+                  >
+                    {t.downloadPlayer}
+                  </button>
+
+                  <button
+                    onClick={() => download("staff", lang)}
+                    className="w-full rounded-xl border border-white/20 py-3 text-sm text-white/88 hover:border-white/30"
+                  >
+                    {t.downloadStaff}
+                  </button>
+
+                  <div className="pt-1 text-center text-[11px] text-white/35">
+                    {t.availableOther}
+                  </div>
+
+                  <button
+                    onClick={() => download("player", otherLang)}
+                    className="w-full rounded-xl border border-white/10 bg-white/[0.03] py-2.5 text-[12px] text-white/72 hover:border-white/20 hover:text-white"
+                  >
+                    {t.downloadOther}
+                  </button>
+                </div>
+              </div>
+
+              <div className="rounded-[28px] border border-white/10 bg-white/[0.025] p-5">
+                <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
+                  {t.progressHeader}
+                </div>
+
+                <div className="mt-4 flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="text-[22px] font-medium leading-tight text-white/92">
+                      {plan.player.name || t.noPlayerYet}
+                    </div>
+
+                    <div className="mt-2 text-[13px] text-white/48">
+                      {plan.brand.clubName || t.club}
+                    </div>
+
+                    <div className="mt-1 text-[12px] text-white/34">
+                      {plan.meta.team || t.teamType}
+                    </div>
+                  </div>
+
+                  <div className="shrink-0">
+                    {plan.player.headshotUrl ? (
+                      <img
+                        src={plan.player.headshotUrl}
+                        className="h-12 w-12 rounded-full border border-white/10 object-cover"
+                        alt=""
+                      />
+                    ) : (
+                      <div className="h-12 w-12 rounded-full border border-white/10 bg-white/[0.04]" />
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-5 h-[1px] w-full overflow-hidden rounded-full bg-white/6">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: "42%",
+                      background: `linear-gradient(90deg, ${primary} 0%, ${secondary} 100%)`,
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="rounded-[28px] border border-white/10 bg-white/[0.025] p-5">
+                <div className="flex items-end justify-between gap-4">
+                  <div>
+                    <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
+                      {t.totalProgress}
+                    </div>
+                    <div className="mt-3 text-[30px] font-semibold leading-none tracking-[-0.03em] text-white/92">
+                      {totalProgress}%
+                    </div>
+                  </div>
+
+                  <div className="text-[12px] text-white/38">
+                    {sections.filter((s) => s.progress === 100).length}/{sections.length}
+                  </div>
+                </div>
+
+                <div className="mt-4 h-[8px] overflow-hidden rounded-full bg-white/8">
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      width: `${totalProgress}%`,
+                      background: `linear-gradient(90deg, ${primary} 0%, ${secondary} 100%)`,
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="flex-1 rounded-[28px] border border-white/10 bg-white/[0.025] p-4">
+                <div className="mb-4 text-[11px] uppercase tracking-[0.18em] text-white/40">
+                  {t.planProgress}
+                </div>
+
+                <div className="space-y-3">
+                  {sections.map((section) => (
+                    <ProgressRow
+                      key={section.key}
+                      label={section.label}
+                      progress={section.progress}
+                      filled={section.filled}
+                      total={section.total}
+                      primary={primary}
+                      secondary={secondary}
+                      readyLabel={t.ready}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>      
+      </div>
     </div>
   );
 }
@@ -1593,7 +1586,7 @@ function SimpleDropdown({
   return (
     <div ref={rootRef}>
       {!hideLabel ? (
-        <div className="text-[11px] text-white/40 mb-2 uppercase tracking-wide">
+        <div className="mb-2 text-[11px] uppercase tracking-wide text-white/40">
           {label}
         </div>
       ) : null}
@@ -1603,7 +1596,7 @@ function SimpleDropdown({
           type="button"
           onClick={() => setOpen((v) => !v)}
           onKeyDown={onKeyDown}
-          className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-left transition hover:border-white/16 focus:outline-none focus:border-white/24 focus:bg-white/[0.06]"
+          className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-left transition hover:border-white/16 focus:border-white/24 focus:bg-white/[0.06] focus:outline-none"
           aria-haspopup="listbox"
           aria-expanded={open}
         >
@@ -1613,18 +1606,18 @@ function SimpleDropdown({
                 <img
                   src={selectedItem.iconUrl}
                   alt=""
-                  className="w-5 h-5 object-contain shrink-0"
+                  className="h-5 w-5 shrink-0 object-contain"
                 />
               ) : (
-                <div className="w-5 h-5 rounded-full border border-white/10 bg-white/[0.03] shrink-0" />
+                <div className="h-5 w-5 shrink-0 rounded-full border border-white/10 bg-white/[0.03]" />
               )}
 
-              <div className="text-[14px] text-white/90 truncate">
+              <div className="truncate text-[14px] text-white/90">
                 {selectedItem?.label || placeholder}
               </div>
             </div>
 
-            <div className="text-white/35 shrink-0">
+            <div className="shrink-0 text-white/35">
               <svg
                 width="14"
                 height="14"
@@ -1646,7 +1639,11 @@ function SimpleDropdown({
 
         {open ? (
           <div className="absolute z-[999] mt-2 w-full overflow-hidden rounded-2xl border border-white/10 bg-[#101317] shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
-            <div ref={listRef} className="max-h-[280px] overflow-y-auto p-2" role="listbox">
+            <div
+              ref={listRef}
+              className="max-h-[280px] overflow-y-auto p-2"
+              role="listbox"
+            >
               {items.map((item, idx) => {
                 const active = idx === activeIndex;
                 const selected = item.value === value;
@@ -1662,30 +1659,30 @@ function SimpleDropdown({
                       setOpen(false);
                       setActiveIndex(-1);
                     }}
-                    className={`w-full flex items-center justify-between gap-3 rounded-xl px-3 py-3 text-left transition ${
+                    className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-left transition ${
                       active || selected
-                        ? "bg-white/[0.08] border border-white/10"
-                        : "hover:bg-white/[0.04] border border-transparent"
+                        ? "border border-white/10 bg-white/[0.08]"
+                        : "border border-transparent hover:bg-white/[0.04]"
                     }`}
                   >
-                    <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex min-w-0 items-center gap-3">
                       {item.iconUrl ? (
                         <img
                           src={item.iconUrl}
                           alt=""
-                          className="w-5 h-5 object-contain shrink-0"
+                          className="h-5 w-5 shrink-0 object-contain"
                         />
                       ) : (
-                        <div className="w-5 h-5 rounded-full border border-white/10 bg-white/[0.03] shrink-0" />
+                        <div className="h-5 w-5 shrink-0 rounded-full border border-white/10 bg-white/[0.03]" />
                       )}
 
-                      <span className="text-[14px] text-white/90 truncate">
+                      <span className="truncate text-[14px] text-white/90">
                         {item.label}
                       </span>
                     </div>
 
                     {selected ? (
-                      <div className="text-white/45 shrink-0">
+                      <div className="shrink-0 text-white/45">
                         <svg
                           width="14"
                           height="14"
@@ -1734,7 +1731,7 @@ function VideoCardCompact({
 
   return (
     <div className="rounded-xl border border-white/10 bg-black/20 p-3">
-      <div className="text-[12px] text-white/82 font-medium">{title}</div>
+      <div className="text-[12px] font-medium text-white/82">{title}</div>
 
       <div className="mt-3 space-y-3">
         <InputCompact
@@ -1749,12 +1746,12 @@ function VideoCardCompact({
           onChange={(v) => onChange({ url: v })}
         />
 
-        <div className="text-[10px] text-white/28 uppercase tracking-[0.14em]">
+        <div className="text-[10px] uppercase tracking-[0.14em] text-white/28">
           {t.videoOr}
         </div>
 
         <div>
-          <div className="text-[10px] text-white/40 mb-1 uppercase tracking-wide">
+          <div className="mb-1 text-[10px] uppercase tracking-wide text-white/40">
             {t.videoUpload}
           </div>
 
@@ -1778,8 +1775,9 @@ function VideoCardCompact({
           </button>
 
           {upload?.fileName ? (
-            <div className="mt-1.5 text-[10px] text-white/45 leading-relaxed">
-              {t.videoChosen}: <span className="text-white/72">{upload.fileName}</span>
+            <div className="mt-1.5 text-[10px] leading-relaxed text-white/45">
+              {t.videoChosen}:{" "}
+              <span className="text-white/72">{upload.fileName}</span>
             </div>
           ) : null}
         </div>
@@ -1816,13 +1814,13 @@ function InputCompact({
 }) {
   return (
     <div>
-      <div className="text-[10px] text-white/40 mb-1 uppercase tracking-wide">
+      <div className="mb-1 text-[10px] uppercase tracking-wide text-white/40">
         {label}
       </div>
       <input
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-transparent border-b border-white/20 py-1.5 text-[12px] focus:outline-none focus:border-white"
+        className="w-full border-b border-white/20 bg-transparent py-1.5 text-[12px] focus:border-white focus:outline-none"
       />
     </div>
   );
@@ -1844,7 +1842,7 @@ function ChoicePill({
       className={`rounded-full px-3 py-1.5 text-[12px] transition ${
         active
           ? "bg-white text-black"
-          : "border border-white/10 bg-white/[0.04] text-white/72 hover:text-white hover:border-white/20"
+          : "border border-white/10 bg-white/[0.04] text-white/72 hover:border-white/20 hover:text-white"
       }`}
     >
       {children}
@@ -1864,8 +1862,10 @@ function ModeBtn({
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-1.5 text-sm rounded-full transition ${
-        active ? "bg-white text-black" : "text-white/50 hover:text-white/80"
+      className={`rounded-full px-4 py-2 text-[13px] transition ${
+        active
+          ? "bg-white text-black"
+          : "text-white/52 hover:text-white/82"
       }`}
     >
       {children}
@@ -1884,13 +1884,13 @@ function Input({
 }) {
   return (
     <div>
-      <div className="text-[11px] text-white/40 mb-1 uppercase tracking-wide">
+      <div className="mb-1 text-[11px] uppercase tracking-wide text-white/40">
         {label}
       </div>
       <input
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-transparent border-b border-white/20 py-2 text-[14px] focus:outline-none focus:border-white"
+        className="w-full border-b border-white/20 bg-transparent py-2 text-[14px] focus:border-white focus:outline-none"
       />
     </div>
   );
@@ -1906,19 +1906,23 @@ function LangPill({
   t: (typeof UI)["nl"] | (typeof UI)["en"];
 }) {
   return (
-    <div className="flex bg-white/5 rounded-full p-1 text-[12px]">
+    <div className="inline-flex rounded-full border border-white/10 bg-white/[0.04] p-1 text-[11px] tracking-[0.14em]">
       <button
         onClick={() => setLang("nl")}
-        className={`px-3 py-1 rounded-full ${
-          lang === "nl" ? "bg-white text-black" : "text-white/50"
+        className={`rounded-full px-3 py-1.5 transition ${
+          lang === "nl"
+            ? "bg-white text-black"
+            : "text-white/48 hover:text-white/78"
         }`}
       >
         {t.langNl}
       </button>
       <button
         onClick={() => setLang("en")}
-        className={`px-3 py-1 rounded-full ${
-          lang === "en" ? "bg-white text-black" : "text-white/50"
+        className={`rounded-full px-3 py-1.5 transition ${
+          lang === "en"
+            ? "bg-white text-black"
+            : "text-white/48 hover:text-white/78"
         }`}
       >
         {t.langEn}
@@ -1937,7 +1941,7 @@ function Hint({
   return (
     <button
       onClick={onClick}
-      className="text-xs px-3 py-1 rounded-full bg-white/5 text-white/60 hover:text-white"
+      className="rounded-full bg-white/5 px-3 py-1 text-xs text-white/60 hover:text-white"
     >
       + {children}
     </button>
@@ -1972,7 +1976,7 @@ function ProgressRow({
         </div>
       </div>
 
-      <div className="mt-3 h-[6px] rounded-full bg-white/8 overflow-hidden">
+      <div className="mt-3 h-[6px] overflow-hidden rounded-full bg-white/8">
         <div
           className="h-full rounded-full transition-all"
           style={{
@@ -2005,9 +2009,9 @@ function CoverPreviewCard({
   systemLine: string;
 }) {
   return (
-    <div className="h-full w-full flex items-center justify-center">
+    <div className="flex h-full w-full items-center justify-center">
       <div
-        className="relative h-full max-h-[760px] aspect-[210/297] w-auto max-w-full overflow-hidden rounded-[18px] border border-white/10"
+        className="relative h-full max-h-[760px] w-auto max-w-full overflow-hidden rounded-[18px] border border-white/10 aspect-[210/297]"
         style={{
           background: `linear-gradient(135deg, ${primary} ${balance}%, ${secondary} 100%)`,
         }}
@@ -2016,7 +2020,7 @@ function CoverPreviewCard({
           <img
             src={playerImageUrl}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover opacity-[0.9]"
+            className="absolute inset-0 h-full w-full object-cover opacity-[0.9]"
             style={{
               objectPosition: "center 22%",
               transform: "scale(1.02)",
@@ -2067,44 +2071,42 @@ function CoverPreviewCard({
           }}
         />
 
-        <div className="relative z-10 w-full h-full">
+        <div className="relative z-10 h-full w-full">
           <div
-            className="absolute left-[18px] top-[18px] bottom-[18px] w-[3px] rounded-full"
+            className="absolute bottom-[18px] left-[18px] top-[18px] w-[3px] rounded-full"
             style={{ background: primary }}
           />
 
-          <div className="absolute top-[22px] left-[32px]">
-            <div className="text-[11px] tracking-[0.16em] uppercase text-white/90 font-semibold">
+          <div className="absolute left-[32px] top-[22px]">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/90">
               {clubName}
             </div>
-            <div className="text-[10px] text-white/70 mt-1">
-              {systemLine}
-            </div>
+            <div className="mt-1 text-[10px] text-white/70">{systemLine}</div>
           </div>
 
           {logoUrl ? (
-            <div className="absolute top-[16px] right-[16px] w-[44px] h-[44px] rounded-[12px] border border-white/20 bg-white/10 backdrop-blur-sm flex items-center justify-center shadow-[0_8px_22px_rgba(0,0,0,0.22)]">
+            <div className="absolute right-[16px] top-[16px] flex h-[44px] w-[44px] items-center justify-center rounded-[12px] border border-white/20 bg-white/10 shadow-[0_8px_22px_rgba(0,0,0,0.22)] backdrop-blur-sm">
               <img
                 src={logoUrl}
-                className="w-[24px] h-[24px] object-contain"
+                className="h-[24px] w-[24px] object-contain"
                 alt=""
               />
             </div>
           ) : null}
 
-          <div className="absolute left-[32px] right-[20px] bottom-[90px]">
-            <div className="text-[32px] leading-none tracking-[-0.03em] font-extrabold text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.28)] break-words">
+          <div className="absolute bottom-[90px] left-[32px] right-[20px]">
+            <div className="break-words text-[32px] font-extrabold leading-none tracking-[-0.03em] text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.28)]">
               {playerName}
             </div>
           </div>
 
-          <div className="absolute left-[32px] right-[20px] bottom-[20px] flex items-center justify-between">
-            <div className="text-[10px] tracking-[0.26em] uppercase text-white/70">
+          <div className="absolute bottom-[20px] left-[32px] right-[20px] flex items-center justify-between">
+            <div className="text-[10px] uppercase tracking-[0.26em] text-white/70">
               {systemLine}
             </div>
 
             <div
-              className="w-[36px] h-[2px] rounded-full"
+              className="h-[2px] w-[36px] rounded-full"
               style={{ background: primary }}
             />
           </div>

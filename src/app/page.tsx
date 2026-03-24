@@ -1,16 +1,37 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { LogoMarquee } from "@/components/LogoMarquee";
 import { SiteHeader } from "@/components/SiteHeader";
-import { COPY } from "@/lib/copy";
 import { useLang } from "@/lib/useLang";
+
+type HeroSlide = {
+  src: string;
+  alt: string;
+};
+
+const HERO_SLIDES: HeroSlide[] = [
+  {
+    src: "/hero/pdp-cover-v2.png",
+    alt: "Development plan cover preview",
+  },
+  {
+    src: "/hero/pdp-focus-v2.png",
+    alt: "Development plan focus preview",
+  },
+  {
+    src: "/hero/pdp-detail-v2.png",
+    alt: "Development plan detail preview",
+  },
+];
 
 export default function Home() {
   const { lang, setLang } = useLang("en");
-  const t = useMemo(() => COPY[lang], [lang]);
+
+  const isNl = lang === "nl";
 
   const logos = [
     { src: "/logos/club1.png", alt: "Club 1" },
@@ -46,109 +67,164 @@ export default function Home() {
     { src: "/logos/club31.png", alt: "Club 31" },
   ];
 
-  const tracks = [
-    {
-      href: "/vision",
-      n: "01",
-      title: t.tracks[0].title,
-      desc: t.tracks[0].desc,
-      meta: "VISION SYSTEM",
-    },
-    {
-      href: "/recruitment",
-      n: "02",
-      title: t.tracks[1].title,
-      desc: t.tracks[1].desc,
-      meta: "RECRUITMENT SYSTEM",
-    },
-    {
-      href: "/development",
-      n: "03",
-      title: t.tracks[2].title,
-      desc: t.tracks[2].desc,
-      meta: "DEVELOPMENT SYSTEM",
-    },
-  ] as const;
+  const headlineA = isNl ? "Plannen." : "Plans.";
+  const headlineB = isNl ? "Uitgevoerd." : "Executed.";
 
-  const headlineA =
-    lang === "nl" ? "Plannen die echt" : "Plans that actually";
-  const headlineB =
-    lang === "nl" ? "uitgevoerd worden." : "get executed.";
+  const sub = isNl
+    ? "Van jouw context naar een uitgewerkt plan - in minuten."
+    : "Built from your context into a structured plan - in minutes.";
 
-  const sub =
-    lang === "nl"
-      ? "Gebouwd voor clubs waar helderheid, eigenaarschap en ritme ook onder druk moeten blijven staan."
-      : "Built for clubs where clarity, ownership and rhythm have to hold under pressure.";
+  const microProof = isNl
+    ? ["ROLGEBONDEN", "GESTRUCTUREERD", "KLAAR VOOR GEBRUIK"]
+    : ["ROLE-BASED", "STRUCTURED", "EXECUTION-READY"];
 
-  const tracksTitle =
-    lang === "nl" ? "Drie kernomgevingen." : "Three core environments.";
+  const heroEyebrow = isNl
+    ? "PLATFORM VOOR PROFCLUBS"
+    : "PLATFORM FOR PROFESSIONAL CLUBS";
 
-  const selectedClubsLabel =
-    lang === "nl"
-      ? "GESELECTEERDE CLUBS (PRIVATE BETA)"
-      : "SELECTED CLUBS (PRIVATE BETA)";
+  const primaryCta = isNl ? "Maak je plan" : "Create your plan";
 
-  const openLabel = t.homeOpenLabel;
+  const tracksTitle = isNl
+    ? "Drie omgevingen."
+    : "Three core environments.";
+
+  const selectedClubsLabel = isNl
+    ? "GESELECTEERDE CLUBS (PRIVATE BETA)"
+    : "SELECTED CLUBS (PRIVATE BETA)";
+
+  const bottomLine = isNl
+    ? "Gebouwd voor clubs die standaard serieus nemen."
+    : "Built for clubs that take standards seriously.";
+
   const copyrightLabel = `© ${new Date().getFullYear()} Football Leadership`;
 
-  const primaryCta = lang === "nl" ? "Open Development" : "Open Development";
-  const secondaryCta = lang === "nl" ? "Bekijk platform" : "View platform";
-  const heroEyebrow =
-    lang === "nl"
-      ? "BESLUITPLATFORM VOOR PROFCLUBS"
-      : "DECISION PLATFORM FOR PROFESSIONAL CLUBS";
+  const tracks = isNl
+    ? [
+        {
+          href: "/vision",
+          n: "01",
+          title: "Visie & Strategie",
+          desc: "Richting bepalen. Koers houden onder druk.",
+          meta: "VISION SYSTEM",
+          cta: "Open omgeving",
+        },
+        {
+          href: "/recruitment",
+          n: "02",
+          title: "Recruitment",
+          desc: "Windows plannen. Profielen aanscherpen. Rust brengen in keuzes.",
+          meta: "RECRUITMENT SYSTEM",
+          cta: "Open omgeving",
+        },
+        {
+          href: "/development",
+          n: "03",
+          title: "Ontwikkeling & Assessments",
+          desc: "Ontwikkelplannen bouwen. Assessments onderbouwen. Verandering volgen.",
+          meta: "DEVELOPMENT SYSTEM",
+          cta: "Open omgeving",
+        },
+      ]
+    : [
+        {
+          href: "/vision",
+          n: "01",
+          title: "Vision & Strategy",
+          desc: "Set direction. Keep course under pressure.",
+          meta: "VISION SYSTEM",
+          cta: "Open environment",
+        },
+        {
+          href: "/recruitment",
+          n: "02",
+          title: "Recruitment",
+          desc: "Plan windows. Sharpen profiles. Bring calm to decisions.",
+          meta: "RECRUITMENT SYSTEM",
+          cta: "Open environment",
+        },
+        {
+          href: "/development",
+          n: "03",
+          title: "Development & Assessments",
+          desc: "Build development plans. Ground assessments. Track change.",
+          meta: "DEVELOPMENT SYSTEM",
+          cta: "Open environment",
+        },
+      ];
+
+  const whatYouGetTitle = isNl ? "WAT JE KRIJGT" : "WHAT YOU GET";
+
+  const whatYouGetItems = isNl
+    ? [
+        "Richting zonder ruis",
+        "Recruitment met eigenaarschap",
+        "Assessments en plannen die blijven hangen",
+        "Minimal interface. Serieuze standaard.",
+      ]
+    : [
+        "Direction without noise",
+        "Recruitment with ownership",
+        "Assessments and plans that stick",
+        "Minimal interface. Serious standard.",
+      ];
 
   return (
-    <main className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
+    <main className="min-h-screen overflow-x-hidden bg-black text-white selection:bg-white selection:text-black">
       <div className="pointer-events-none fixed inset-0">
-        <div className="absolute inset-0 bg-[#050505]" />
-        <div className="absolute inset-0 bg-[radial-gradient(900px_600px_at_72%_18%,rgba(255,255,255,0.08),transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(700px_500px_at_18%_30%,rgba(255,255,255,0.04),transparent_65%)]" />
+        <div className="absolute inset-0 bg-[#040404]" />
+        <div className="absolute inset-0 bg-[radial-gradient(900px_620px_at_70%_16%,rgba(60,255,170,0.10),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(700px_520px_at_20%_24%,rgba(255,255,255,0.05),transparent_62%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.015),transparent_28%)]" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-6">
         <SiteHeader lang={lang} setLang={setLang} />
 
-        <section className="pt-6 pb-24">
-          <div className="grid gap-12 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+        <section className="pb-24 pt-6 md:pt-8">
+          <div className="grid items-center gap-12 lg:grid-cols-[0.66fr_1.34fr] lg:gap-16">
             <div className="max-w-2xl">
-              <div className="text-[11px] tracking-[0.22em] text-white/38">
+              <div className="text-[11px] tracking-[0.24em] text-white/34">
                 {heroEyebrow}
               </div>
 
-              <h1 className="mt-6 font-medium tracking-tight leading-[0.98] text-[42px] sm:text-[56px] md:text-[76px] lg:text-[88px]">
+              <h1 className="mt-6 text-[44px] font-medium leading-[0.9] tracking-[-0.03em] sm:text-[60px] md:text-[76px] lg:text-[84px]">
                 {headlineA}
-                <span className="block text-white/52">{headlineB}</span>
+                <span className="block text-white/48">{headlineB}</span>
               </h1>
 
               <p className="mt-7 max-w-[34ch] text-[16px] leading-relaxed text-white/62 sm:text-[18px] md:text-[19px]">
                 {sub}
               </p>
 
-              <div className="mt-10 flex flex-wrap items-center gap-3">
-                <Button
-                  asChild
-                  className="bg-white text-black hover:bg-white/90"
-                >
-                  <Link href="/development">{primaryCta}</Link>
-                </Button>
+              <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[9px] tracking-[0.18em] text-white/34">
+                {microProof.map((item, index) => (
+                  <span key={item} className="inline-flex items-center gap-5">
+                    <span>{item}</span>
+                    {index < microProof.length - 1 ? (
+                      <span className="h-[1px] w-4 bg-white/14" />
+                    ) : null}
+                  </span>
+                ))}
+              </div>
 
+              <div className="mt-12 flex flex-wrap items-center gap-3">
                 <Button
                   asChild
-                  variant="secondary"
-                  className="border border-white/15 bg-transparent text-white hover:bg-white/10"
+                  className="h-12 rounded-full bg-white px-6 text-black hover:bg-white/90"
                 >
-                  <Link href="#platform">{secondaryCta}</Link>
+                  <Link href="/development/player-development-plan">
+                    {primaryCta}
+                  </Link>
                 </Button>
               </div>
             </div>
 
-            <div className="lg:pl-6">
-              <HeroPlanPreview lang={lang} />
+            <div className="lg:pl-2">
+              <HeroSlides slides={HERO_SLIDES} />
             </div>
           </div>
 
-          <div id="platform" className="mt-24">
+          <div id="platform" className="mt-28">
             <div className="text-xs tracking-[0.18em] text-white/45">
               {tracksTitle}
             </div>
@@ -159,14 +235,11 @@ export default function Home() {
                   key={x.href}
                   href={x.href}
                   className={[
-                    "group relative overflow-hidden rounded-3xl",
-                    "border border-white/10 bg-white/[0.025]",
-                    "p-7 md:p-8",
-                    "transition-all duration-300 ease-out",
-                    "hover:bg-white/[0.045] hover:-translate-y-0.5",
+                    "group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.025] p-7 md:p-8",
+                    "transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-white/[0.045]",
                   ].join(" ")}
                 >
-                  <div className="pointer-events-none absolute inset-0 rounded-3xl border border-transparent group-hover:border-white/15 transition duration-300" />
+                  <div className="pointer-events-none absolute inset-0 rounded-3xl border border-transparent transition duration-300 group-hover:border-white/15" />
 
                   <div className="relative flex items-start justify-between gap-4">
                     <div className="text-xs tracking-[0.18em] text-white/45">
@@ -178,34 +251,40 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div className="relative mt-5 text-lg font-medium text-white/92">
+                  <div className="relative mt-7 text-[22px] font-medium tracking-tight text-white/92">
                     {x.title}
                   </div>
 
-                  <p className="relative mt-3 text-sm leading-relaxed text-white/60">
+                  <p className="relative mt-4 max-w-[30ch] text-[15px] leading-relaxed text-white/60">
                     {x.desc}
                   </p>
 
-                  <div className="relative mt-8 text-sm text-white/55 transition group-hover:text-white">
-                    {openLabel}
+                  <div className="relative mt-10 text-sm text-white/55 transition group-hover:text-white">
+                    {x.cta}
                   </div>
                 </Link>
               ))}
             </div>
           </div>
 
-          <div className="mt-16">
-            <div className="text-xs tracking-[0.18em] text-white/45">
-              {t.whatYouGet}
+          <div className="mt-20">
+            <div className="text-[11px] tracking-[0.22em] text-white/42">
+              {whatYouGetTitle}
             </div>
-            <div className="mt-5 flex flex-wrap gap-x-8 gap-y-3 text-sm text-white/60">
-              {t.whatYouGetBullets.map((u) => (
-                <span key={u}>{u}</span>
+
+            <div className="mt-6 grid gap-y-4 md:grid-cols-2 md:gap-x-10 lg:grid-cols-4 lg:gap-x-8">
+              {whatYouGetItems.map((item) => (
+                <div
+                  key={item}
+                  className="text-[15px] leading-relaxed text-white/62"
+                >
+                  {item}
+                </div>
               ))}
             </div>
           </div>
 
-          <div className="mt-16 mb-2">
+          <div className="mb-2 mt-20">
             <div className="mb-4 text-xs tracking-[0.22em] text-white/35">
               {selectedClubsLabel}
             </div>
@@ -231,7 +310,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-10 text-xs text-white/35">{t.footerLine}</div>
+          <div className="mt-10 text-sm text-white/35">{bottomLine}</div>
 
           <div className="mt-14 pb-10 text-xs text-white/30">
             {copyrightLabel}
@@ -242,181 +321,160 @@ export default function Home() {
   );
 }
 
-function HeroPlanPreview({ lang }: { lang: "en" | "de" | "es" | "fr" | "it" | "nl" }) {
-  const isNl = lang === "nl";
+function HeroSlides({
+  slides,
+}: {
+  slides: HeroSlide[];
+}) {
+  const [activeIndex, setActiveIndex] = useState(1);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setActiveIndex((current) => (current + 1) % slides.length);
+    }, 3600);
+
+    return () => window.clearInterval(interval);
+  }, [slides.length]);
 
   return (
-    <div className="relative">
-      <div className="absolute -inset-6 rounded-[36px] bg-white/[0.03] blur-3xl" />
+    <div className="relative mx-auto w-full max-w-[1080px]">
+      <div className="absolute left-[16%] top-[8%] h-52 w-52 rounded-full bg-emerald-400/12 blur-3xl" />
+      <div className="absolute bottom-[8%] right-[12%] h-56 w-56 rounded-full bg-white/6 blur-3xl" />
 
-      <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-[#0E1116] shadow-[0_30px_120px_rgba(0,0,0,0.45)]">
-        <div className="border-b border-white/8 px-5 py-4 sm:px-6">
-          <div className="flex flex-wrap items-center gap-2 text-[11px] tracking-[0.18em] text-white/34">
-            <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-white/38">
-              Vision
-            </span>
-            <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-white/38">
-              Recruitment
-            </span>
-            <span className="rounded-full border border-white/14 bg-white/[0.08] px-2.5 py-1 text-white/82">
-              Development
-            </span>
-          </div>
+      <div className="relative min-h-[520px] sm:min-h-[620px] lg:min-h-[760px]">
+        <div className="pointer-events-none absolute inset-x-[4%] top-[6%] bottom-[8%] rounded-[44px] border border-white/7 bg-white/[0.015]" />
+        <div className="pointer-events-none absolute inset-x-[4%] top-[6%] bottom-[8%] rounded-[44px] bg-[radial-gradient(72%_72%_at_68%_18%,rgba(35,211,120,0.09),transparent_62%)]" />
 
-          <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <div className="text-[11px] tracking-[0.18em] text-white/36">
-                {isNl ? "ONTWIKKELING — INDIVIDUEEL PLAN" : "DEVELOPMENT — INDIVIDUAL PLAN"}
-              </div>
-              <div className="mt-2 text-[24px] font-medium tracking-tight text-white/94 sm:text-[28px]">
-                {isNl ? "Middenvelder #8" : "Midfielder #8"}
-              </div>
-            </div>
+        <div className="absolute left-6 top-6 z-20 flex flex-wrap items-center gap-2 sm:left-8 sm:top-8">
+          <span className="rounded-full border border-white/12 bg-black/25 px-3 py-1 text-[10px] tracking-[0.18em] text-white/72 backdrop-blur-md">
+            VISION
+          </span>
+          <span className="rounded-full border border-white/12 bg-black/25 px-3 py-1 text-[10px] tracking-[0.18em] text-white/72 backdrop-blur-md">
+            RECRUITMENT
+          </span>
+          <span className="rounded-full border border-emerald-300/20 bg-emerald-300/12 px-3 py-1 text-[10px] tracking-[0.18em] text-white backdrop-blur-md">
+            DEVELOPMENT
+          </span>
+        </div>
 
-            <div className="text-right text-[12px] text-white/42">
-              <div>{isNl ? "Cyclus: 6 weken" : "Cycle: 6 weeks"}</div>
-              <div className="mt-1">{isNl ? "Eigenaar: Middenveldcoach" : "Owner: Midfield coach"}</div>
-            </div>
+        <div className="hidden lg:block absolute inset-0">
+          <div className="absolute inset-0 flex items-center justify-center">
+            {slides.map((slide, index) => {
+              const isActive = index === activeIndex;
+
+              const positionClass =
+                index === activeIndex
+                  ? "z-30 translate-y-0 scale-100 opacity-100"
+                  : index < activeIndex
+                    ? "z-10 -translate-x-[18%] translate-y-[5%] scale-[0.82] opacity-40 grayscale"
+                    : "z-10 translate-x-[18%] translate-y-[5%] scale-[0.82] opacity-40 grayscale";
+
+              return (
+                <button
+                  key={slide.src}
+                  type="button"
+                  onClick={() => setActiveIndex(index)}
+                  aria-label={`Show slide ${index + 1}`}
+                  className={[
+                    "absolute transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                    positionClass,
+                  ].join(" ")}
+                >
+                  <div
+                    className={[
+                      "relative overflow-hidden rounded-[30px] transition-all duration-700",
+                      isActive
+                        ? "shadow-[0_45px_120px_rgba(0,0,0,0.62)] ring-1 ring-white/12"
+                        : "shadow-[0_24px_60px_rgba(0,0,0,0.35)] ring-1 ring-white/6",
+                    ].join(" ")}
+                  >
+                    <Image
+                      src={slide.src}
+                      alt={slide.alt}
+                      width={860}
+                      height={1146}
+                      priority={index === 0}
+                      className={[
+                        "h-auto w-[340px] xl:w-[390px] rounded-[30px] transition-all duration-700",
+                        isActive ? "" : "blur-[0.2px]",
+                      ].join(" ")}
+                      sizes="(min-width: 1280px) 390px, 340px"
+                    />
+
+                    <div
+                      className={[
+                        "absolute inset-0 transition-all duration-700",
+                        isActive ? "bg-black/6" : "bg-black/42",
+                      ].join(" ")}
+                    />
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        <div className="grid gap-0 md:grid-cols-[1.15fr_0.85fr]">
-          <div className="px-5 py-5 sm:px-6 sm:py-6">
-            <PlanBlock
-              label={isNl ? "Focusgebied" : "Focus area"}
-              value={
-                isNl
-                  ? "Vooruit spelen onder druk"
-                  : "Forward passing under pressure"
-              }
+        <div className="lg:hidden absolute inset-0 flex items-center justify-center px-6 pb-20 pt-20 sm:px-10">
+          <div className="relative w-full max-w-[460px]">
+            {slides.map((slide, index) => {
+              const isActive = index === activeIndex;
+
+              return (
+                <div
+                  key={slide.src}
+                  className={[
+                    "absolute inset-0 transition-all duration-[1200ms] ease-out",
+                    isActive ? "scale-100 opacity-100" : "scale-[1.02] opacity-0",
+                  ].join(" ")}
+                >
+                  <div className="overflow-hidden rounded-[28px] ring-1 ring-white/8 shadow-[0_32px_90px_rgba(0,0,0,0.5)]">
+                    <Image
+                      src={slide.src}
+                      alt={slide.alt}
+                      width={860}
+                      height={1146}
+                      priority={index === 0}
+                      className="h-auto w-full rounded-[28px]"
+                      sizes="90vw"
+                    />
+                    <div className="absolute inset-0 bg-black/8" />
+                  </div>
+                </div>
+              );
+            })}
+
+            <Image
+              src={slides[activeIndex].src}
+              alt={slides[activeIndex].alt}
+              width={860}
+              height={1146}
+              className="h-auto w-full opacity-0"
+              sizes="90vw"
             />
-
-            <PlanBlock
-              label={isNl ? "Gedragsdoel" : "Behaviour target"}
-              value={
-                isNl
-                  ? "Open aannemen en binnen twee balcontacten vooruit spelen wanneer de as open is."
-                  : "Receive on the half-turn and play forward within two touches when the central lane is open."
-              }
-            />
-
-            <PlanList
-              label={isNl ? "Interventies" : "Interventions"}
-              items={
-                isNl
-                  ? [
-                      "Voororiëntatie vóór aanname",
-                      "Positie kiezen tussen linies",
-                      "Rondo met richting en tijdsdruk",
-                    ]
-                  : [
-                      "Pre-receive scanning behaviour",
-                      "Positioning between lines",
-                      "Rondo with directional and time pressure",
-                    ]
-              }
-            />
-
-            <PlanBlock
-              label={isNl ? "Wedstrijdtransfer" : "Match transfer"}
-              value={
-                isNl
-                  ? "Na balwinst in het midden direct eerst vooruit kijken en de eerste pass door de as zoeken."
-                  : "After regain in the middle third, look forward first and search for the first pass through the central lane."
-              }
-            />
-          </div>
-
-          <div className="border-t border-white/8 px-5 py-5 md:border-l md:border-t-0 sm:px-6 sm:py-6">
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-              <div className="text-[11px] tracking-[0.18em] text-white/40">
-                {isNl ? "Ritme & beoordeling" : "Rhythm & review"}
-              </div>
-
-              <div className="mt-4 space-y-4">
-                <MetaRow
-                  k={isNl ? "Wekelijks ritme" : "Weekly rhythm"}
-                  v={isNl ? "MD+1 review / MD-2 transfer" : "MD+1 review / MD-2 transfer"}
-                />
-                <MetaRow
-                  k={isNl ? "Bewijs" : "Evidence"}
-                  v={isNl ? "Video + training clips" : "Video + training clips"}
-                />
-                <MetaRow
-                  k={isNl ? "Evaluatie" : "Evaluation"}
-                  v={isNl ? "Speler + coach + staf" : "Player + coach + staff"}
-                />
-              </div>
-            </div>
-
-            <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-              <div className="text-[11px] tracking-[0.18em] text-white/40">
-                {isNl ? "Uitvoeringssignalen" : "Execution signals"}
-              </div>
-
-              <div className="mt-4 space-y-3">
-                <Signal
-                  title={isNl ? "Scannen vóór aanname" : "Scans before receive"}
-                  note={isNl ? "zichtbaar frequenter" : "visibly more frequent"}
-                />
-                <Signal
-                  title={isNl ? "Open lichaamsstand" : "Open body shape"}
-                  note={isNl ? "eerder voorbereid" : "prepared earlier"}
-                />
-                <Signal
-                  title={isNl ? "Eerste blik vooruit" : "First look forward"}
-                  note={isNl ? "consistenter na balwinst" : "more consistent after regain"}
-                />
-              </div>
-            </div>
           </div>
         </div>
+
+        <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2 sm:bottom-8 sm:left-8">
+          {slides.map((slide, index) => {
+            const active = index === activeIndex;
+
+            return (
+              <button
+                key={slide.src}
+                type="button"
+                onClick={() => setActiveIndex(index)}
+                aria-label={`Go to slide ${index + 1}`}
+                className={[
+                  "h-2.5 rounded-full transition-all duration-300",
+                  active
+                    ? "w-8 bg-white"
+                    : "w-2.5 bg-white/35 hover:bg-white/55",
+                ].join(" ")}
+              />
+            );
+          })}
+        </div>
       </div>
-    </div>
-  );
-}
-
-function PlanBlock({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="border-b border-white/8 py-4 first:pt-0 last:border-b-0">
-      <div className="text-[11px] tracking-[0.18em] text-white/38">{label}</div>
-      <div className="mt-2 text-[15px] leading-relaxed text-white/86 sm:text-[16px]">
-        {value}
-      </div>
-    </div>
-  );
-}
-
-function PlanList({ label, items }: { label: string; items: string[] }) {
-  return (
-    <div className="border-b border-white/8 py-4">
-      <div className="text-[11px] tracking-[0.18em] text-white/38">{label}</div>
-      <div className="mt-3 space-y-2">
-        {items.map((item) => (
-          <div key={item} className="flex items-start gap-3 text-[15px] text-white/84">
-            <span className="mt-[9px] h-[1px] w-4 shrink-0 bg-white/22" />
-            <span className="leading-relaxed">{item}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function MetaRow({ k, v }: { k: string; v: string }) {
-  return (
-    <div className="flex items-start justify-between gap-4 border-b border-white/8 pb-3 last:border-b-0 last:pb-0">
-      <div className="text-[12px] text-white/45">{k}</div>
-      <div className="max-w-[58%] text-right text-[12px] text-white/78">{v}</div>
-    </div>
-  );
-}
-
-function Signal({ title, note }: { title: string; note: string }) {
-  return (
-    <div className="rounded-xl border border-white/8 bg-black/20 px-3 py-3">
-      <div className="text-[13px] text-white/86">{title}</div>
-      <div className="mt-1 text-[12px] text-white/46">{note}</div>
     </div>
   );
 }
