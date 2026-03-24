@@ -26,8 +26,6 @@ export default function Page() {
         <SiteHeader
           lang={lang}
           setLang={setLang}
-          requestAccessLabel={t.requestAccess}
-          brandLabel={t.brand}
         />
       </div>
 

@@ -9,7 +9,12 @@ function esc(input: unknown) {
     .replace(/"/g, "&quot;");
 }
 
+function t(lang: "nl" | "en", nl: string, en: string) {
+  return lang === "nl" ? nl : en;
+}
+
 export function pageCoverLocked(args: {
+  lang: "nl" | "en";
   clubName: string;
   logoUrl?: string;
   accentHex: string;
@@ -20,12 +25,14 @@ export function pageCoverLocked(args: {
   systemLine?: string;
 }) {
   const {
+    lang,
     clubName,
     logoUrl,
     accentHex,
     playerName,
     headshotUrl,
     headline,
+    subjectLine,
     systemLine,
   } = args;
 
@@ -53,7 +60,10 @@ export function pageCoverLocked(args: {
 
     <div class="pdpCover__topText">
       <div class="pdpCover__club">${esc(clubName)}</div>
-      <div class="pdpCover__subject">${esc("Persoonlijk Ontwikkelplan")}</div>
+      <div class="pdpCover__subject">${esc(
+        subjectLine ||
+          t(lang, "Persoonlijk Ontwikkelplan", "Player Development Plan")
+      )}</div>
     </div>
 
     <div class="pdpCover__logoWrap" aria-hidden="true">

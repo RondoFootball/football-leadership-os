@@ -95,8 +95,6 @@ export default function Home() {
         <SiteHeader
           lang={lang}
           setLang={setLang}
-          requestAccessLabel={t.requestAccess}
-          brandLabel={t.brand}
         />
 
         <section className="pt-6 pb-20">
