@@ -1,9 +1,12 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { DevelopmentPlanV1, Lang } from "../lib/engineSchema";
 
-type ChatMsg = { role: "user" | "assistant"; content: string };
+type ChatMsg = {
+  role: "user" | "assistant";
+  content: string;
+};
 
 export type ChatPlannerState = {
   filledSlots?: Record<string, boolean>;
@@ -45,12 +48,66 @@ export function PdpChat({
 }) {
   const isNl = lang === "nl";
 
+  const copy = useMemo(
+    () =>
+      isNl
+        ? {
+            introQuestion: "Wat zie je concreet gebeuren bij deze speler?",
+            layerLabel: "Conversation",
+            title: "Werk vanuit wat je concreet ziet.",
+            body:
+              "Gebruik de chat om observatie, gedrag en context te vertalen naar een plan dat scherp genoeg is om mee te werken.",
+            ready: "Plan ready",
+            live: "Live",
+            thinking: "Denkt…",
+            building: "Bouwt plan…",
+            createDraft: "Maak eerste versie",
+            generated: "Plan gegenereerd",
+            viewPlan: "Bekijk plan",
+            downloadPdf: "Download PDF",
+            placeholder: "Beschrijf concreet wat je ziet…",
+            send: "Verstuur",
+            sendHint: "CMD/CTRL + ENTER om te versturen",
+            quickPrompts: [
+              "Beschrijf het gedrag onder druk",
+              "Beschrijf het moment in de wedstrijd",
+              "Beschrijf het effect op het spel",
+            ],
+            errorChat: "Er ging iets mis in de chat.",
+            errorGenerate: "Er ging iets mis bij het genereren van het plan.",
+          }
+        : {
+            introQuestion: "What do you concretely see happening with this player?",
+            layerLabel: "Conversation",
+            title: "Work from what you concretely see.",
+            body:
+              "Use the chat to turn observation, behaviour and context into a plan sharp enough to actually work with.",
+            ready: "Plan ready",
+            live: "Live",
+            thinking: "Thinking…",
+            building: "Building plan…",
+            createDraft: "Create first draft",
+            generated: "Plan generated",
+            viewPlan: "View plan",
+            downloadPdf: "Download PDF",
+            placeholder: "Describe concretely what you see…",
+            send: "Send",
+            sendHint: "CMD/CTRL + ENTER to send",
+            quickPrompts: [
+              "Describe the behaviour under pressure",
+              "Describe the moment in the match",
+              "Describe the effect on the game",
+            ],
+            errorChat: "Something went wrong in the chat.",
+            errorGenerate: "Something went wrong while generating the plan.",
+          },
+    [isNl]
+  );
+
   const [messages, setMessages] = useState<ChatMsg[]>([
     {
       role: "assistant",
-      content: isNl
-        ? "Wat zie je concreet gebeuren bij deze speler?"
-        : "What do you concretely see happening with this player?",
+      content: copy.introQuestion,
     },
   ]);
 
@@ -60,11 +117,9 @@ export function PdpChat({
   const [planReady, setPlanReady] = useState(false);
   const [planner, setPlanner] = useState<ChatPlannerState | null>(null);
 
-  const endRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, busy, generating]);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const shouldStickToBottomRef = useRef(true);
 
   useEffect(() => {
     onPlannerStateChange?.(planner);
@@ -74,9 +129,7 @@ export function PdpChat({
     setMessages([
       {
         role: "assistant",
-        content: isNl
-          ? "Wat zie je concreet gebeuren bij deze speler?"
-          : "What do you concretely see happening with this player?",
+        content: copy.introQuestion,
       },
     ]);
     setInput("");
@@ -84,14 +137,57 @@ export function PdpChat({
     setGenerating(false);
     setPlanReady(false);
     setPlanner(null);
-  }, [isNl]);
+  }, [copy.introQuestion]);
+
+  useEffect(() => {
+    if (!scrollRef.current) return;
+    if (!shouldStickToBottomRef.current) return;
+
+    const el = scrollRef.current;
+    el.scrollTo({
+      top: el.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [messages, busy, generating]);
+
+  function handleScroll() {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    shouldStickToBottomRef.current = distanceFromBottom < 48;
+  }
+
+  function autoResizeTextarea() {
+    const el = textareaRef.current;
+    if (!el) return;
+
+    el.style.height = "0px";
+    el.style.height = `${Math.min(el.scrollHeight, 180)}px`;
+  }
+
+  useEffect(() => {
+    autoResizeTextarea();
+  }, [input]);
+
+  function applyPrompt(text: string) {
+    setInput(text);
+    requestAnimationFrame(() => {
+      textareaRef.current?.focus();
+      autoResizeTextarea();
+    });
+  }
 
   async function send() {
     if (!input.trim() || busy) return;
 
-    const next = [...messages, { role: "user" as const, content: input }];
+    const nextMessages: ChatMsg[] = [
+      ...messages,
+      { role: "user", content: input.trim() },
+    ];
 
-    setMessages(next);
+    shouldStickToBottomRef.current = true;
+    setMessages(nextMessages);
     setInput("");
     setBusy(true);
 
@@ -102,41 +198,53 @@ export function PdpChat({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          messages: next,
+          messages: nextMessages,
           draftPlan,
           lang,
           plannerState: planner,
         }),
       });
 
+      if (!res.ok) {
+        throw new Error(copy.errorChat);
+      }
+
       const data = (await res.json()) as ApiQuestion | ApiPlan;
 
-      console.log("💬 CHAT RESPONSE", data);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: data.message },
+      ]);
 
-      setMessages((m) => [...m, { role: "assistant", content: data.message }]);
+      if (data?.derived?.planner) {
+        setPlanner(data.derived.planner);
+      }
 
-      if (data?.derived?.planner) setPlanner(data.derived.planner);
-
-      if (data.type === "plan") {
-        if (!data.plan) {
-          console.error("❌ PLAN MISSING IN CHAT RESPONSE", data);
-          return;
-        }
-
-        console.log("✅ PLAN RECEIVED FROM CHAT", data.plan);
-
+      if (data.type === "plan" && data.plan) {
         onPlanGenerated(data.plan);
         setPlanReady(true);
       }
-    } catch (e) {
-      console.error("❌ CHAT ERROR", e);
+    } catch (error) {
+      console.error("PDP chat error:", error);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: copy.errorChat,
+        },
+      ]);
     } finally {
       setBusy(false);
+      requestAnimationFrame(() => {
+        textareaRef.current?.focus();
+      });
     }
   }
 
   async function generate() {
     setGenerating(true);
+    shouldStickToBottomRef.current = true;
 
     try {
       const res = await fetch("/api/pdp/generate", {
@@ -151,120 +259,201 @@ export function PdpChat({
         }),
       });
 
-      const data = await res.json();
-
-      console.log("⚙️ GENERATE RESPONSE", data);
-
-      if (!data || !data.plan) {
-        console.error("❌ GENERATE FAILED — NO PLAN", data);
-        alert(
-          isNl
-            ? "Er ging iets mis bij het genereren van het plan."
-            : "Something went wrong while generating the plan."
-        );
-        return;
+      if (!res.ok) {
+        throw new Error(copy.errorGenerate);
       }
 
-      console.log("✅ PLAN RECEIVED FROM GENERATE", data.plan);
+      const data = await res.json();
+
+      if (!data?.plan) {
+        throw new Error(copy.errorGenerate);
+      }
 
       onPlanGenerated(data.plan);
       setPlanReady(true);
 
-      if (data?.derived?.planner) setPlanner(data.derived.planner);
-    } catch (e) {
-      console.error("❌ GENERATE ERROR", e);
-      alert(isNl ? "Fout bij genereren." : "Error while generating.");
+      if (data?.derived?.planner) {
+        setPlanner(data.derived.planner);
+      }
+
+      if (data?.message) {
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: data.message },
+        ]);
+      }
+    } catch (error) {
+      console.error("PDP generate error:", error);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: copy.errorGenerate,
+        },
+      ]);
     } finally {
       setGenerating(false);
     }
   }
 
+  function onInputKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      e.preventDefault();
+      void send();
+    }
+  }
+
+  const statusLabel = planReady ? copy.ready : copy.live;
+
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-      <div className="text-sm text-white/90">
-        {isNl ? "Gesprek" : "Conversation"}
+    <div className="overflow-hidden rounded-[24px] border border-white/8 bg-[#0a0e13]">
+      <div className="border-b border-white/8 px-5 py-5 sm:px-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="max-w-[58ch]">
+            <div className="text-[11px] uppercase tracking-[0.18em] text-white/36">
+              {copy.layerLabel}
+            </div>
+
+            <h3 className="mt-2 text-[24px] font-medium leading-[1.02] tracking-[-0.03em] text-white/92 sm:text-[28px]">
+              {copy.title}
+            </h3>
+
+            <p className="mt-3 text-[14px] leading-relaxed text-white/52">
+              {copy.body}
+            </p>
+          </div>
+
+          <div
+            className={[
+              "rounded-full border px-3 py-1.5 text-[11px] tracking-[0.18em]",
+              planReady
+                ? "border-emerald-300/20 bg-emerald-300/10 text-white/84"
+                : "border-white/10 bg-white/[0.03] text-white/48",
+            ].join(" ")}
+          >
+            {statusLabel}
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          {copy.quickPrompts.map((prompt) => (
+            <button
+              key={prompt}
+              type="button"
+              onClick={() => applyPrompt(prompt)}
+              className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[12px] text-white/66 transition hover:border-white/18 hover:text-white"
+            >
+              {prompt}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="mt-4 max-h-[420px] space-y-3 overflow-auto">
-        {messages.map((m, i) => (
-          <div
-            key={i}
-            className={`rounded-xl p-3 text-sm ${
-              m.role === "assistant" ? "bg-black/30" : "bg-white/5"
-            }`}
-          >
-            {m.content}
-          </div>
-        ))}
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="max-h-[420px] min-h-[240px] space-y-4 overflow-y-auto px-5 py-5 sm:px-6"
+      >
+        {messages.map((message, index) => {
+          const assistant = message.role === "assistant";
+
+          return (
+            <div
+              key={`${message.role}-${index}`}
+              className={`flex ${assistant ? "justify-start" : "justify-end"}`}
+            >
+              <div
+                className={[
+                  "max-w-[85%] rounded-[20px] px-4 py-3 text-[14px] leading-relaxed",
+                  assistant
+                    ? "border border-white/8 bg-white/[0.04] text-white/84"
+                    : "bg-white text-black",
+                ].join(" ")}
+              >
+                {message.content}
+              </div>
+            </div>
+          );
+        })}
 
         {(busy || generating) && (
-          <div className="text-sm text-white/50">
-            {busy
-              ? isNl
-                ? "Denkt…"
-                : "Thinking…"
-              : isNl
-                ? "Bouwt plan…"
-                : "Building plan…"}
+          <div className="flex justify-start">
+            <div className="rounded-[20px] border border-white/8 bg-white/[0.04] px-4 py-3 text-[13px] text-white/46">
+              {busy ? copy.thinking : copy.building}
+            </div>
           </div>
         )}
-
-        <div ref={endRef} />
       </div>
 
-      {!planReady && (
-        <div className="mt-4 flex justify-end">
+      <div className="border-t border-white/8 px-5 py-4 sm:px-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            {planReady ? (
+              <>
+                <div className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1.5 text-[11px] text-white/82">
+                  {copy.generated}
+                </div>
+
+                {onViewPlan ? (
+                  <button
+                    type="button"
+                    onClick={onViewPlan}
+                    className="rounded-full border border-white/12 bg-white/[0.03] px-3 py-1.5 text-[12px] text-white/72 transition hover:border-white/20 hover:text-white"
+                  >
+                    {copy.viewPlan}
+                  </button>
+                ) : null}
+
+                {onDownloadPdf ? (
+                  <button
+                    type="button"
+                    onClick={() => onDownloadPdf("player")}
+                    className="rounded-full border border-white/12 bg-white px-3 py-1.5 text-[12px] text-black transition hover:bg-white/90"
+                  >
+                    {copy.downloadPdf}
+                  </button>
+                ) : null}
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={generate}
+                disabled={generating}
+                className="rounded-full bg-white px-4 py-2 text-[13px] text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {copy.createDraft}
+              </button>
+            )}
+          </div>
+
+          <div className="text-[10px] uppercase tracking-[0.18em] text-white/28">
+            {copy.sendHint}
+          </div>
+        </div>
+
+        <div className="flex items-end gap-3">
+          <div className="flex-1 rounded-[22px] border border-white/10 bg-black/28 px-4 py-3">
+            <textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={onInputKeyDown}
+              rows={1}
+              placeholder={copy.placeholder}
+              className="max-h-[180px] min-h-[28px] w-full resize-none bg-transparent text-[14px] leading-relaxed text-white placeholder:text-white/26 focus:outline-none"
+            />
+          </div>
+
           <button
-            onClick={generate}
-            className="rounded-lg bg-white px-4 py-2 text-sm text-black"
+            type="button"
+            onClick={() => void send()}
+            disabled={busy || !input.trim()}
+            className="rounded-[18px] bg-white px-4 py-3 text-[13px] text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-55"
           >
-            {isNl ? "Maak eerste versie" : "Create first draft"}
+            {copy.send}
           </button>
         </div>
-      )}
-
-      {planReady && (
-        <div className="mt-4 space-y-2">
-          <div className="text-sm text-green-400">
-            {isNl ? "Plan gegenereerd ✔" : "Plan generated ✔"}
-          </div>
-
-          <div className="flex gap-2">
-            {onViewPlan && (
-              <button
-                onClick={onViewPlan}
-                className="rounded-lg border border-white/20 px-3 py-2 text-sm"
-              >
-                {isNl ? "Bekijk plan" : "View plan"}
-              </button>
-            )}
-
-            {onDownloadPdf && (
-              <button
-                onClick={() => onDownloadPdf("player")}
-                className="rounded-lg bg-white px-3 py-2 text-sm text-black"
-              >
-                {isNl ? "Download PDF" : "Download PDF"}
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      <div className="mt-4 flex gap-2">
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder={isNl ? "Beschrijf gedrag..." : "Describe behaviour..."}
-          className="flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm"
-        />
-
-        <button
-          onClick={send}
-          className="rounded-lg bg-white px-4 text-black"
-        >
-          {isNl ? "Verstuur" : "Send"}
-        </button>
       </div>
     </div>
   );

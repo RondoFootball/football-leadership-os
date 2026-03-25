@@ -32,9 +32,6 @@ const ACADEMY_AGES = [
 
 const UI = {
   nl: {
-    eyebrow: "PLAYER DEVELOPMENT PLAN",
-    subtitle: "Van gesprek naar gestructureerd plan",
-
     modeChat: "Gesprek",
     modeManual: "Handmatig",
 
@@ -42,7 +39,7 @@ const UI = {
     basicsSubtitle:
       "Leg eerst vast voor wie dit plan geldt. Club, team en branding bepalen daarna automatisch de juiste context.",
 
-    brandingTitle: "Visuele preview",
+    brandingTitle: "Live cover preview",
     brandingEdit: "Branding aanpassen",
     brandingCollapse: "Inklappen",
 
@@ -106,7 +103,7 @@ const UI = {
 
     videoTitle: "Video / clips",
     videoBody:
-      "Voeg relevante wedstrijd- of trainingsbeelden toe. Werk met een link of kies direct een bestand vanaf je laptop.",
+      "Video is optioneel. Voeg alleen bewijs toe wanneer het helpt om observatie en context aan te scherpen.",
     videoClip1: "Clip 1",
     videoClip2: "Clip 2",
     videoClip3: "Clip 3",
@@ -121,6 +118,10 @@ const UI = {
     videoOr: "of",
     videoUploadHelp:
       "Upload werkt in deze versie binnen je sessie. Voor vaste opslag koppelen we later een upload-API.",
+    compactVideoOpen: "Open",
+    compactVideoClose: "Sluit",
+    compactVideoEmpty: "Geen clips",
+    compactVideoCount: "clips",
 
     langNl: "NL",
     langEn: "EN",
@@ -151,11 +152,19 @@ const UI = {
     exportTitle: "Download plan",
     coverSlide: "Cover",
     ready: "Klaar",
-  },
-  en: {
-    eyebrow: "PLAYER DEVELOPMENT PLAN",
-    subtitle: "From conversation to structured plan",
 
+    workspaceTitle: "Workspace",
+    workspaceBody:
+      "Van observatie naar plan. Bouw eerst gesprek of ontwikkelpunt, voeg daarna bewijs toe.",
+    controlLayer: "Control layer",
+    clubContext: "Club context",
+    pdfReady: "PDF-ready",
+    playerIdentity: "Player identity",
+    brandingMetaClub: "Club",
+    brandingMetaTeam: "Team",
+  },
+
+  en: {
     modeChat: "Conversation",
     modeManual: "Manual",
 
@@ -163,7 +172,7 @@ const UI = {
     basicsSubtitle:
       "First define who this plan is for. Club, team and branding then shape the right context automatically.",
 
-    brandingTitle: "Visual preview",
+    brandingTitle: "Live cover preview",
     brandingEdit: "Adjust branding",
     brandingCollapse: "Collapse",
 
@@ -227,7 +236,7 @@ const UI = {
 
     videoTitle: "Video / clips",
     videoBody:
-      "Add relevant match or training footage. Work with a link or choose a file directly from your laptop.",
+      "Video is optional. Only add evidence when it helps sharpen observation and context.",
     videoClip1: "Clip 1",
     videoClip2: "Clip 2",
     videoClip3: "Clip 3",
@@ -242,6 +251,10 @@ const UI = {
     videoOr: "or",
     videoUploadHelp:
       "Upload works in this version within your session. We can connect fixed storage later with an upload API.",
+    compactVideoOpen: "Open",
+    compactVideoClose: "Close",
+    compactVideoEmpty: "No clips",
+    compactVideoCount: "clips",
 
     langNl: "NL",
     langEn: "EN",
@@ -272,6 +285,16 @@ const UI = {
     exportTitle: "Download plan",
     coverSlide: "Cover",
     ready: "Ready",
+
+    workspaceTitle: "Workspace",
+    workspaceBody:
+      "From observation to plan. Build the conversation or development point first, then add evidence.",
+    controlLayer: "Control layer",
+    clubContext: "Club context",
+    pdfReady: "PDF-ready",
+    playerIdentity: "Player identity",
+    brandingMetaClub: "Club",
+    brandingMetaTeam: "Team",
   },
 } as const;
 
@@ -338,6 +361,14 @@ function clampPercent(v: string | number | undefined, fallback = 70) {
   return Math.max(0, Math.min(100, Math.round(n)));
 }
 
+function hasText(value: unknown) {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function hasItems(value: unknown) {
+  return Array.isArray(value) && value.length > 0;
+}
+
 function mergeGeneratedPlanWithLockedBasics(
   current: DevelopmentPlanV1,
   generated: DevelopmentPlanV1
@@ -397,7 +428,7 @@ export default function PlayerDevelopmentPlanBuilder() {
   const [generatedPlan, setGeneratedPlan] =
     useState<DevelopmentPlanV1 | null>(null);
 
-  const [lang, setLang] = useState<Lang>("nl");
+  const [lang, setLang] = useState<Lang>("en");
   const [mode, setMode] = useState<Mode>("chat");
   const [chatPlannerState, setChatPlannerState] =
     useState<ChatPlannerState | null>(null);
@@ -405,6 +436,7 @@ export default function PlayerDevelopmentPlanBuilder() {
   const [basicsOpen, setBasicsOpen] = useState(true);
   const [brandingOpen, setBrandingOpen] = useState(false);
   const [identityPhotoOpen, setIdentityPhotoOpen] = useState(false);
+  const [videoOpen, setVideoOpen] = useState(false);
 
   const [selectedCountry, setSelectedCountry] = useState("Netherlands");
   const [selectedLeague, setSelectedLeague] = useState("");
@@ -435,63 +467,69 @@ export default function PlayerDevelopmentPlanBuilder() {
   const academyAge = (((plan.player as any)?.academyAgeCategory || "") as string);
 
   const coverReady =
-    !!plan.player.name?.trim() &&
-    !!plan.brand.clubName?.trim() &&
-    !!plan.meta.team?.trim() &&
-    !!plan.brand.primaryColor?.trim();
+    hasText(plan.player.name) &&
+    hasText(plan.brand.clubName) &&
+    hasText(plan.meta.team) &&
+    hasText(plan.brand.primaryColor);
 
   const agreementProgress = getSectionProgress([
-    !!plan.slide2?.focusBehaviour?.trim() ||
+    hasText(plan.slide2?.focusBehaviour) ||
       plannerFilled(chatPlannerState, "developmentPoint"),
-    !!plan.slide2?.developmentGoal?.trim() ||
+    hasText(plan.slide2?.developmentGoal) ||
       plannerFilled(chatPlannerState, "targetBehaviour"),
-    !!plan.slide2?.matchSituation?.trim() ||
+    hasText(plan.slide2?.matchSituation) ||
       plannerFilled(chatPlannerState, "matchSituation"),
   ]);
 
   const contextProgress = getSectionProgress([
-    !!plan.slideContext?.gameMoments?.length ||
+    hasItems(plan.slideContext?.gameMoments) ||
       plannerFilled(chatPlannerState, "gameMoments"),
-    !!plan.slideContext?.zones?.length ||
+    hasItems(plan.slideContext?.zones) ||
       plannerFilled(chatPlannerState, "zones"),
-    !!plan.slideContext?.principles?.length ||
+    hasItems(plan.slideContext?.principles) ||
       plannerFilled(chatPlannerState, "principles"),
   ]);
 
   const realityProgress = getSectionProgress([
-    !!plan.slide3Baseline?.intro?.trim() ||
-      !!plan.slide3Baseline?.observations?.length ||
+    hasText(plan.slide3Baseline?.intro) ||
+      hasItems(plan.slide3Baseline?.observations) ||
       plannerFilled(chatPlannerState, "observations"),
-    !!plan.slide3?.what_we_see?.items?.length ||
+    hasItems(plan.slide3?.what_we_see?.items) ||
       plannerFilled(chatPlannerState, "observations"),
-    !!plan.slide3?.moment?.items?.length ||
-      !!plan.slide3Baseline?.moments?.length ||
+    hasItems(plan.slide3?.moment?.items) ||
+      hasItems(plan.slide3Baseline?.moments) ||
       plannerFilled(chatPlannerState, "whenObserved"),
-    !!plan.slide3?.effect_on_match?.items?.length ||
-      !!plan.slide3Baseline?.matchEffects?.length ||
+    hasItems(plan.slide3?.effect_on_match?.items) ||
+      hasItems(plan.slide3Baseline?.matchEffects) ||
       plannerFilled(chatPlannerState, "effectOnGame"),
   ]);
 
   const approachProgress = getSectionProgress([
-    !!plan.slide4DevelopmentRoute?.developmentRoute?.training?.trim() ||
+    hasText(plan.slide4DevelopmentRoute?.developmentRoute?.training) ||
       plannerFilled(chatPlannerState, "playerActions"),
-    !!plan.slide4DevelopmentRoute?.developmentRoute?.match?.trim() ||
+    hasText(plan.slide4DevelopmentRoute?.developmentRoute?.match) ||
       plannerFilled(chatPlannerState, "playerActions"),
-    !!plan.slide4DevelopmentRoute?.developmentRoute?.video?.trim() ||
+    hasText(plan.slide4DevelopmentRoute?.developmentRoute?.video) ||
       plannerFilled(chatPlannerState, "staffResponsibilities"),
-    !!plan.slide4DevelopmentRoute?.developmentRoute?.off_field?.trim() ||
+    hasText(plan.slide4DevelopmentRoute?.developmentRoute?.off_field) ||
       plannerFilled(chatPlannerState, "staffResponsibilities"),
-    !!plan.slide4DevelopmentRoute?.playerOwnText?.trim() ||
+    hasText(plan.slide4DevelopmentRoute?.playerOwnText) ||
       plannerFilled(chatPlannerState, "playerActions"),
   ]);
 
   const successProgress = getSectionProgress([
-    !!plan.slide6SuccessDefinition?.inGame?.length ||
+    hasItems(plan.slide6SuccessDefinition?.inGame) ||
       plannerFilled(chatPlannerState, "successSignals"),
-    !!plan.slide6SuccessDefinition?.behaviour?.length ||
+    hasItems(plan.slide6SuccessDefinition?.behaviour) ||
       plannerFilled(chatPlannerState, "successSignals"),
-    !!plan.slide6SuccessDefinition?.signals?.length ||
+    hasItems(plan.slide6SuccessDefinition?.signals) ||
       plannerFilled(chatPlannerState, "successSignals"),
+  ]);
+
+  const evidenceProgress = getSectionProgress([
+    !!(plan as any)?.slide3Baseline?.videoClips?.[0]?.url || !!localVideoUploads[0],
+    !!(plan as any)?.slide3Baseline?.videoClips?.[1]?.url || !!localVideoUploads[1],
+    !!(plan as any)?.slide3Baseline?.videoClips?.[2]?.url || !!localVideoUploads[2],
   ]);
 
   const sections = [
@@ -537,10 +575,18 @@ export default function PlayerDevelopmentPlanBuilder() {
       filled: successProgress.filled,
       total: successProgress.total,
     },
+    {
+      key: "evidence",
+      label: t.videoTitle,
+      progress: evidenceProgress.progress,
+      filled: evidenceProgress.filled,
+      total: evidenceProgress.total,
+    },
   ];
 
   const totalProgress = Math.round(
-    sections.reduce((sum, section) => sum + section.progress, 0) / sections.length
+    sections.reduce((sum, section) => sum + section.progress, 0) /
+      sections.length
   );
 
   const selectableClubPresets = useMemo(
@@ -578,17 +624,16 @@ export default function PlayerDevelopmentPlanBuilder() {
 
   const activePreset = getClubPresetByName(plan.brand.clubName);
 
+  const clipCount = [0, 1, 2].filter(
+    (idx) =>
+      !!(plan as any)?.slide3Baseline?.videoClips?.[idx]?.url ||
+      !!localVideoUploads[idx]
+  ).length;
+
   function onPlanGenerated(next: DevelopmentPlanV1) {
     const merged = mergeGeneratedPlanWithLockedBasics(plan, next);
     setPlan(merged);
     setGeneratedPlan(merged);
-
-    console.log("✅ GENERATED PLAN BINNEN");
-    console.log("slide2", merged.slide2);
-    console.log("context", merged.slideContext);
-    console.log("baseline", merged.slide3Baseline);
-    console.log("approach", merged.slide4DevelopmentRoute);
-    console.log("success", merged.slide6SuccessDefinition);
   }
 
   function applyClubPreset(clubName: string) {
@@ -710,9 +755,6 @@ export default function PlayerDevelopmentPlanBuilder() {
   async function download(version: "player" | "staff", exportLang: Lang) {
     const exportPlan = generatedPlan || plan;
 
-    console.log("📤 EXPORT PLAN");
-    console.log(exportPlan);
-
     const res = await fetch(`/api/pdp/pdf`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -752,7 +794,10 @@ export default function PlayerDevelopmentPlanBuilder() {
                 <ModeBtn active={mode === "chat"} onClick={() => setMode("chat")}>
                   {t.modeChat}
                 </ModeBtn>
-                <ModeBtn active={mode === "manual"} onClick={() => setMode("manual")}>
+                <ModeBtn
+                  active={mode === "manual"}
+                  onClick={() => setMode("manual")}
+                >
                   {t.modeManual}
                 </ModeBtn>
               </div>
@@ -761,14 +806,14 @@ export default function PlayerDevelopmentPlanBuilder() {
             <LangPill lang={lang} setLang={setLang} t={t} />
           </div>
 
-          <div className="relative z-0 grid grid-cols-1 items-stretch gap-6 xl:grid-cols-2">
-            <div className="h-full overflow-visible rounded-[28px] border border-white/10 bg-white/[0.025]">
+          <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-2">
+            <div className="overflow-visible rounded-[32px] border border-white/10 bg-white/[0.02]">
               <button
                 onClick={() => setBasicsOpen((v) => !v)}
                 className="flex w-full items-center justify-between px-6 py-5 text-left"
               >
                 <div>
-                  <div className="text-[12px] tracking-[0.16em] uppercase text-white/40">
+                  <div className="text-[12px] uppercase tracking-[0.16em] text-white/40">
                     {t.basicsTitle}
                   </div>
                   <div className="mt-1 text-[13px] text-white/55">
@@ -783,7 +828,7 @@ export default function PlayerDevelopmentPlanBuilder() {
                 <div className="space-y-5 px-6 pb-6">
                   <div className="rounded-[20px] border border-white/10 bg-black/20 p-5">
                     <div className="mb-5">
-                      <div className="text-[11px] tracking-[0.18em] uppercase text-white/38">
+                      <div className="text-[11px] uppercase tracking-[0.18em] text-white/38">
                         {t.step1Eyebrow}
                       </div>
 
@@ -1140,38 +1185,38 @@ export default function PlayerDevelopmentPlanBuilder() {
               )}
             </div>
 
-            <div className="flex h-full min-h-[760px] flex-col rounded-[28px] border border-white/8 bg-white/[0.025] p-5">
-              <div className="flex items-center justify-between">
+            <div className="rounded-[32px] border border-white/8 bg-white/[0.02] p-5">
+              <div className="flex items-center justify-between gap-4">
                 <div>
-                  <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
+                  <div className="text-[12px] uppercase tracking-[0.16em] text-white/38">
                     {t.brandingTitle}
                   </div>
-                  <div className="mt-1 text-[12px] text-white/45">
+                  <div className="mt-2 max-w-[34ch] text-[13px] leading-relaxed text-white/55">
                     {t.coverPreviewSub}
                   </div>
                 </div>
 
                 <button
                   onClick={() => setBrandingOpen((v) => !v)}
-                  className="text-[12px] text-white/45 hover:text-white/80"
+                  className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-[12px] text-white/72 transition hover:border-white/18 hover:text-white"
                 >
                   {brandingOpen ? t.brandingCollapse : t.brandingEdit}
                 </button>
               </div>
 
-              <div className="mt-4 flex min-h-0 flex-1 items-center justify-center">
-                <div className="flex h-full w-full items-center justify-center">
-                  <CoverPreviewCard
-                    clubName={plan.brand.clubName || t.club}
-                    logoUrl={plan.brand.logoUrl}
-                    playerName={plan.player.name || t.noPlayerYet}
-                    playerImageUrl={plan.player.headshotUrl}
-                    primary={primary}
-                    secondary={secondary}
-                    balance={balance}
-                    systemLine={t.coverSystemLine}
-                  />
-                </div>
+              <div className="mt-6">
+                <CoverPreviewStage
+                  t={t}
+                  clubName={plan.brand.clubName || t.club}
+                  logoUrl={plan.brand.logoUrl}
+                  playerName={plan.player.name || t.noPlayerYet}
+                  playerImageUrl={plan.player.headshotUrl}
+                  primary={primary}
+                  secondary={secondary}
+                  balance={balance}
+                  systemLine={t.coverSystemLine}
+                  teamLabel={plan.meta.team || t.teamType}
+                />
               </div>
 
               <div className="mt-4 flex min-h-[20px] items-center gap-2">
@@ -1239,180 +1284,185 @@ export default function PlayerDevelopmentPlanBuilder() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 items-stretch gap-6 xl:grid-cols-[3.25fr_1fr]">
-            <div className="flex h-full flex-col gap-6">
-              <div className="min-h-[760px] rounded-[28px] border border-white/10 bg-white/[0.025] p-8">
-                {mode === "chat" ? (
-                  <>
-                    <div className="mb-6 max-w-[52ch]">
-                      <div className="text-[18px] font-medium leading-tight text-white/92">
-                        {t.heroChatTitle}
-                      </div>
-                      <div className="mt-2 text-[13px] leading-relaxed text-white/52">
-                        {t.heroChatBody}
-                      </div>
-                    </div>
-
-                    <div className="mb-6 flex flex-wrap gap-2">
-                      <Hint onClick={() => insertPrompt("Beschrijf wat je concreet ziet in gedrag")}>
-                        {t.hintObservation}
-                      </Hint>
-                      <Hint onClick={() => insertPrompt("Beschrijf in welk wedstrijdmoment dit gebeurt")}>
-                        {t.hintMoment}
-                      </Hint>
-                      <Hint onClick={() => insertPrompt("Beschrijf wat het effect is op het spel")}>
-                        {t.hintGoal}
-                      </Hint>
-                    </div>
-
-                   <PdpChat
-  lang={lang}
-  draftPlan={plan}
-  onPlanGenerated={onPlanGenerated}
-  onPlannerStateChange={setChatPlannerState}
-  onViewPlan={() => {
-    console.log("Current builder plan:", generatedPlan || plan);
-  }}
-  onDownloadPdf={(version) => download(version, lang)}
-/>
-                  </>
-                ) : (
-                  <>
-                    <div className="max-w-[40ch] text-[15px] text-white/88">
-                      {t.heroManualTitle}
-                    </div>
-                    <div className="mt-2 mb-6 max-w-[52ch] text-[13px] text-white/55">
-                      {t.heroManualBody}
-                    </div>
-
-                    <div className="max-w-[520px]">
-                      <Input
-                        label={t.developmentPoint}
-                        value={plan.slide2?.focusBehaviour}
-                        onChange={(v) =>
-                          setPlan((prev) => ({
-                            ...prev,
-                            slide2: { ...prev.slide2, focusBehaviour: v },
-                          }))
-                        }
-                      />
-                    </div>
-                  </>
-                )}
+          <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="rounded-[30px] border border-white/10 bg-white/[0.02]">
+              <div className="border-b border-white/8 px-6 py-5">
+                <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
+                  {t.workspaceTitle}
+                </div>
+                <div className="mt-2 max-w-[52ch] text-[14px] leading-relaxed text-white/56">
+                  {t.workspaceBody}
+                </div>
               </div>
 
-              <div className="rounded-[28px] border border-white/10 bg-white/[0.025] p-5">
-                <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
-                  {t.videoTitle}
+              <div className="space-y-5 px-6 py-6">
+                <div className="rounded-[24px] border border-white/8 bg-[#0b0f14]">
+                  {mode === "chat" ? (
+                    <div className="px-5 py-5 sm:px-6">
+                      <div className="mb-5 max-w-[52ch]">
+                        <div className="text-[12px] uppercase tracking-[0.18em] text-white/36">
+                          Conversation layer
+                        </div>
+                        <div className="mt-2 text-[28px] font-medium tracking-[-0.03em] text-white/92">
+                          {t.heroChatTitle}
+                        </div>
+                        <div className="mt-3 text-[14px] leading-relaxed text-white/52">
+                          {t.heroChatBody}
+                        </div>
+                      </div>
+
+                      <div className="mb-5 flex flex-wrap gap-2">
+                        <Hint
+                          onClick={() =>
+                            insertPrompt("Beschrijf wat je concreet ziet in gedrag")
+                          }
+                        >
+                          {t.hintObservation}
+                        </Hint>
+                        <Hint
+                          onClick={() =>
+                            insertPrompt(
+                              "Beschrijf in welk wedstrijdmoment dit gebeurt"
+                            )
+                          }
+                        >
+                          {t.hintMoment}
+                        </Hint>
+                        <Hint
+                          onClick={() =>
+                            insertPrompt("Beschrijf wat het effect is op het spel")
+                          }
+                        >
+                          {t.hintGoal}
+                        </Hint>
+                      </div>
+
+                      <PdpChat
+                        lang={lang}
+                        draftPlan={plan}
+                        onPlanGenerated={onPlanGenerated}
+                        onPlannerStateChange={setChatPlannerState}
+                        onViewPlan={() => {
+                          console.log("Current builder plan:", generatedPlan || plan);
+                        }}
+                        onDownloadPdf={(version) => download(version, lang)}
+                      />
+                    </div>
+                  ) : (
+                    <div className="p-6">
+                      <div className="max-w-[40ch] text-[20px] font-medium text-white/92">
+                        {t.heroManualTitle}
+                      </div>
+                      <div className="mt-3 max-w-[52ch] text-[14px] leading-relaxed text-white/55">
+                        {t.heroManualBody}
+                      </div>
+
+                      <div className="mt-8 max-w-[520px]">
+                        <Input
+                          label={t.developmentPoint}
+                          value={plan.slide2?.focusBehaviour}
+                          onChange={(v) =>
+                            setPlan((prev) => ({
+                              ...prev,
+                              slide2: { ...prev.slide2, focusBehaviour: v },
+                            }))
+                          }
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="mt-2 max-w-[64ch] text-[13px] leading-relaxed text-white/50">
-                  {t.videoBody}
-                </div>
 
-                <div className="mt-2 text-[11px] leading-relaxed text-white/32">
-                  {t.videoUploadHelp}
-                </div>
+                <div className="rounded-[24px] border border-white/8 bg-[#0b0f14]">
+                  <button
+                    type="button"
+                    onClick={() => setVideoOpen((v) => !v)}
+                    className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6"
+                  >
+                    <div>
+                      <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
+                        {t.videoTitle}
+                      </div>
+                      <div className="mt-2 max-w-[60ch] text-[14px] leading-relaxed text-white/56">
+                        {t.videoBody}
+                      </div>
+                    </div>
 
-                <div className="mt-5 grid grid-cols-1 gap-4 xl:grid-cols-3">
-                  <VideoCardCompact
-                    title={t.videoClip1}
-                    clip={(plan as any)?.slide3Baseline?.videoClips?.[0]}
-                    upload={localVideoUploads[0]}
-                    t={t}
-                    onChange={(patch) => updateVideoClip(0, patch)}
-                    onUpload={(file) => handleVideoUpload(0, file)}
-                  />
+                    <div className="flex items-center gap-2">
+                      <MiniMetaPill>
+                        {clipCount > 0
+                          ? `${clipCount} ${t.compactVideoCount}`
+                          : t.compactVideoEmpty}
+                      </MiniMetaPill>
+                      <div className="rounded-full border border-white/12 bg-white/[0.03] px-3 py-1.5 text-[12px] text-white/72">
+                        {videoOpen ? t.compactVideoClose : t.compactVideoOpen}
+                      </div>
+                    </div>
+                  </button>
 
-                  <VideoCardCompact
-                    title={t.videoClip2}
-                    clip={(plan as any)?.slide3Baseline?.videoClips?.[1]}
-                    upload={localVideoUploads[1]}
-                    t={t}
-                    onChange={(patch) => updateVideoClip(1, patch)}
-                    onUpload={(file) => handleVideoUpload(1, file)}
-                  />
+                  {videoOpen && (
+                    <div className="border-t border-white/8 px-5 pb-5 pt-4 sm:px-6">
+                      <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+                        <VideoCardCompact
+                          title={t.videoClip1}
+                          clip={(plan as any)?.slide3Baseline?.videoClips?.[0]}
+                          upload={localVideoUploads[0]}
+                          t={t}
+                          onChange={(patch) => updateVideoClip(0, patch)}
+                          onUpload={(file) => handleVideoUpload(0, file)}
+                        />
 
-                  <VideoCardCompact
-                    title={t.videoClip3}
-                    clip={(plan as any)?.slide3Baseline?.videoClips?.[2]}
-                    upload={localVideoUploads[2]}
-                    t={t}
-                    onChange={(patch) => updateVideoClip(2, patch)}
-                    onUpload={(file) => handleVideoUpload(2, file)}
-                  />
+                        <VideoCardCompact
+                          title={t.videoClip2}
+                          clip={(plan as any)?.slide3Baseline?.videoClips?.[1]}
+                          upload={localVideoUploads[1]}
+                          t={t}
+                          onChange={(patch) => updateVideoClip(1, patch)}
+                          onUpload={(file) => handleVideoUpload(1, file)}
+                        />
+
+                        <VideoCardCompact
+                          title={t.videoClip3}
+                          clip={(plan as any)?.slide3Baseline?.videoClips?.[2]}
+                          upload={localVideoUploads[2]}
+                          t={t}
+                          onChange={(patch) => updateVideoClip(2, patch)}
+                          onUpload={(file) => handleVideoUpload(2, file)}
+                        />
+                      </div>
+
+                      <div className="mt-3 text-[12px] leading-relaxed text-white/34">
+                        {t.videoUploadHelp}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            <div className="flex h-full flex-col gap-6">
-              <div className="rounded-[28px] border border-white/10 bg-white/[0.05] p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
-                      {t.exportTitle}
-                    </div>
-                    <div className="mt-3 text-[22px] font-medium leading-tight text-white/92">
-                      {t.exportAlways}
-                    </div>
-                    <div className="mt-2 max-w-[26ch] text-[12px] leading-relaxed text-white/50">
-                      {t.exportStrong}
-                    </div>
-                  </div>
-
-                  <div className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] text-white/68">
-                    PDF
-                  </div>
+            <div className="xl:sticky xl:top-8">
+              <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+                <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
+                  {t.controlLayer}
                 </div>
 
-                <div className="mt-5 space-y-3">
-                  <button
-                    onClick={() => download("player", lang)}
-                    className="w-full rounded-xl bg-white py-3 text-sm font-medium text-black hover:bg-white/90"
-                  >
-                    {t.downloadPlayer}
-                  </button>
-
-                  <button
-                    onClick={() => download("staff", lang)}
-                    className="w-full rounded-xl border border-white/20 py-3 text-sm text-white/88 hover:border-white/30"
-                  >
-                    {t.downloadStaff}
-                  </button>
-
-                  <div className="pt-1 text-center text-[11px] text-white/35">
-                    {t.availableOther}
-                  </div>
-
-                  <button
-                    onClick={() => download("player", otherLang)}
-                    className="w-full rounded-xl border border-white/10 bg-white/[0.03] py-2.5 text-[12px] text-white/72 hover:border-white/20 hover:text-white"
-                  >
-                    {t.downloadOther}
-                  </button>
-                </div>
-              </div>
-
-              <div className="rounded-[28px] border border-white/10 bg-white/[0.025] p-5">
-                <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
-                  {t.progressHeader}
-                </div>
-
-                <div className="mt-4 flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="text-[22px] font-medium leading-tight text-white/92">
-                      {plan.player.name || t.noPlayerYet}
+                <div className="mt-5 border-t border-white/8 pt-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
+                        {t.progressHeader}
+                      </div>
+                      <div className="mt-3 text-[22px] font-medium text-white/92">
+                        {plan.player.name || t.noPlayerYet}
+                      </div>
+                      <div className="mt-2 text-[13px] text-white/48">
+                        {plan.brand.clubName || t.club}
+                      </div>
+                      <div className="mt-1 text-[12px] text-white/34">
+                        {plan.meta.team || t.teamType}
+                      </div>
                     </div>
 
-                    <div className="mt-2 text-[13px] text-white/48">
-                      {plan.brand.clubName || t.club}
-                    </div>
-
-                    <div className="mt-1 text-[12px] text-white/34">
-                      {plan.meta.team || t.teamType}
-                    </div>
-                  </div>
-
-                  <div className="shrink-0">
                     {plan.player.headshotUrl ? (
                       <img
                         src={plan.player.headshotUrl}
@@ -1425,62 +1475,100 @@ export default function PlayerDevelopmentPlanBuilder() {
                   </div>
                 </div>
 
-                <div className="mt-5 h-[1px] w-full overflow-hidden rounded-full bg-white/6">
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: "42%",
-                      background: `linear-gradient(90deg, ${primary} 0%, ${secondary} 100%)`,
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div className="rounded-[28px] border border-white/10 bg-white/[0.025] p-5">
-                <div className="flex items-end justify-between gap-4">
-                  <div>
-                    <div className="text-[11px] tracking-[0.16em] uppercase text-white/38">
-                      {t.totalProgress}
+                <div className="mt-5 border-t border-white/8 pt-5">
+                  <div className="flex items-end justify-between gap-4">
+                    <div>
+                      <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
+                        {t.totalProgress}
+                      </div>
+                      <div className="mt-3 text-[42px] font-semibold leading-none tracking-[-0.04em] text-white/92">
+                        {totalProgress}%
+                      </div>
                     </div>
-                    <div className="mt-3 text-[30px] font-semibold leading-none tracking-[-0.03em] text-white/92">
-                      {totalProgress}%
+
+                    <div className="text-[13px] text-white/38">
+                      {sections.filter((s) => s.progress === 100).length}/
+                      {sections.length}
                     </div>
                   </div>
 
-                  <div className="text-[12px] text-white/38">
-                    {sections.filter((s) => s.progress === 100).length}/{sections.length}
-                  </div>
-                </div>
-
-                <div className="mt-4 h-[8px] overflow-hidden rounded-full bg-white/8">
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{
-                      width: `${totalProgress}%`,
-                      background: `linear-gradient(90deg, ${primary} 0%, ${secondary} 100%)`,
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div className="flex-1 rounded-[28px] border border-white/10 bg-white/[0.025] p-4">
-                <div className="mb-4 text-[11px] uppercase tracking-[0.18em] text-white/40">
-                  {t.planProgress}
-                </div>
-
-                <div className="space-y-3">
-                  {sections.map((section) => (
-                    <ProgressRow
-                      key={section.key}
-                      label={section.label}
-                      progress={section.progress}
-                      filled={section.filled}
-                      total={section.total}
-                      primary={primary}
-                      secondary={secondary}
-                      readyLabel={t.ready}
+                  <div className="mt-4 h-[8px] overflow-hidden rounded-full bg-white/8">
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{
+                        width: `${totalProgress}%`,
+                        background: `linear-gradient(90deg, ${primary} 0%, ${secondary} 100%)`,
+                      }}
                     />
-                  ))}
+                  </div>
+                </div>
+
+                <div className="mt-5 border-t border-white/8 pt-5">
+                  <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
+                    {t.planProgress}
+                  </div>
+
+                  <div className="mt-4 space-y-3">
+                    {sections.map((section) => (
+                      <ProgressRow
+                        key={section.key}
+                        label={section.label}
+                        progress={section.progress}
+                        filled={section.filled}
+                        total={section.total}
+                        primary={primary}
+                        secondary={secondary}
+                        readyLabel={t.ready}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-5 border-t border-white/8 pt-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
+                        {t.exportTitle}
+                      </div>
+                      <div className="mt-3 text-[18px] font-medium leading-tight text-white/92">
+                        {t.exportAlways}
+                      </div>
+                      <div className="mt-2 text-[13px] leading-relaxed text-white/50">
+                        {t.exportStrong}
+                      </div>
+                    </div>
+
+                    <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] text-white/68">
+                      PDF
+                    </div>
+                  </div>
+
+                  <div className="mt-5 space-y-3">
+                    <button
+                      onClick={() => download("player", lang)}
+                      className="w-full rounded-full bg-white py-3 text-sm font-medium text-black transition hover:bg-white/90"
+                    >
+                      {t.downloadPlayer}
+                    </button>
+
+                    <button
+                      onClick={() => download("staff", lang)}
+                      className="w-full rounded-full border border-white/16 py-3 text-sm text-white/88 transition hover:border-white/28"
+                    >
+                      {t.downloadStaff}
+                    </button>
+
+                    <div className="pt-1 text-center text-[11px] text-white/35">
+                      {t.availableOther}
+                    </div>
+
+                    <button
+                      onClick={() => download("player", otherLang)}
+                      className="w-full rounded-full border border-white/10 bg-white/[0.02] py-2.5 text-[12px] text-white/72 transition hover:border-white/18 hover:text-white"
+                    >
+                      {t.downloadOther}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1731,10 +1819,15 @@ function VideoCardCompact({
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   return (
-    <div className="rounded-xl border border-white/10 bg-black/20 p-3">
-      <div className="text-[12px] font-medium text-white/82">{title}</div>
+    <div className="rounded-[18px] border border-white/10 bg-white/[0.02] p-3">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="text-[13px] font-medium text-white/86">{title}</div>
+        <div className="text-[10px] uppercase tracking-[0.14em] text-white/34">
+          {upload?.fileName || clip?.url ? "Active" : "Optional"}
+        </div>
+      </div>
 
-      <div className="mt-3 space-y-3">
+      <div className="space-y-2.5">
         <InputCompact
           label={t.videoName}
           value={clip?.title || ""}
@@ -1747,14 +1840,14 @@ function VideoCardCompact({
           onChange={(v) => onChange({ url: v })}
         />
 
-        <div className="text-[10px] uppercase tracking-[0.14em] text-white/28">
-          {t.videoOr}
-        </div>
-
-        <div>
-          <div className="mb-1 text-[10px] uppercase tracking-wide text-white/40">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[12px] text-white/78 transition hover:border-white/18 hover:text-white"
+          >
             {t.videoUpload}
-          </div>
+          </button>
 
           <input
             ref={inputRef}
@@ -1767,18 +1860,9 @@ function VideoCardCompact({
             }}
           />
 
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-left text-[12px] text-white/80 hover:border-white/20 hover:text-white"
-          >
-            {t.videoUpload}
-          </button>
-
           {upload?.fileName ? (
-            <div className="mt-1.5 text-[10px] leading-relaxed text-white/45">
-              {t.videoChosen}:{" "}
-              <span className="text-white/72">{upload.fileName}</span>
+            <div className="min-w-0 truncate text-[11px] text-white/42">
+              {upload.fileName}
             </div>
           ) : null}
         </div>
@@ -1864,9 +1948,7 @@ function ModeBtn({
     <button
       onClick={onClick}
       className={`rounded-full px-4 py-2 text-[13px] transition ${
-        active
-          ? "bg-white text-black"
-          : "text-white/52 hover:text-white/82"
+        active ? "bg-white text-black" : "text-white/52 hover:text-white/82"
       }`}
     >
       {children}
@@ -1911,9 +1993,7 @@ function LangPill({
       <button
         onClick={() => setLang("nl")}
         className={`rounded-full px-3 py-1.5 transition ${
-          lang === "nl"
-            ? "bg-white text-black"
-            : "text-white/48 hover:text-white/78"
+          lang === "nl" ? "bg-white text-black" : "text-white/48 hover:text-white/78"
         }`}
       >
         {t.langNl}
@@ -1921,9 +2001,7 @@ function LangPill({
       <button
         onClick={() => setLang("en")}
         className={`rounded-full px-3 py-1.5 transition ${
-          lang === "en"
-            ? "bg-white text-black"
-            : "text-white/48 hover:text-white/78"
+          lang === "en" ? "bg-white text-black" : "text-white/48 hover:text-white/78"
         }`}
       >
         {t.langEn}
@@ -1942,10 +2020,18 @@ function Hint({
   return (
     <button
       onClick={onClick}
-      className="rounded-full bg-white/5 px-3 py-1 text-xs text-white/60 hover:text-white"
+      className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[12px] text-white/64 transition hover:border-white/18 hover:text-white"
     >
-      + {children}
+      {children}
     </button>
+  );
+}
+
+function MiniMetaPill({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="rounded-full border border-white/10 bg-white/[0.02] px-3 py-1.5 text-[11px] tracking-[0.18em] text-white/54">
+      {children}
+    </div>
   );
 }
 
@@ -1969,7 +2055,7 @@ function ProgressRow({
   const done = progress === 100;
 
   return (
-    <div className="rounded-xl border border-white/8 bg-white/[0.02] p-3">
+    <div className="rounded-[18px] border border-white/8 bg-white/[0.02] p-3">
       <div className="flex items-center justify-between gap-3">
         <div className="text-[13px] text-white/82">{label}</div>
         <div className="text-[11px] text-white/38">
@@ -1985,6 +2071,62 @@ function ProgressRow({
             background: `linear-gradient(90deg, ${primary} 0%, ${secondary} 100%)`,
           }}
         />
+      </div>
+    </div>
+  );
+}
+
+function CoverPreviewStage({
+  t,
+  clubName,
+  logoUrl,
+  playerName,
+  playerImageUrl,
+  primary,
+  secondary,
+  balance,
+  systemLine,
+  teamLabel,
+}: {
+  t: (typeof UI)["nl"] | (typeof UI)["en"];
+  clubName: string;
+  logoUrl?: string;
+  playerName: string;
+  playerImageUrl?: string;
+  primary: string;
+  secondary: string;
+  balance: number;
+  systemLine: string;
+  teamLabel: string;
+}) {
+  return (
+    <div className="rounded-[28px] border border-white/8 bg-[radial-gradient(90%_90%_at_70%_15%,rgba(37,211,120,0.07),transparent_60%)] p-5">
+      <div className="mb-5 flex items-center justify-between">
+        <MiniMetaPill>{t.clubContext}</MiniMetaPill>
+        <MiniMetaPill>{t.pdfReady}</MiniMetaPill>
+      </div>
+
+      <div className="rounded-[26px] border border-white/8 bg-black/18 p-6">
+        <CoverPreviewCard
+          clubName={clubName}
+          logoUrl={logoUrl}
+          playerName={playerName}
+          playerImageUrl={playerImageUrl}
+          primary={primary}
+          secondary={secondary}
+          balance={balance}
+          systemLine={systemLine}
+        />
+      </div>
+
+      <div className="mt-5 flex flex-wrap gap-2">
+        <MiniMetaPill>{t.playerIdentity}</MiniMetaPill>
+        <MiniMetaPill>
+          {t.brandingMetaClub}: {clubName}
+        </MiniMetaPill>
+        <MiniMetaPill>
+          {t.brandingMetaTeam}: {teamLabel}
+        </MiniMetaPill>
       </div>
     </div>
   );
@@ -2010,107 +2152,93 @@ function CoverPreviewCard({
   systemLine: string;
 }) {
   return (
-    <div className="flex h-full w-full items-center justify-center">
+    <div className="relative mx-auto aspect-[210/297] w-full max-w-[540px] overflow-hidden rounded-[28px] border border-white/16 shadow-[0_30px_100px_rgba(0,0,0,0.36)]">
       <div
-        className="relative h-full max-h-[760px] w-auto max-w-full overflow-hidden rounded-[18px] border border-white/10 aspect-[210/297]"
+        className="absolute inset-0"
         style={{
           background: `linear-gradient(135deg, ${primary} ${balance}%, ${secondary} 100%)`,
         }}
-      >
-        {playerImageUrl ? (
-          <img
-            src={playerImageUrl}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover opacity-[0.9]"
-            style={{
-              objectPosition: "center 22%",
-              transform: "scale(1.02)",
-              filter: "saturate(.94) contrast(1.02)",
-            }}
-          />
-        ) : null}
+      />
 
-        <div
-          className="absolute inset-0"
+      {playerImageUrl ? (
+        <img
+          src={playerImageUrl}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover opacity-[0.92]"
           style={{
-            background: `
-              linear-gradient(90deg, rgba(0,0,0,.74) 0%, rgba(0,0,0,.34) 42%, rgba(0,0,0,.62) 100%),
-              linear-gradient(180deg, rgba(0,0,0,.16) 0%, rgba(0,0,0,.46) 100%)
-            `,
+            objectPosition: "center 20%",
+            filter: "saturate(.95) contrast(1.03)",
+            transform: "scale(1.03)",
           }}
         />
+      ) : null}
 
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,.62)_0%,rgba(0,0,0,.18)_48%,rgba(0,0,0,.3)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.08)_0%,rgba(0,0,0,.24)_100%)]" />
+
+      <div
+        className="absolute inset-0 opacity-[0.12]"
+        style={{
+          background: `
+            radial-gradient(circle at 76% 78%, rgba(255,255,255,0.32) 0%, transparent 22%),
+            radial-gradient(circle at 20% 62%, ${primary}77 0%, transparent 20%)
+          `,
+        }}
+      />
+
+      <div
+        className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(255,255,255,.14) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px)
+          `,
+          backgroundSize: "4px 4px",
+        }}
+      />
+
+      <div className="absolute inset-[18px] rounded-[22px] border border-white/8" />
+
+      <div className="relative z-10 h-full w-full">
         <div
-          className="absolute inset-0 mix-blend-screen opacity-[0.96]"
-          style={{
-            background: `
-              radial-gradient(circle at 14% 26%, ${primary}55 0%, transparent 44%),
-              radial-gradient(circle at 82% 74%, ${secondary}33 0%, transparent 34%),
-              linear-gradient(135deg, ${primary}22 0%, transparent 42%, ${secondary}22 100%)
-            `,
-          }}
+          className="absolute bottom-[34px] left-[34px] top-[34px] w-[4px] rounded-full"
+          style={{ background: primary }}
         />
 
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `
-              radial-gradient(circle at center, transparent 38%, rgba(0,0,0,.22) 100%),
-              linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.22))
-            `,
-          }}
-        />
-
-        <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px)
-            `,
-            backgroundSize: "4px 4px",
-          }}
-        />
-
-        <div className="relative z-10 h-full w-full">
-          <div
-            className="absolute bottom-[18px] left-[18px] top-[18px] w-[3px] rounded-full"
-            style={{ background: primary }}
-          />
-
-          <div className="absolute left-[32px] top-[22px]">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/90">
-              {clubName}
-            </div>
-            <div className="mt-1 text-[10px] text-white/70">{systemLine}</div>
+        <div className="absolute left-[58px] right-[120px] top-[34px]">
+          <div className="text-[clamp(14px,1.2vw,22px)] font-semibold uppercase tracking-[0.16em] text-white/96">
+            {clubName}
           </div>
-
-          {logoUrl ? (
-            <div className="absolute right-[16px] top-[16px] flex h-[44px] w-[44px] items-center justify-center rounded-[12px] border border-white/20 bg-white/10 shadow-[0_8px_22px_rgba(0,0,0,0.22)] backdrop-blur-sm">
-              <img
-                src={logoUrl}
-                className="h-[24px] w-[24px] object-contain"
-                alt=""
-              />
-            </div>
-          ) : null}
-
-          <div className="absolute bottom-[90px] left-[32px] right-[20px]">
-            <div className="break-words text-[32px] font-extrabold leading-none tracking-[-0.03em] text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.28)]">
-              {playerName}
-            </div>
+          <div className="mt-2 text-[clamp(12px,1vw,18px)] text-white/76">
+            {systemLine}
           </div>
+        </div>
 
-          <div className="absolute bottom-[20px] left-[32px] right-[20px] flex items-center justify-between">
-            <div className="text-[10px] uppercase tracking-[0.26em] text-white/70">
-              {systemLine}
-            </div>
-
-            <div
-              className="h-[2px] w-[36px] rounded-full"
-              style={{ background: primary }}
+        {logoUrl ? (
+          <div className="absolute right-[28px] top-[28px] flex h-[72px] w-[72px] items-center justify-center rounded-[20px] border border-white/16 bg-white/10 shadow-[0_14px_40px_rgba(0,0,0,0.24)] backdrop-blur-md">
+            <img
+              src={logoUrl}
+              className="h-[36px] w-[36px] object-contain"
+              alt=""
             />
           </div>
+        ) : null}
+
+        <div className="absolute bottom-[90px] left-[58px] right-[40px]">
+          <div className="break-words text-[clamp(34px,4.4vw,72px)] font-semibold leading-[0.92] tracking-[-0.05em] text-white drop-shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
+            {playerName}
+          </div>
+        </div>
+
+        <div className="absolute bottom-[32px] left-[58px] right-[40px] flex items-center justify-between gap-6">
+          <div className="text-[clamp(11px,0.85vw,15px)] uppercase tracking-[0.32em] text-white/74">
+            {systemLine}
+          </div>
+
+          <div
+            className="h-[3px] w-[84px] rounded-full"
+            style={{ background: primary }}
+          />
         </div>
       </div>
     </div>
