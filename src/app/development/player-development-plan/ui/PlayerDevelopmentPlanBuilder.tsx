@@ -776,18 +776,16 @@ export default function PlayerDevelopmentPlanBuilder() {
     const contentType = res.headers.get("content-type") || "";
 
     if (!res.ok) {
-      const errorText = await res.text();
-      console.error("PDF API error:", res.status, errorText);
-      alert(`PDF export mislukt (${res.status}). Check de server logs.`);
-      return;
-    }
+  const errorText = await res.text();
+  alert(errorText);
+  return;
+}
 
     if (!contentType.toLowerCase().includes("pdf")) {
-      const errorText = await res.text();
-      console.error("Expected PDF but got:", contentType, errorText);
-      alert("Export gaf geen PDF terug. Check de API-route /api/pdp/pdf.");
-      return;
-    }
+  const errorText = await res.text();
+  alert(errorText);
+  return;
+}
 
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
