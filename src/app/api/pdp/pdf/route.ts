@@ -1,7 +1,6 @@
 // src/app/api/pdp/pdf/route.ts
 
 import { NextResponse } from "next/server";
-import chromium from "@sparticuz/chromium";
 import puppeteer from "puppeteer-core";
 
 import type { DevelopmentPlanV1 } from "@/app/development/player-development-plan/ui/lib/engineSchema";
@@ -142,25 +141,8 @@ export async function POST(req: Request) {
 
     const html = renderPdpHtml(plan, { lang, version });
 
-    const executablePath =
-  process.env.VERCEL
-    ? await chromium.executablePath()
-    : undefined;
-
 browser = await puppeteer.launch({
-  executablePath,
-  args: [
-    ...chromium.args,
-    "--no-sandbox",
-    "--disable-setuid-sandbox",
-    "--disable-dev-shm-usage",
-    "--disable-gpu",
-  ],
-  defaultViewport: {
-    width: 1080,
-    height: 1920,
-    deviceScaleFactor: 2,
-  },
+  args: ["--no-sandbox", "--disable-setuid-sandbox"],
   headless: true,
 });
 
