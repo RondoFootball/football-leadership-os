@@ -142,14 +142,13 @@ export async function POST(req: Request) {
 
     const html = renderPdpHtml(plan, { lang, version });
 
-    const executablePath = await chromium.executablePath();
+    const executablePath =
+  process.env.VERCEL
+    ? await chromium.executablePath()
+    : undefined;
 
-    if (!executablePath) {
-      throw new Error("Chromium executablePath could not be resolved.");
-    }
-
-    browser = await puppeteer.launch({
-  executablePath: await chromium.executablePath(),
+browser = await puppeteer.launch({
+  executablePath,
   args: [
     ...chromium.args,
     "--no-sandbox",

@@ -11,7 +11,7 @@
     "postinstall": "playwright install chromium"
   },
   "dependencies": {
-    "@sparticuz/chromium": "^143.0.4",
+    "@sparticuz/chromium": "^143.0.0",
     "@supabase/supabase-js": "^2.97.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -21,7 +21,7 @@
     "pdf-parse": "^2.4.5",
     "pdfjs-dist": "^5.4.624",
     "playwright": "^1.58.2",
-    "puppeteer-core": "^24.37.5",
+    "puppeteer-core": "^24.0.0",
     "radix-ui": "^1.4.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
