@@ -541,7 +541,7 @@ export const clubDatabase: ClubDatabaseCountry[] = [
       {
         id: "allsvenskan",
         name: "Allsvenskan",
-        logoUrl: "/logos/sweden/Allsvenskan/allsvenskan.png",
+        logoUrl: "/logos/sweden/allsvenskan/allsvenskan.png",
         clubs: [],
       },
     ],
