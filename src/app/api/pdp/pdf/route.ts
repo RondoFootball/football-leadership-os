@@ -141,34 +141,22 @@ export async function POST(req: Request) {
 
     const html = renderPdpHtml(plan, { lang, version });
 
-browser = await puppeteer.launch({
-  args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  headless: true,
+const response = await fetch("https://chrome.browserless.io/pdf", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    html,
+  }),
 });
 
-    const page = await browser.newPage();
+if (!response.ok) {
+  const text = await response.text();
+  throw new Error(`Browserless error: ${text}`);
+}
 
-    await page.emulateMediaType("print");
-    await page.setContent(html, {
-      waitUntil: "networkidle0",
-      timeout: 60000,
-    });
-
-    const pdfBytes = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      preferCSSPageSize: true,
-      margin: {
-        top: "0mm",
-        right: "0mm",
-        bottom: "0mm",
-        left: "0mm",
-      },
-    });
-
-    const u8 =
-      pdfBytes instanceof Uint8Array ? pdfBytes : new Uint8Array(pdfBytes as any);
-    const arrayBuffer = toTrueArrayBuffer(u8);
+const arrayBuffer = await response.arrayBuffer();
 
     const base = safeStr(body.filename, buildFilenameBase(plan, lang, version));
     const filenameAscii = safeAsciiFilename(base);
