@@ -149,15 +149,21 @@ export async function POST(req: Request) {
     }
 
     browser = await puppeteer.launch({
-      executablePath,
-      args: [...chromium.args],
-      defaultViewport: {
-        width: 1080,
-        height: 1920,
-        deviceScaleFactor: 2,
-      },
-      headless: true,
-    });
+  executablePath: await chromium.executablePath(),
+  args: [
+    ...chromium.args,
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-dev-shm-usage",
+    "--disable-gpu",
+  ],
+  defaultViewport: {
+    width: 1080,
+    height: 1920,
+    deviceScaleFactor: 2,
+  },
+  headless: true,
+});
 
     const page = await browser.newPage();
 
@@ -199,7 +205,7 @@ export async function POST(req: Request) {
     const message =
       err?.message || (typeof err === "string" ? err : "Unknown error");
 
-    console.error("PDP_PDF_ERROR:", err);
+    console.error("PDF ERROR FULL:", JSON.stringify(err, null, 2));
 
     return NextResponse.json(
       {
