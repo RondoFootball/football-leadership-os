@@ -1,6 +1,9 @@
 // src/app/api/pdp/pdf/route.ts
 
 import { NextResponse } from "next/server";
+import chromium from "@sparticuz/chromium";
+import puppeteer from "puppeteer-core";
+
 import type { DevelopmentPlanV1 } from "@/app/development/player-development-plan/ui/lib/engineSchema";
 import { renderPdpHtml } from "@/app/development/player-development-plan/ui/lib/renderPdfHtml";
 
@@ -34,40 +37,39 @@ function inferVersion(v: any): PlanVersion {
   return v === "player" ? "player" : "staff";
 }
 
-/**
- * ASCII-only filename safe for HTTP headers (ByteString).
- * - strips accents
- * - removes non-ascii (incl. em dash —)
- * - removes quotes/backslashes
- */
 function safeAsciiFilename(input: string) {
   const normalized = (input || "")
     .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, ""); // strip diacritics
+    .replace(/[\u0300-\u036f]/g, "");
 
   const cleaned = normalized
-    .replace(/[^\x20-\x7E]/g, "") // keep only ASCII printable
-    .replace(/["\\]/g, "") // remove quotes/backslashes
+    .replace(/[^\x20-\x7E]/g, "")
+    .replace(/["\\]/g, "")
     .replace(/\s+/g, " ")
     .trim();
 
-  // Ensure it ends with .pdf
   const name = cleaned || "pdp.pdf";
   return name.toLowerCase().endsWith(".pdf") ? name : `${name}.pdf`;
 }
 
-function buildFilenameBase(plan: DevelopmentPlanV1, lang: Lang, version: PlanVersion) {
-  const club = safeStr((plan as any)?.brand?.clubName || (plan as any)?.meta?.club, "Club");
-  const player = safeStr((plan as any)?.player?.name, lang === "nl" ? "Speler" : "Player");
+function buildFilenameBase(
+  plan: DevelopmentPlanV1,
+  lang: Lang,
+  version: PlanVersion
+) {
+  const club = safeStr(
+    (plan as any)?.brand?.clubName || (plan as any)?.meta?.club,
+    "Club"
+  );
+  const player = safeStr(
+    (plan as any)?.player?.name,
+    lang === "nl" ? "Speler" : "Player"
+  );
   const v = version === "player" ? "Player" : "Staff";
 
-  // IMPORTANT: use normal hyphen-minus "-" (ASCII), not em dash "—"
   return `Player Development Plan - ${v} - ${player} - ${club}.pdf`;
 }
 
-/**
- * ✅ Always returns a true ArrayBuffer (avoids weird BodyInit/SharedArrayBuffer edge cases).
- */
 function toTrueArrayBuffer(bytes: Uint8Array): ArrayBuffer {
   const ab = new ArrayBuffer(bytes.byteLength);
   new Uint8Array(ab).set(bytes);
@@ -102,15 +104,12 @@ async function parseBody(req: Request): Promise<Partial<PdfRequest>> {
     if (typeof planStr === "string") {
       try {
         out.plan = JSON.parse(planStr) as DevelopmentPlanV1;
-      } catch {
-        // ignored (handled by validator below)
-      }
+      } catch {}
     }
 
     return out;
   }
 
-  // fallback: try json anyway
   try {
     return (await req.json()) as Partial<PdfRequest>;
   } catch {
@@ -119,10 +118,11 @@ async function parseBody(req: Request): Promise<Partial<PdfRequest>> {
 }
 
 export async function POST(req: Request) {
+  let browser: any = null;
+
   try {
     const body = await parseBody(req);
 
-    // Hard guard: we need { plan: {...} }
     if (!body?.plan) {
       return NextResponse.json(
         {
@@ -138,52 +138,57 @@ export async function POST(req: Request) {
     const lang: Lang = inferLang(body.lang, plan);
     const version: PlanVersion = inferVersion(body.version);
 
-    // Render HTML
     const html = renderPdpHtml(plan, { lang, version });
 
-    // Generate PDF
-    const { chromium } = await import("playwright");
-    const browser = await chromium.launch({ headless: true });
-
-    try {
-      const page = await browser.newPage({
-        viewport: { width: 1080, height: 1920 },
+    browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: {
+        width: 1080,
+        height: 1920,
         deviceScaleFactor: 2,
-      });
+      },
+      executablePath: await chromium.executablePath(),
+      headless: true,
+    });
 
-      await page.emulateMedia({ media: "print" });
-      await page.setContent(html, { waitUntil: "networkidle" });
+    const page = await browser.newPage();
+    await page.emulateMediaType("print");
+    await page.setContent(html, { waitUntil: "networkidle0" });
 
-      const pdfBytes = await page.pdf({
-        format: "A4",
-        printBackground: true,
-        preferCSSPageSize: true,
-      });
+    const pdfBytes = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      preferCSSPageSize: true,
+    });
 
-      // Ensure stable binary type
-      const u8 = pdfBytes instanceof Uint8Array ? pdfBytes : new Uint8Array(pdfBytes as any);
-      const arrayBuffer = toTrueArrayBuffer(u8);
+    const u8 =
+      pdfBytes instanceof Uint8Array ? pdfBytes : new Uint8Array(pdfBytes);
+    const arrayBuffer = toTrueArrayBuffer(u8);
 
-      // Filename (ASCII + UTF-8*)
-      const base = safeStr(body.filename, buildFilenameBase(plan, lang, version));
-      const filenameAscii = safeAsciiFilename(base);
-      const filenameStar = `UTF-8''${encodeURIComponent(base)}`;
+    const base = safeStr(body.filename, buildFilenameBase(plan, lang, version));
+    const filenameAscii = safeAsciiFilename(base);
+    const filenameStar = `UTF-8''${encodeURIComponent(base)}`;
 
-      return new NextResponse(arrayBuffer, {
-        status: 200,
-        headers: {
-          "Content-Type": "application/pdf",
-          "Content-Disposition": `attachment; filename="${filenameAscii}"; filename*=${filenameStar}`,
-          "Cache-Control": "no-store",
-        },
-      });
-    } finally {
+    return new NextResponse(arrayBuffer, {
+      status: 200,
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="${filenameAscii}"; filename*=${filenameStar}`,
+        "Cache-Control": "no-store",
+      },
+    });
+  } catch (err: any) {
+    const message =
+      err?.message || (typeof err === "string" ? err : "Unknown error");
+    console.error("PDP_PDF_ERROR:", err);
+    return NextResponse.json(
+      { error: "PDF generation failed", message },
+      { status: 500 }
+    );
+  } finally {
+    if (browser) {
       await browser.close();
     }
-  } catch (err: any) {
-    const message = err?.message || (typeof err === "string" ? err : "Unknown error");
-    console.error("PDP_PDF_ERROR:", message);
-    return NextResponse.json({ error: "PDF generation failed", message }, { status: 500 });
   }
 }
 
