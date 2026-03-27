@@ -1,7 +1,7 @@
 // src/app/api/pdp/pdf/route.ts
 
 import { NextResponse } from "next/server";
-import puppeteer from "puppeteer-core";
+import puppeteer from "puppeteer";
 
 import type { DevelopmentPlanV1 } from "@/app/development/player-development-plan/ui/lib/engineSchema";
 import { renderPdpHtml } from "@/app/development/player-development-plan/ui/lib/renderPdfHtml";
