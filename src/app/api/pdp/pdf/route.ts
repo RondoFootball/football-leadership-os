@@ -141,13 +141,25 @@ export async function POST(req: Request) {
 
     const html = renderPdpHtml(plan, { lang, version });
 
-const response = await fetch("https://chrome.browserless.io/pdf", {
+    const token = process.env.BROWSERLESS_TOKEN;
+    console.log("TOKEN IN USE:", token);
+
+if (!token) {
+  throw new Error("Missing BROWSERLESS_TOKEN");
+}
+
+const response = await fetch("https://chrome.browserless.io/content", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    html,
+    token: token,
+    html: html,
+    options: {
+      format: "A4",
+      printBackground: true,
+    },
   }),
 });
 
