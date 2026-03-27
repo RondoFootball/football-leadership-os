@@ -1153,7 +1153,7 @@ export function pageContext(args: {
 `;
 }
 
-/** ---------------- SLIDE 4 ---------------- */
+/** ---------------- SLIDE 4 — DIAGNOSIS / REALITY (FINAL APPLE-SUBTLE VERSION) ---------------- */
 export function pageDiagnosis(args: {
   lang: Lang;
   accentHex: string;
@@ -1190,651 +1190,642 @@ export function pageDiagnosis(args: {
     videoSlots,
   } = args;
 
-  const wm = safeText(logoUrl);
-  const wmHtml = wm
-    ? `<div class="pdpS3__wm" aria-hidden="true">
-         <img src="${esc(wm)}" alt="${esc(clubName)} watermark" />
-       </div>`
-    : ``;
-
-  const observations = notEmpty(whatWeSeeItems).slice(0, 3);
+  const observations = notEmpty(whatWeSeeItems).slice(0, 4);
   const contexts = notEmpty(momentItems).slice(0, 3);
   const effects = notEmpty(effectItems).slice(0, 3);
+
+  const fallbackObservation = t(
+    lang,
+    "Nog geen observatie toegevoegd",
+    "No observation added yet"
+  );
+  const fallbackContext = t(
+    lang,
+    "Nog geen context toegevoegd",
+    "No context added yet"
+  );
+  const fallbackEffect = t(
+    lang,
+    "Nog geen effect toegevoegd",
+    "No effect added yet"
+  );
+
+  const heroPrimary = observations[0] || fallbackObservation;
+  const heroSecondary = effects[0] || fallbackEffect;
+
+  const safeLogo = safeText(logoUrl);
+  const wmHtml = safeLogo
+    ? `
+      <div class="truthS4__wm" aria-hidden="true">
+        <img src="${esc(safeLogo)}" alt="${esc(clubName)} watermark" />
+      </div>
+    `
+    : "";
 
   const videos = [...(videoSlots || []).slice(0, 3)];
   while (videos.length < 3) videos.push({ status: "pending" });
 
   const videoMetaLine = (slot: Slide3VideoSlot) => {
-    const parts = [
-      safeText(slot.match_or_session),
-      safeText(slot.timestamp),
-    ].filter(Boolean);
-
+    const parts = [safeText(slot.match_or_session), safeText(slot.timestamp)].filter(
+      Boolean
+    );
     return parts.length ? parts.join(" • ") : "";
   };
 
-  const stripHead = t(lang, "VIDEO'S (VOORBEELDEN)", "VIDEOS (EXAMPLES)");
+  const renderObservationList = (items: string[]) => {
+    const list = items.length ? items : [fallbackObservation];
 
-  const videoCard = (slot: Slide3VideoSlot) => {
-    if (slot.status === "active") {
-      const sub = videoMetaLine(slot);
-
-      return `
-        <a class="pdpS3__videoCard pdpS3__videoCard--active" href="${esc(
-          slot.url || "#"
-        )}">
-          <div class="pdpS3__videoThumb">
-            ${
-              slot.thumbnail_url
-                ? `<img src="${esc(slot.thumbnail_url)}" alt="" />`
-                : `<div class="pdpS3__videoFallback"></div>`
-            }
-            <div class="pdpS3__videoShade"></div>
-            <div class="pdpS3__playWrap">
-              <div class="pdpS3__play"></div>
-            </div>
+    return list
+      .map(
+        (item, index) => `
+          <div class="truthS4__obsItem ${index === 0 ? "truthS4__obsItem--lead" : ""}">
+            <span class="truthS4__obsDot"></span>
+            <span class="truthS4__obsText">${esc(item)}</span>
           </div>
+        `
+      )
+      .join("");
+  };
 
-          <div class="pdpS3__videoMeta">
-            <div class="pdpS3__videoTitle">${esc(
-              slot.title || t(lang, "Video", "Video")
-            )}</div>
-            <div class="pdpS3__videoSub ${
-              sub ? "" : "pdpS3__videoSub--empty"
-            }">${esc(sub || "\u00A0")}</div>
-          </div>
-        </a>
-      `;
-    }
+  const renderMiniList = (
+    items: string[],
+    fallback: string,
+    variant: "context" | "effect"
+  ) => {
+    const list = items.length ? items : [fallback];
 
     return `
-      <div class="pdpS3__videoCard pdpS3__videoCard--empty">
-        <div class="pdpS3__videoThumb pdpS3__videoThumb--empty">
-          <div class="pdpS3__videoShade"></div>
-          <div class="pdpS3__playWrap">
-            <div class="pdpS3__play pdpS3__play--disabled"></div>
+      <ul class="truthS4__miniList truthS4__miniList--${variant}">
+        ${list
+          .map(
+            (item) => `
+              <li class="truthS4__miniItem truthS4__miniItem--${variant}">
+                <span class="truthS4__miniBullet"></span>
+                <span>${esc(item)}</span>
+              </li>
+            `
+          )
+          .join("")}
+      </ul>
+    `;
+  };
+
+  const videoCard = (slot: Slide3VideoSlot, variant: "hero" | "small") => {
+    const title =
+      slot.status === "active"
+        ? slot.title || t(lang, "Video", "Video")
+        : "";
+
+    const sub =
+      slot.status === "active"
+        ? videoMetaLine(slot)
+        : t(lang, "Bewijs volgt", "Evidence pending");
+
+    return `
+      <div class="truthS4__videoCard truthS4__videoCard--${variant} ${
+        slot.status === "active"
+          ? "truthS4__videoCard--active"
+          : "truthS4__videoCard--empty"
+      }">
+        <div class="truthS4__videoThumb">
+          ${
+  slot.status === "active"
+    ? (
+        slot.thumbnail_url
+          ? `<img src="${esc(slot.thumbnail_url)}" alt="" />`
+          : `<div class="truthS4__videoFallback truthS4__videoFallback--active"></div>`
+      )
+    : `<div class="truthS4__videoFallback truthS4__videoFallback--empty"></div>`
+}
+          <div class="truthS4__videoShade"></div>
+          <div class="truthS4__playWrap">
+            <div class="truthS4__play ${
+              slot.status === "active" ? "" : "truthS4__play--disabled"
+            }"></div>
           </div>
         </div>
 
-        <div class="pdpS3__videoMeta">
-          <div class="pdpS3__videoTitle">${esc(
-            t(lang, "Geen video geüpload", "No video uploaded")
-          )}</div>
-          <div class="pdpS3__videoSub pdpS3__videoSub--empty">&nbsp;</div>
+        <div class="truthS4__videoMeta">
+          <div class="truthS4__videoTitle ${
+            title ? "" : "truthS4__videoTitle--empty"
+          }">${esc(title || "\u00A0")}</div>
+          <div class="truthS4__videoSub ${
+            sub ? "" : "truthS4__videoSub--empty"
+          }">${esc(sub || "\u00A0")}</div>
         </div>
       </div>
     `;
   };
 
-  const bulletList = (items: string[], variant = "") =>
-    items.length
-      ? `<ul class="pdpS3__list">
-          ${items
-            .map(
-              (x) => `
-                <li class="pdpS3__li ${variant}">
-                  <span class="pdpS3__dot"></span>
-                  <span>${esc(x)}</span>
-                </li>`
-            )
-            .join("")}
-        </ul>`
-      : `<div class="pdpS3__empty"></div>`;
-
   return `
-<section class="page pdpS3" style="--accent:${esc(accentHex)};">
+<section class="page truthS4" style="--accent:${esc(accentHex)};">
   ${wmHtml}
-  <div class="pdpS3__wash" aria-hidden="true"></div>
-  <div class="pdpS3__vignette" aria-hidden="true"></div>
-  <div class="pdpS3__grain" aria-hidden="true"></div>
-  <div class="pdpS3__axis" aria-hidden="true"></div>
 
-  <div class="pdpS3__top">
-    <div class="pdpS3__kicker">${esc(t(lang, "REALITEIT", "REALITY"))}</div>
-    <div class="pdpS3__title">${esc(
-      t(lang, "WAAR STAAN WE NU", "WHERE ARE WE NOW")
-    )}</div>
-    <div class="pdpS3__titleMarker" aria-hidden="true"></div>
+  <div class="truthS4__bg" aria-hidden="true"></div>
+  <div class="truthS4__vignette" aria-hidden="true"></div>
+  <div class="truthS4__grid" aria-hidden="true"></div>
+  <div class="truthS4__rail" aria-hidden="true"></div>
+
+  <div class="truthS4__header">
+    <div class="truthS4__kicker">${esc(t(lang, "REALITEIT", "REALITY"))}</div>
+
+    <div class="truthS4__hero">
+      <div class="truthS4__headline">${esc(heroPrimary)}</div>
+      <div class="truthS4__headlineSub">${esc(heroSecondary)}</div>
+    </div>
   </div>
 
-  <div class="pdpS3__midRow">
-    <div class="pdpS3__card pdpS3__card--moment">
-      <div class="pdpS3__head">${esc(
-        t(lang, "WANNEER ZIEN WE DIT", "WHEN DO WE SEE THIS")
+  <div class="truthS4__primary">
+    <div class="truthS4__sectionLabel">${esc(
+      t(lang, "WAT WE NU ZIEN", "WHAT WE SEE NOW")
+    )}</div>
+
+    <div class="truthS4__observations">
+      ${renderObservationList(observations)}
+    </div>
+  </div>
+
+  <div class="truthS4__secondary">
+    <div class="truthS4__secondaryBlock truthS4__secondaryBlock--context">
+      <div class="truthS4__sectionLabel">${esc(
+        t(lang, "WAAR DIT ZICHTBAAR WORDT", "WHERE THIS BECOMES VISIBLE")
       )}</div>
-      ${bulletList(contexts)}
+      ${renderMiniList(contexts, fallbackContext, "context")}
     </div>
 
-    <div class="pdpS3__card pdpS3__card--behaviour">
-      <div class="pdpS3__head">${esc(
-        t(lang, "WAT ZIEN WE NU", "WHAT WE SEE NOW")
+    <div class="truthS4__secondaryBlock truthS4__secondaryBlock--effect">
+      <div class="truthS4__sectionLabel">${esc(
+        t(lang, "GEVOLG VOOR HET SPEL", "EFFECT ON THE GAME")
       )}</div>
-      <div class="pdpS3__behaviourBody">
-        <div class="pdpS3__behaviourRail"></div>
-        <div class="pdpS3__behaviourText">
-          ${bulletList(observations, "pdpS3__li--behaviour")}
-        </div>
+      ${renderMiniList(effects, fallbackEffect, "effect")}
+    </div>
+  </div>
+
+  <div class="truthS4__evidence">
+    <div class="truthS4__evidenceHead">
+      <div class="truthS4__sectionLabel">${esc(
+        t(lang, "BEWIJS / VIDEO", "EVIDENCE / VIDEO")
+      )}</div>
+    </div>
+
+    <div class="truthS4__evidenceGrid">
+      <div class="truthS4__evidenceMain">
+        ${videoCard(videos[0], "hero")}
+      </div>
+
+      <div class="truthS4__evidenceSide">
+        ${videoCard(videos[1], "small")}
+        ${videoCard(videos[2], "small")}
       </div>
     </div>
   </div>
 
-  <div class="pdpS3__effectCard">
-    <div class="pdpS3__head">${esc(
-      t(lang, "EFFECT OP HET SPEL", "EFFECT ON THE GAME")
-    )}</div>
-    ${bulletList(effects, "pdpS3__li--effect")}
-  </div>
-
-  <div class="pdpS3__videoStrip">
-    <div class="pdpS3__videoStripHead">${esc(stripHead)}</div>
-    <div class="pdpS3__videoGrid">
-      ${videoCard(videos[0])}
-      ${videoCard(videos[1])}
-      ${videoCard(videos[2])}
-    </div>
-  </div>
-
   <style>
-    .pdpS3{
+    .truthS4{
       position:relative;
       height:100%;
-      background:#0B0D10;
-      color:#fff;
-      border-radius:18px;
       overflow:hidden;
+      border-radius:18px;
+      background:#07090C;
+      color:#FFFFFF;
+      font-family:"SF Pro Display","Inter",Arial,sans-serif;
     }
 
-    .pdpS3 *{
+    .truthS4 *{
       box-sizing:border-box;
     }
 
-    .pdpS3__wm{
-      position:absolute;
-      right:-18mm;
-      bottom:-18mm;
-      width:136mm;
-      height:136mm;
-      opacity:.038;
-      z-index:0;
-      pointer-events:none;
-      filter:blur(.2px);
-    }
+    .truthS4__wm{
+  position:absolute;
+  right:6mm;
+  top:22mm;
+  width:96mm;
+  height:96mm;
+  opacity:.05;
+  z-index:1;
+  pointer-events:none;
+}
 
-    .pdpS3__wm img{
-      width:100%;
-      height:100%;
-      object-fit:contain;
-    }
+.truthS4__wm img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
 
-    .pdpS3__wash{
-      position:absolute;
-      inset:0;
-      background:
-        radial-gradient(
-          circle at 16% 18%,
-          color-mix(in srgb, var(--accent-primary, var(--accent)) 11%, black 8%) 0%,
-          transparent 34%
-        ),
-        radial-gradient(
-          circle at 84% 78%,
-          color-mix(in srgb, var(--accent-secondary, var(--accent)) 7%, black 18%) 0%,
-          transparent 28%
-        ),
-        linear-gradient(
-          145deg,
-          color-mix(in srgb, var(--accent-mix, var(--accent)) 6%, black 14%) 0%,
-          transparent 60%
-        );
-      z-index:0;
-      pointer-events:none;
-    }
+    .truthS4__wm img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
 
-    .pdpS3__vignette{
+    .truthS4__bg{
       position:absolute;
       inset:0;
       background:
-        radial-gradient(circle at center, transparent 46%, rgba(0,0,0,.18) 100%),
-        linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.16));
+        radial-gradient(circle at 8% 12%, color-mix(in srgb, var(--accent) 8%, transparent) 0%, transparent 26%),
+        radial-gradient(circle at 78% 16%, rgba(255,255,255,.015) 0%, transparent 18%),
+        linear-gradient(180deg, rgba(255,255,255,.006) 0%, rgba(255,255,255,0) 22%),
+        #07090C;
       z-index:0;
       pointer-events:none;
     }
 
-    .pdpS3__grain{
+    .truthS4__bg::after{
+      content:"";
       position:absolute;
       inset:0;
-      opacity:.022;
+      background:
+        radial-gradient(circle at 18% 72%, color-mix(in srgb, var(--accent) 7%, transparent) 0%, transparent 34%);
+      opacity:.26;
+      pointer-events:none;
+    }
+
+    .truthS4__vignette{
+      position:absolute;
+      inset:0;
+      background:radial-gradient(circle at center, transparent 58%, rgba(0,0,0,.16) 100%);
+      z-index:0;
+      pointer-events:none;
+    }
+
+    .truthS4__grid{
+      position:absolute;
+      inset:0;
+      opacity:.004;
       background-image:
         linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
-      background-size:5px 5px, 5px 5px;
+      background-size:6px 6px, 6px 6px;
       z-index:0;
       pointer-events:none;
     }
 
-    .pdpS3__axis{
+    .truthS4__rail{
       position:absolute;
       left:18mm;
-      top:16mm;
-      bottom:16mm;
-      width:4px;
-      border-radius:999px;
-      background:
-        linear-gradient(
-          180deg,
-          color-mix(in srgb, var(--accent-primary, var(--accent)) 96%, #fff 4%) 0%,
-          color-mix(in srgb, var(--accent-primary, var(--accent)) 78%, transparent) 58%,
-          color-mix(in srgb, var(--accent-primary, var(--accent)) 16%, transparent) 100%
-        );
-      box-shadow:
-        0 0 0 1px color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, transparent),
-        0 0 14px color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, transparent),
-        0 0 28px color-mix(in srgb, var(--accent-primary, var(--accent)) 10%, transparent);
-      opacity:.98;
-      z-index:1;
-    }
-
-    .pdpS3__top{
-      position:absolute;
-      left:26mm;
-      right:16mm;
       top:18mm;
-      height:27mm;
+      bottom:18mm;
+      width:3px;
+      border-radius:999px;
+      background:linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--accent) 86%, #fff 2%) 0%,
+        color-mix(in srgb, var(--accent) 34%, transparent) 52%,
+        transparent 100%
+      );
+      box-shadow:
+        0 0 10px color-mix(in srgb, var(--accent) 14%, transparent),
+        0 0 22px color-mix(in srgb, var(--accent) 5%, transparent);
+      opacity:.92;
       z-index:2;
-      overflow:hidden;
     }
 
-    .pdpS3__kicker{
-      font-size:9.5pt;
+    .truthS4__header{
+      position:absolute;
+      left:28mm;
+      right:18mm;
+      top:18mm;
+      z-index:3;
+    }
+
+    .truthS4__kicker{
+      font-size:9pt;
+      line-height:1.1;
+      font-weight:720;
+      letter-spacing:.24em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.48);
+      white-space:nowrap;
+    }
+
+    .truthS4__hero{
+      margin-top:7px;
+      padding-bottom:10px;
+      border-bottom:1px solid rgba(255,255,255,.045);
+      max-width:90%;
+    }
+
+    .truthS4__headline{
+      max-width:100%;
+      font-size:28.5pt;
+      line-height:.95;
+      letter-spacing:-.07em;
+      font-weight:820;
+      color:#FFFFFF;
+      word-break:normal;
+      overflow-wrap:break-word;
+      text-wrap:balance;
+    }
+
+    .truthS4__headlineSub{
+      margin-top:8px;
+      max-width:95%;
+      font-size:12.4pt;
+      line-height:1.18;
+      letter-spacing:-.018em;
+      font-weight:500;
+      color:rgba(255,255,255,.58);
+      word-break:normal;
+      overflow-wrap:break-word;
+      text-wrap:balance;
+    }
+
+    .truthS4__sectionLabel{
+      font-size:8.3pt;
+      line-height:1.1;
+      font-weight:720;
       letter-spacing:.22em;
       text-transform:uppercase;
-      color:rgba(255,255,255,.72);
-      font-weight:640;
-      line-height:1.1;
-      margin-bottom:6px;
+      color:rgba(255,255,255,.36);
+      white-space:nowrap;
     }
 
-    .pdpS3__title{
-      font-size:22pt;
-      line-height:1.02;
-      letter-spacing:-0.02em;
-      font-weight:840;
-      text-transform:uppercase;
-      color:#fff;
-      max-width:20ch;
-      text-shadow:0 8px 24px rgba(0,0,0,.18);
-    }
-
-    .pdpS3__titleMarker{
-      width:22mm;
-      height:2px;
-      margin-top:6px;
-      border-radius:999px;
-      background:
-        linear-gradient(
-          90deg,
-          color-mix(in srgb, var(--accent-primary, var(--accent)) 94%, #fff 2%) 0%,
-          transparent 100%
-        );
-      opacity:.82;
-      box-shadow:0 0 10px color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, transparent);
-    }
-
-    .pdpS3__midRow{
+    .truthS4__primary{
       position:absolute;
-      left:26mm;
-      right:16mm;
-      top:40mm;
-      height:76mm;
-      z-index:2;
-      display:grid;
-      grid-template-columns:1fr 1.18fr;
+      left:28mm;
+      right:18mm;
+      top:66mm;
+      z-index:3;
+    }
+
+    .truthS4__observations{
+      margin-top:10px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      max-width:76%;
+    }
+
+    .truthS4__obsItem{
+      display:flex;
+      align-items:flex-start;
       gap:10px;
     }
 
-    .pdpS3__effectCard{
-      position:absolute;
-      left:26mm;
-      right:16mm;
-      top:122mm;
-      height:56mm;
-      z-index:2;
-      border:1px solid color-mix(in srgb, var(--accent-secondary, var(--accent)) 22%, rgba(255,255,255,.08));
-      border-radius:18px;
-      padding:13px 14px;
-      background:
-        linear-gradient(
-          145deg,
-          rgba(0,0,0,.18) 0%,
-          color-mix(in srgb, var(--accent-secondary, var(--accent)) 9%, rgba(0,0,0,.12)) 100%
-        );
-      overflow:hidden;
-      box-shadow:
-        0 12px 32px rgba(0,0,0,.28),
-        inset 0 0 0 1px rgba(255,255,255,.02);
-    }
-
-    .pdpS3__videoStrip{
-      position:absolute;
-      left:26mm;
-      right:16mm;
-      top:184mm;
-      bottom:14mm;
-      z-index:2;
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:18px;
-      padding:10px 10px 9px;
-      background:
-        linear-gradient(
-          145deg,
-          rgba(255,255,255,.035) 0%,
-          rgba(255,255,255,.02) 100%
-        );
-      overflow:hidden;
-      box-shadow:
-        0 12px 32px rgba(0,0,0,.26),
-        inset 0 0 0 1px rgba(255,255,255,.018);
-    }
-
-    .pdpS3__videoStripHead{
-      font-size:8.6pt;
-      letter-spacing:.22em;
-      text-transform:uppercase;
-      color:rgba(255,255,255,.50);
-      font-weight:720;
-      line-height:1.1;
-      margin-bottom:6px;
-    }
-
-    .pdpS3__videoGrid{
-      display:grid;
-      grid-template-columns:1fr 1fr 1fr;
-      gap:8px;
-      height:calc(100% - 14px);
-      align-items:stretch;
-    }
-
-    .pdpS3__card{
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:18px;
-      overflow:hidden;
-      min-height:0;
-      padding:13px 14px;
-      background:
-        linear-gradient(
-          145deg,
-          rgba(255,255,255,.04) 0%,
-          rgba(255,255,255,.025) 100%
-        );
-      box-shadow:
-        0 12px 32px rgba(0,0,0,.28),
-        inset 0 0 0 1px rgba(255,255,255,.02);
-    }
-
-    .pdpS3__card--behaviour{
-      border:1px solid color-mix(in srgb, var(--accent-primary, var(--accent)) 22%, rgba(255,255,255,.08));
-      background:
-        linear-gradient(
-          145deg,
-          rgba(255,255,255,.05) 0%,
-          color-mix(in srgb, var(--accent-mix, var(--accent)) 9%, rgba(255,255,255,.025)) 100%
-        );
-      box-shadow:
-        0 18px 40px rgba(0,0,0,.34),
-        inset 0 0 0 1px rgba(255,255,255,.03);
-    }
-
-    .pdpS3__head{
-      font-size:8.8pt;
-      letter-spacing:.22em;
-      text-transform:uppercase;
-      color:rgba(255,255,255,.50);
-      font-weight:720;
-      margin-bottom:8px;
-      line-height:1.1;
-    }
-
-    .pdpS3__list{
-      list-style:none;
-      margin:0;
-      padding:0;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-
-    .pdpS3__li{
-      display:flex;
-      gap:9px;
-      align-items:flex-start;
-      min-width:0;
-    }
-
-    .pdpS3__dot{
-      width:7px;
-      height:7px;
+    .truthS4__obsDot{
+      width:8px;
+      height:8px;
+      margin-top:8px;
       border-radius:999px;
-      background:var(--accent-mix, var(--accent));
-      margin-top:4px;
-      flex:0 0 auto;
+      background:var(--accent);
       box-shadow:
-        0 0 0 1px color-mix(in srgb, var(--accent-mix, var(--accent)) 22%, transparent),
-        0 0 10px color-mix(in srgb, var(--accent-mix, var(--accent)) 14%, transparent);
+        0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent),
+        0 0 7px color-mix(in srgb, var(--accent) 10%, transparent);
+      flex:0 0 auto;
     }
 
-    .pdpS3__li span:last-child{
-      font-size:12pt;
-      line-height:1.28;
-      color:rgba(255,255,255,.80);
-      font-weight:500;
+    .truthS4__obsText{
+      font-size:15.8pt;
+      line-height:1.23;
+      letter-spacing:-.018em;
+      font-weight:620;
+      color:rgba(255,255,255,.9);
       display:-webkit-box;
-      -webkit-line-clamp:2;
+      -webkit-line-clamp:3;
       -webkit-box-orient:vertical;
       overflow:hidden;
       min-width:0;
     }
 
-    .pdpS3__li--effect span:last-child{
-      font-size:12.5pt;
-      line-height:1.3;
-      color:rgba(255,255,255,.86);
-      font-weight:560;
+    .truthS4__obsItem--lead .truthS4__obsText{
+      font-size:17.2pt;
+      line-height:1.16;
+      color:#FFFFFF;
+      font-weight:680;
     }
 
-    .pdpS3__behaviourBody{
+    .truthS4__secondary{
+      position:absolute;
+      left:28mm;
+      right:18mm;
+      top:120mm;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12mm;
+      z-index:3;
+      padding-top:10px;
+      border-top:1px solid rgba(255,255,255,.045);
+    }
+
+    .truthS4__secondaryBlock{
+      min-width:0;
+    }
+
+    .truthS4__miniList{
+      list-style:none;
+      margin:9px 0 0 0;
+      padding:0;
       display:flex;
-      gap:10px;
+      flex-direction:column;
+      gap:7px;
+    }
+
+    .truthS4__miniItem{
+      display:flex;
       align-items:flex-start;
+      gap:8px;
+    }
+
+    .truthS4__miniBullet{
+      width:5px;
+      height:5px;
+      margin-top:6px;
+      border-radius:999px;
+      background:rgba(255,255,255,.28);
+      flex:0 0 auto;
+    }
+
+    .truthS4__miniItem--context span:last-child,
+    .truthS4__miniItem--effect span:last-child{
+      font-size:11.1pt;
+      line-height:1.29;
+      font-weight:520;
+      color:rgba(255,255,255,.66);
+    }
+
+    .truthS4__miniItem--effect span:last-child{
+      color:rgba(255,255,255,.76);
+    }
+
+    .truthS4__evidence{
+      position:absolute;
+      left:28mm;
+      right:18mm;
+      bottom:14mm;
+      height:78mm;
+      z-index:3;
+      padding-top:8px;
+      border-top:1px solid rgba(255,255,255,.045);
+    }
+
+    .truthS4__evidenceHead{
+      margin-bottom:8px;
+    }
+
+    .truthS4__evidenceGrid{
+      display:grid;
+      grid-template-columns:1.45fr .95fr;
+      gap:8px;
+      height:calc(100% - 16px);
       min-height:0;
     }
 
-    .pdpS3__behaviourRail{
-      width:2px;
-      height:38mm;
-      border-radius:999px;
-      background:
-        linear-gradient(
-          180deg,
-          color-mix(in srgb, var(--accent-primary, var(--accent)) 58%, rgba(255,255,255,.16)) 0%,
-          color-mix(in srgb, var(--accent-primary, var(--accent)) 14%, transparent) 100%
-        );
-      box-shadow:0 0 10px color-mix(in srgb, var(--accent-primary, var(--accent)) 14%, transparent);
-      flex:0 0 auto;
-      opacity:.98;
-    }
-
-    .pdpS3__behaviourText{
+    .truthS4__evidenceMain,
+    .truthS4__evidenceSide{
       min-width:0;
-      flex:1 1 auto;
+      min-height:0;
     }
 
-    .pdpS3__li--behaviour span:last-child{
-      font-size:13.4pt;
-      line-height:1.28;
-      color:rgba(255,255,255,.90);
-      font-weight:600;
-      letter-spacing:.003em;
-    }
-
-    .pdpS3__empty{
-      min-height:10px;
-    }
-
-    .pdpS3__videoCard{
+    .truthS4__evidenceSide{
       display:grid;
-      grid-template-rows:45mm minmax(12mm, 1fr);
-      gap:3.2mm;
+      grid-template-rows:1fr 1fr;
+      gap:8px;
+      min-height:0;
+    }
+
+    .truthS4__videoCard{
       width:100%;
       height:100%;
-      border-radius:14px;
+      border-radius:12px;
       overflow:hidden;
-      border:1px solid rgba(255,255,255,.08);
-      background:
-        linear-gradient(
-          145deg,
-          rgba(255,255,255,.04) 0%,
-          rgba(255,255,255,.025) 100%
-        );
-      text-decoration:none;
-      color:inherit;
-      padding:8px 8px 10px;
-      position:relative;
-      min-height:0;
+      border:1px solid rgba(255,255,255,.05);
+      background:rgba(255,255,255,.014);
       box-shadow:
-        0 10px 24px rgba(0,0,0,.22),
-        inset 0 0 0 1px rgba(255,255,255,.018);
+        0 6px 18px rgba(0,0,0,.12),
+        inset 0 0 0 1px rgba(255,255,255,.008);
+      display:grid;
+      grid-template-rows:1fr auto;
     }
 
-    .pdpS3__videoCard--active{
-      border:1px solid color-mix(in srgb, var(--accent-primary, var(--accent)) 26%, rgba(255,255,255,.08));
-      box-shadow:
-        0 14px 34px rgba(0,0,0,.35),
-        0 0 0 1px color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, transparent),
-        inset 0 0 0 1px rgba(255,255,255,.018);
-      transform:translateY(-1px);
+    .truthS4__videoCard--hero{
+      background:rgba(255,255,255,.016);
     }
 
-    .pdpS3__videoThumb{
+   .truthS4__videoCard--active{
+  border-color:color-mix(in srgb, var(--accent) 28%, rgba(255,255,255,.05));
+  box-shadow:
+    0 8px 22px rgba(0,0,0,.14),
+    0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent),
+    0 0 22px color-mix(in srgb, var(--accent) 8%, transparent),
+    inset 0 0 0 1px rgba(255,255,255,.008);
+}
+
+.truthS4__videoCard--empty{
+  border-color:rgba(255,255,255,.04);
+  box-shadow:
+    0 6px 18px rgba(0,0,0,.11),
+    inset 0 0 0 1px rgba(255,255,255,.006);
+}
+
+    .truthS4__videoThumb{
       position:relative;
-      height:100%;
-      border-radius:9px;
       overflow:hidden;
-      background:#121418;
-      box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,.03),
-        0 8px 20px rgba(0,0,0,.22);
+      background:#101317;
     }
 
-    .pdpS3__videoThumb img{
+    .truthS4__videoThumb img{
       width:100%;
       height:100%;
       object-fit:cover;
     }
 
-    .pdpS3__videoFallback{
-      width:100%;
-      height:100%;
-      background:
-        radial-gradient(circle at 30% 35%, rgba(255,255,255,.07), transparent 30%),
-        linear-gradient(145deg, rgba(255,255,255,.04), rgba(0,0,0,.16));
-    }
+    .truthS4__videoFallback--active{
+  background:
+    radial-gradient(circle at 24% 38%, color-mix(in srgb, var(--accent) 16%, transparent) 0%, transparent 18%),
+    linear-gradient(145deg, rgba(255,255,255,.035), rgba(0,0,0,.10));
+  opacity:.9;
+}
 
-    .pdpS3__videoThumb--empty{
-      background:
-        radial-gradient(circle at 30% 35%, rgba(255,255,255,.07), transparent 30%),
-        linear-gradient(145deg, rgba(255,255,255,.04), rgba(0,0,0,.16));
-    }
+.truthS4__videoFallback--empty{
+  background:
+    radial-gradient(circle at 24% 38%, color-mix(in srgb, var(--accent) 8%, transparent) 0%, transparent 18%),
+    linear-gradient(145deg, rgba(255,255,255,.018), rgba(0,0,0,.08));
+  opacity:.45;
+}
 
-    .pdpS3__videoShade{
+    .truthS4__videoShade{
       position:absolute;
       inset:0;
       background:
-        linear-gradient(180deg, rgba(0,0,0,.04), rgba(0,0,0,.34)),
-        linear-gradient(90deg, rgba(0,0,0,.08), rgba(0,0,0,.20));
+        linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,.22));
       z-index:1;
     }
 
-    .pdpS3__playWrap{
+    .truthS4__playWrap{
       position:absolute;
       inset:0;
       display:flex;
       align-items:center;
       justify-content:center;
-      z-index:3;
+      z-index:2;
       pointer-events:none;
     }
 
-    .pdpS3__play{
-      width:11mm;
-      height:11mm;
+    .truthS4__play{
+      width:9.5mm;
+      height:9.5mm;
       border-radius:999px;
       position:relative;
-      background:rgba(255,255,255,.16);
-      border:1px solid rgba(255,255,255,.32);
+      background:rgba(255,255,255,.11);
+      border:1px solid rgba(255,255,255,.2);
       box-shadow:
-        0 8px 18px rgba(0,0,0,.30),
-        inset 0 0 0 1px rgba(255,255,255,.06);
-      opacity:1;
+        0 6px 14px rgba(0,0,0,.14),
+        0 0 0 1px color-mix(in srgb, var(--accent) 6%, transparent);
     }
 
-    .pdpS3__play::before{
+    .truthS4__play::before{
       content:"";
       position:absolute;
-      left:4.1mm;
-      top:3.1mm;
-      border-left:3mm solid rgba(255,255,255,.96);
-      border-top:1.9mm solid transparent;
-      border-bottom:1.9mm solid transparent;
+      left:3.75mm;
+      top:2.7mm;
+      border-left:2.7mm solid rgba(255,255,255,.92);
+      border-top:1.7mm solid transparent;
+      border-bottom:1.7mm solid transparent;
     }
 
-    .pdpS3__play--disabled{
-      background:rgba(255,255,255,.12);
-      border:1px solid rgba(255,255,255,.26);
-      box-shadow:
-        0 8px 18px rgba(0,0,0,.28),
-        inset 0 0 0 1px rgba(255,255,255,.04);
-      opacity:1;
+    .truthS4__play--disabled{
+      opacity:.58;
     }
 
-    .pdpS3__play--disabled::before{
-      border-left-color:rgba(255,255,255,.90);
-    }
-
-    .pdpS3__videoMeta{
-      min-height:0;
+    .truthS4__videoMeta{
       display:flex;
       flex-direction:column;
-      justify-content:flex-start;
-      gap:1.4mm;
-      padding:0 2px 4px;
-      overflow:visible;
+      justify-content:flex-end;
+      gap:1mm;
+      padding:8px 10px 9px;
+      min-width:0;
+      background:linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,.008));
     }
 
-    .pdpS3__videoTitle{
-      font-size:8.8pt;
+    .truthS4__videoTitle{
+      font-size:8.1pt;
       line-height:1.22;
-      color:rgba(255,255,255,.92);
       font-weight:600;
+      color:rgba(255,255,255,.8);
       display:-webkit-box;
       -webkit-line-clamp:2;
       -webkit-box-orient:vertical;
       overflow:hidden;
       min-height:0;
-      padding-bottom:1px;
     }
 
-    .pdpS3__videoSub{
-      font-size:7.3pt;
+    .truthS4__videoTitle--empty{
+      opacity:0;
+      height:0;
+      min-height:0;
+    }
+
+    .truthS4__videoSub{
+      font-size:7pt;
       line-height:1.22;
-      color:rgba(255,255,255,.58);
+      color:rgba(255,255,255,.34);
       display:-webkit-box;
       -webkit-line-clamp:2;
       -webkit-box-orient:vertical;
       overflow:hidden;
-      min-height:0;
-      padding-bottom:2px;
     }
 
-    .pdpS3__videoSub--empty{
+    .truthS4__videoSub--empty{
       opacity:0;
     }
   </style>
@@ -1843,32 +1834,44 @@ export function pageDiagnosis(args: {
 }
 
 /** ---------------- SLIDE 5 ---------------- */
+
 export function pageDevelopmentRoute(args: {
   lang: Lang;
   accentHex: string;
   clubName: string;
   logoUrl?: string;
+  playerName?: string;
 
   title: string;
   subtitle: string;
 
-  trainingText: string;
-  matchText: string;
-  videoText: string;
-  offFieldText: string;
+  trainingItems?: string[];
+  matchItems?: string[];
+  videoItems?: string[];
+  offFieldItems?: string[];
 
-  playerOwnText: string;
+  trainingText?: string;
+  matchText?: string;
+  videoText?: string;
+  offFieldText?: string;
 
-  playerText: string;
-  coachText: string;
-  analystText: string;
-  staffText: string;
+  playerOwnText?: string;
+  playerText?: string;
+  coachText?: string;
+  analystText?: string;
+  staffText?: string;
 }) {
   const {
     lang,
     accentHex,
     clubName,
     logoUrl,
+    title,
+    subtitle,
+    trainingItems,
+    matchItems,
+    videoItems,
+    offFieldItems,
     trainingText,
     matchText,
     videoText,
@@ -1880,509 +1883,482 @@ export function pageDevelopmentRoute(args: {
     staffText,
   } = args;
 
-  const wm = safeText(logoUrl);
-  const wmHtml = wm
-    ? `<div class="pdpS4__wm" aria-hidden="true"><img src="${esc(
-        wm
-      )}" alt="${esc(clubName)} watermark" /></div>`
-    : ``;
+  const tt = (nl: string, en: string) => (lang === "nl" ? nl : en);
 
-  const executionOwner = safeText(playerText);
-  const guidanceOwner = [coachText, analystText, staffText]
-    .map((x) => safeText(x))
-    .filter(Boolean)
-    .join(" / ");
+  const clean = (value?: string) =>
+    typeof value === "string" ? value.trim() : "";
 
-  const safeOwn = safeText(playerOwnText);
-  const safeTraining = safeText(trainingText);
-  const safeMatch = safeText(matchText);
-  const safeVideo = safeText(videoText);
-  const safeOffField = safeText(offFieldText);
+  const escapeHtml = (value?: string) =>
+    String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
 
-  return `
-<section class="page pdpS4" style="--accent:${esc(accentHex)};">
-  ${wmHtml}
-  <div class="pdpS4__wash" aria-hidden="true"></div>
-  <div class="pdpS4__vignette" aria-hidden="true"></div>
-  <div class="pdpS4__grain" aria-hidden="true"></div>
-  <div class="pdpS4__axis" aria-hidden="true"></div>
-
-  <div class="pdpS4__top">
-    <div class="pdpS4__kicker">${esc(t(lang, "AANPAK", "APPROACH"))}</div>
-    <div class="pdpS4__title">
-      ${esc(t(lang, "HOE WE HIERAAN WERKEN", "HOW WE WORK ON THIS"))}
-    </div>
-    <div class="pdpS4__titleMarker" aria-hidden="true"></div>
-  </div>
-
-  <div class="pdpS4__heroCard">
-    <div class="pdpS4__heroHead">
-      ${esc(t(lang, "ZO GAAN WE DIT DOEN", "THIS IS HOW WE DO IT"))}
-    </div>
-
-    <div class="pdpS4__heroBody">
-      <div class="pdpS4__heroRail"></div>
-      <div class="pdpS4__heroText">${esc(safeOwn)}</div>
-    </div>
-  </div>
-
-  <div class="pdpS4__midGrid">
-    <div class="pdpS4__clusterCard pdpS4__clusterCard--left">
-      <div class="pdpS4__clusterHead">
-        ${esc(t(lang, "TRAINING + BEELDEN", "TRAINING + VIDEO"))}
-      </div>
-
-      <div class="pdpS4__subStack">
-        <div class="pdpS4__subPanel">
-          <div class="pdpS4__subHead">${esc(t(lang, "TRAINING", "TRAINING"))}</div>
-          <div class="pdpS4__subText">${esc(safeTraining)}</div>
-        </div>
-
-        <div class="pdpS4__subPanel pdpS4__subPanel--secondary">
-          <div class="pdpS4__subHead">${esc(t(lang, "BEELDEN", "VIDEO"))}</div>
-          <div class="pdpS4__subText">${esc(safeVideo)}</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="pdpS4__clusterCard pdpS4__clusterCard--right">
-      <div class="pdpS4__clusterHead">
-        ${esc(t(lang, "WEDSTRIJD + OFF-FIELD", "MATCH + OFF-FIELD"))}
-      </div>
-
-      <div class="pdpS4__subStack">
-        <div class="pdpS4__subPanel">
-          <div class="pdpS4__subHead">${esc(t(lang, "WEDSTRIJD", "MATCH"))}</div>
-          <div class="pdpS4__subText">${esc(safeMatch)}</div>
-        </div>
-
-        <div class="pdpS4__subPanel pdpS4__subPanel--secondary">
-          <div class="pdpS4__subHead">${esc(t(lang, "OFF-FIELD", "OFF-FIELD"))}</div>
-          <div class="pdpS4__subText">${esc(safeOffField)}</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="pdpS4__ownerStrip">
-    <div class="pdpS4__ownerCol">
-      <div class="pdpS4__ownerLabel">${esc(
-        t(lang, "WIE VOERT HET UIT", "WHO EXECUTES")
-      )}</div>
-      <div class="pdpS4__ownerValue">${esc(executionOwner)}</div>
-    </div>
-
-    <div class="pdpS4__ownerDivider" aria-hidden="true"></div>
-
-    <div class="pdpS4__ownerCol">
-      <div class="pdpS4__ownerLabel">${esc(
-        t(lang, "WIE STUURT DIT AAN", "WHO DRIVES THIS")
-      )}</div>
-      <div class="pdpS4__ownerValue pdpS4__ownerValue--secondary">${esc(
-        guidanceOwner
-      )}</div>
-    </div>
-  </div>
-
-  <style>
-    .pdpS4{
-      position:relative;
-      height:100%;
-      background:#0B0D10;
-      color:#fff;
-      border-radius:18px;
-      overflow:hidden;
+  const normalizeItems = (items?: string[], text?: string) => {
+    if (Array.isArray(items) && items.length > 0) {
+      return items
+        .filter((x) => typeof x === "string")
+        .map((x) => x.trim())
+        .filter(Boolean)
+        .slice(0, 3);
     }
 
-    .pdpS4 *{
+    const raw = clean(text);
+    if (!raw) return [];
+
+    return raw
+      .split(/[\n•;]+/)
+      .map((x) => x.trim())
+      .filter(Boolean)
+      .slice(0, 3);
+  };
+
+  const trainingList = normalizeItems(trainingItems, trainingText);
+const matchList = normalizeItems(matchItems, matchText);
+const videoList = normalizeItems(videoItems, videoText);
+const offFieldList = normalizeItems(offFieldItems, offFieldText);
+
+const fallbackTitle = tt(
+  "Nog geen aanpak gedefinieerd",
+  "No approach defined yet"
+);
+
+const fallbackSubtitle = tt(
+  "Nog geen toelichting toegevoegd",
+  "No explanation added yet"
+);
+
+const safeTitle = clean(title) || fallbackTitle;
+const safeSubtitle = clean(subtitle) || fallbackSubtitle;
+
+  const alignmentItems = [
+    {
+      label: tt("SPELER", "PLAYER"),
+      text: clean(playerText || playerOwnText),
+    },
+    {
+      label: tt("COACH", "COACH"),
+      text: clean(coachText),
+    },
+    {
+      label: tt("ANALIST", "ANALYST"),
+      text: clean(analystText),
+    },
+    {
+      label: tt("STAFF", "STAFF"),
+      text: clean(staffText),
+    },
+  ].filter((item) => item.text);
+
+  const renderList = (items: string[], fallback: string) => {
+    const finalItems = items.length ? items : [fallback];
+
+    return finalItems
+      .map(
+        (item) => `
+          <div class="routeS5__item">
+            <span class="routeS5__dot"></span>
+            <span class="routeS5__itemText">${escapeHtml(item)}</span>
+          </div>
+        `
+      )
+      .join("");
+  };
+
+  const watermarkHtml = clean(logoUrl)
+    ? `
+      <div class="routeS5__wm" aria-hidden="true">
+        <img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(clubName)} watermark" />
+      </div>
+    `
+    : "";
+
+  const alignmentHtml = alignmentItems.length
+    ? `
+      <div class="routeS5__alignment">
+        <div class="routeS5__alignmentLabel">${escapeHtml(
+          tt("AFSTEMMING", "ALIGNMENT")
+        )}</div>
+
+        <div class="routeS5__alignmentGrid">
+          ${alignmentItems
+            .map(
+              (item) => `
+                <div class="routeS5__alignmentItem">
+                  <div class="routeS5__alignmentRole">${escapeHtml(
+                    item.label
+                  )}</div>
+                  <div class="routeS5__alignmentText">${escapeHtml(
+                    item.text
+                  )}</div>
+                </div>
+              `
+            )
+            .join("")}
+        </div>
+      </div>
+    `
+    : "";
+
+  return `
+<section class="page routeS5" style="--accent:${escapeHtml(accentHex)};">
+  ${watermarkHtml}
+
+  <div class="routeS5__bg" aria-hidden="true"></div>
+  <div class="routeS5__vignette" aria-hidden="true"></div>
+  <div class="routeS5__gridFx" aria-hidden="true"></div>
+  <div class="routeS5__rail" aria-hidden="true"></div>
+
+  <div class="routeS5__header">
+    <div class="routeS5__kicker">${escapeHtml(tt("AANPAK", "APPROACH"))}</div>
+
+    <div class="routeS5__hero">
+      <div class="routeS5__title">${escapeHtml(safeTitle)}</div>
+<div class="routeS5__subtitle">${escapeHtml(safeSubtitle)}</div>
+    </div>
+  </div>
+
+  <div class="routeS5__grid">
+    <div class="routeS5__block routeS5__block--primary">
+      <div class="routeS5__label">${escapeHtml(tt("TRAINING", "TRAINING"))}</div>
+      <div class="routeS5__list">
+        ${renderList(
+          trainingList,
+          tt("Nog geen trainingsactie toegevoegd", "No training action added yet")
+        )}
+      </div>
+    </div>
+
+    <div class="routeS5__block routeS5__block--primary">
+      <div class="routeS5__label">${escapeHtml(tt("MATCH", "MATCH"))}</div>
+      <div class="routeS5__list">
+        ${renderList(
+          matchList,
+          tt("Nog geen wedstrijdactie toegevoegd", "No match action added yet")
+        )}
+      </div>
+    </div>
+
+    <div class="routeS5__block">
+      <div class="routeS5__label">${escapeHtml(tt("VIDEO", "VIDEO"))}</div>
+      <div class="routeS5__list">
+        ${renderList(
+          videoList,
+          tt("Nog geen videoactie toegevoegd", "No video action added yet")
+        )}
+      </div>
+    </div>
+
+    <div class="routeS5__block">
+      <div class="routeS5__label">${escapeHtml(tt("OFF FIELD", "OFF FIELD"))}</div>
+      <div class="routeS5__list">
+        ${renderList(
+          offFieldList,
+          tt("Nog geen off-field actie toegevoegd", "No off-field action added yet")
+        )}
+      </div>
+    </div>
+  </div>
+
+  ${alignmentHtml}
+
+  <style>
+    .routeS5{
+      position:relative;
+      height:100%;
+      overflow:hidden;
+      border-radius:18px;
+      background:#07090C;
+      color:#FFFFFF;
+      font-family:"SF Pro Display","Inter",Arial,sans-serif;
+    }
+
+    .routeS5 *{
       box-sizing:border-box;
     }
 
-    .pdpS4__wm{
-      position:absolute;
-      right:-18mm;
-      bottom:-14mm;
-      width:132mm;
-      height:132mm;
-      opacity:.036;
-      z-index:0;
-      pointer-events:none;
-      filter:blur(.2px);
-    }
+    .routeS5__wm{
+  position:absolute;
+  right:12mm;
+  bottom:18mm;
+  width:104mm;
+  height:104mm;
+  opacity:.05;
+  z-index:1;
+  pointer-events:none;
+}
 
-    .pdpS4__wm img{
-      width:100%;
-      height:100%;
-      object-fit:contain;
-    }
+.routeS5__wm img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
 
-    .pdpS4__wash{
-      position:absolute;
-      inset:0;
-      background:
-        radial-gradient(
-          circle at 18% 82%,
-          color-mix(in srgb, var(--accent-primary, var(--accent)) 10%, black 10%) 0%,
-          transparent 34%
-        ),
-        radial-gradient(
-          circle at 84% 18%,
-          color-mix(in srgb, var(--accent-secondary, var(--accent)) 8%, black 18%) 0%,
-          transparent 28%
-        ),
-        linear-gradient(
-          145deg,
-          color-mix(in srgb, var(--accent-mix, var(--accent)) 6%, black 14%) 0%,
-          transparent 60%
-        );
-      z-index:0;
-      pointer-events:none;
-    }
+    .routeS5__wm img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
 
-    .pdpS4__vignette{
+    .routeS5__bg{
       position:absolute;
       inset:0;
       background:
-        radial-gradient(circle at center, transparent 46%, rgba(0,0,0,.18) 100%),
-        linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.15));
+        radial-gradient(circle at 10% 18%, color-mix(in srgb, var(--accent) 7%, transparent) 0%, transparent 24%),
+        radial-gradient(circle at 82% 14%, rgba(255,255,255,.014) 0%, transparent 18%),
+        linear-gradient(180deg, rgba(255,255,255,.006) 0%, rgba(255,255,255,0) 22%),
+        #07090C;
       z-index:0;
       pointer-events:none;
     }
 
-    .pdpS4__grain{
+    .routeS5__bg::after{
+      content:"";
       position:absolute;
       inset:0;
-      opacity:.022;
+      background:
+        radial-gradient(circle at 18% 74%, color-mix(in srgb, var(--accent) 7%, transparent) 0%, transparent 34%);
+      opacity:.2;
+      pointer-events:none;
+    }
+
+    .routeS5__vignette{
+      position:absolute;
+      inset:0;
+      background:radial-gradient(circle at center, transparent 58%, rgba(0,0,0,.16) 100%);
+      z-index:0;
+      pointer-events:none;
+    }
+
+    .routeS5__gridFx{
+      position:absolute;
+      inset:0;
+      opacity:.004;
       background-image:
         linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
-      background-size:5px 5px, 5px 5px;
+      background-size:6px 6px, 6px 6px;
       z-index:0;
       pointer-events:none;
     }
 
-    .pdpS4__axis{
+    .routeS5__rail{
       position:absolute;
       left:18mm;
-      top:16mm;
-      bottom:16mm;
-      width:4px;
-      border-radius:999px;
-      background:
-        linear-gradient(
-          180deg,
-          color-mix(in srgb, var(--accent-primary, var(--accent)) 96%, #fff 4%) 0%,
-          color-mix(in srgb, var(--accent-primary, var(--accent)) 78%, transparent) 58%,
-          color-mix(in srgb, var(--accent-primary, var(--accent)) 16%, transparent) 100%
-        );
-      box-shadow:
-        0 0 0 1px color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, transparent),
-        0 0 14px color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, transparent),
-        0 0 28px color-mix(in srgb, var(--accent-primary, var(--accent)) 10%, transparent);
-      opacity:.98;
-      z-index:1;
-    }
-
-    .pdpS4__top{
-      position:absolute;
-      left:26mm;
-      right:16mm;
       top:18mm;
-      height:24mm;
-      z-index:2;
-      overflow:hidden;
-    }
-
-    .pdpS4__kicker{
-      font-size:9.5pt;
-      letter-spacing:.22em;
-      text-transform:uppercase;
-      color:rgba(255,255,255,.72);
-      font-weight:640;
-      line-height:1.1;
-      margin-bottom:6px;
-    }
-
-    .pdpS4__title{
-      font-size:19.8pt;
-      line-height:1.02;
-      letter-spacing:-0.02em;
-      font-weight:840;
-      text-transform:uppercase;
-      color:#fff;
-      max-width:none;
-      white-space:nowrap;
-      text-shadow:0 8px 24px rgba(0,0,0,.18);
-    }
-
-    .pdpS4__titleMarker{
-      width:22mm;
-      height:2px;
-      margin-top:6px;
+      bottom:18mm;
+      width:3px;
       border-radius:999px;
-      background:
-        linear-gradient(
-          90deg,
-          color-mix(in srgb, var(--accent-primary, var(--accent)) 94%, #fff 2%) 0%,
-          transparent 100%
-        );
-      opacity:.82;
-      box-shadow:0 0 10px color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, transparent);
-    }
-
-    .pdpS4__heroCard{
-      position:absolute;
-      left:26mm;
-      right:16mm;
-      top:40mm;
-      height:46mm;
-      z-index:2;
-      border-radius:18px;
-      padding:13px 15px;
-      overflow:hidden;
-      border:1px solid color-mix(in srgb, var(--accent-primary, var(--accent)) 24%, rgba(255,255,255,.10));
-      background:
-        linear-gradient(
-          145deg,
-          rgba(0,0,0,.18) 0%,
-          color-mix(in srgb, var(--accent-mix, var(--accent)) 12%, rgba(0,0,0,.14)) 100%
-        );
+      background:linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--accent) 86%, #fff 2%) 0%,
+        color-mix(in srgb, var(--accent) 34%, transparent) 52%,
+        transparent 100%
+      );
       box-shadow:
-        0 16px 38px rgba(0,0,0,.34),
-        inset 0 0 0 1px rgba(255,255,255,.025);
+        0 0 10px color-mix(in srgb, var(--accent) 14%, transparent),
+        0 0 22px color-mix(in srgb, var(--accent) 5%, transparent);
+      opacity:.92;
+      z-index:2;
     }
 
-    .pdpS4__heroHead{
-      font-size:8.7pt;
-      letter-spacing:.22em;
-      text-transform:uppercase;
-      color:rgba(255,255,255,.54);
-      font-weight:720;
-      margin-bottom:9px;
+    .routeS5__header{
+      position:absolute;
+      left:28mm;
+      right:18mm;
+      top:18mm;
+      z-index:3;
+    }
+
+    .routeS5__kicker{
+      font-size:9pt;
       line-height:1.1;
+      font-weight:720;
+      letter-spacing:.24em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.48);
+      white-space:nowrap;
     }
 
-    .pdpS4__heroBody{
-      display:flex;
-      gap:11px;
-      align-items:flex-start;
-      min-height:0;
+    .routeS5__hero{
+      margin-top:7px;
+      padding-bottom:10px;
+      border-bottom:1px solid rgba(255,255,255,.045);
+      max-width:78%;
     }
 
-    .pdpS4__heroRail{
-      width:2px;
-      height:24mm;
-      border-radius:999px;
-      background:
-        linear-gradient(
-          180deg,
-          color-mix(in srgb, var(--accent-primary, var(--accent)) 60%, rgba(255,255,255,.18)) 0%,
-          color-mix(in srgb, var(--accent-primary, var(--accent)) 14%, transparent) 100%
-        );
-      box-shadow:0 0 10px color-mix(in srgb, var(--accent-primary, var(--accent)) 14%, transparent);
-      flex:0 0 auto;
-      opacity:.98;
-    }
-
-    .pdpS4__heroText{
-      font-size:13.2pt;
-      line-height:1.28;
-      color:rgba(255,255,255,.92);
-      font-weight:600;
-      letter-spacing:.002em;
+    .routeS5__title{
+      max-width:100%;
+      font-size:29pt;
+      line-height:.95;
+      letter-spacing:-.07em;
+      font-weight:820;
+      color:#FFFFFF;
       display:-webkit-box;
       -webkit-line-clamp:3;
       -webkit-box-orient:vertical;
       overflow:hidden;
-      min-width:0;
-      max-width:44ch;
+      text-wrap:balance;
     }
 
-    .pdpS4__midGrid{
-      position:absolute;
-      left:26mm;
-      right:16mm;
-      top:92mm;
-      bottom:48mm;
-      z-index:2;
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-    }
-
-    .pdpS4__clusterCard{
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:18px;
-      overflow:hidden;
-      min-height:0;
-      padding:13px 14px;
-      background:
-        linear-gradient(
-          145deg,
-          rgba(255,255,255,.04) 0%,
-          rgba(255,255,255,.025) 100%
-        );
-      box-shadow:
-        0 12px 32px rgba(0,0,0,.28),
-        inset 0 0 0 1px rgba(255,255,255,.02);
-      display:flex;
-      flex-direction:column;
-    }
-
-    .pdpS4__clusterCard--left{
-      border:1px solid color-mix(in srgb, var(--accent-primary, var(--accent)) 18%, rgba(255,255,255,.08));
-      background:
-        linear-gradient(
-          145deg,
-          rgba(255,255,255,.045) 0%,
-          color-mix(in srgb, var(--accent-primary, var(--accent)) 7%, rgba(255,255,255,.025)) 100%
-        );
-    }
-
-    .pdpS4__clusterCard--right{
-      border:1px solid color-mix(in srgb, var(--accent-secondary, var(--accent)) 18%, rgba(255,255,255,.08));
-      background:
-        linear-gradient(
-          145deg,
-          rgba(255,255,255,.045) 0%,
-          color-mix(in srgb, var(--accent-secondary, var(--accent)) 7%, rgba(255,255,255,.025)) 100%
-        );
-    }
-
-    .pdpS4__clusterHead{
-      font-size:8.8pt;
-      letter-spacing:.22em;
-      text-transform:uppercase;
-      color:rgba(255,255,255,.52);
-      font-weight:720;
-      margin-bottom:10px;
-      line-height:1.1;
-      flex:0 0 auto;
-    }
-
-    .pdpS4__subStack{
-      display:grid;
-      grid-template-rows:1fr 1fr;
-      gap:10px;
-      min-height:0;
-      flex:1 1 auto;
-    }
-
-    .pdpS4__subPanel{
-      min-height:0;
-      border-radius:14px;
-      padding:11px 11px 10px;
-      border:1px solid rgba(255,255,255,.06);
-      background:
-        linear-gradient(
-          145deg,
-          rgba(255,255,255,.03) 0%,
-          rgba(255,255,255,.015) 100%
-        );
-      box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,.012);
-      overflow:hidden;
-    }
-
-    .pdpS4__subPanel--secondary{
-      background:
-        linear-gradient(
-          145deg,
-          rgba(0,0,0,.10) 0%,
-          rgba(255,255,255,.012) 100%
-        );
-    }
-
-    .pdpS4__subHead{
-      font-size:8pt;
-      letter-spacing:.20em;
-      text-transform:uppercase;
-      color:rgba(255,255,255,.42);
-      font-weight:760;
-      margin-bottom:7px;
-      line-height:1.1;
-    }
-
-    .pdpS4__subText{
-      font-size:11.3pt;
-      line-height:1.28;
-      color:rgba(255,255,255,.84);
-      font-weight:520;
-      display:-webkit-box;
-      -webkit-line-clamp:5;
-      -webkit-box-orient:vertical;
-      overflow:hidden;
-      min-width:0;
-    }
-
-    .pdpS4__ownerStrip{
-      position:absolute;
-      left:26mm;
-      right:16mm;
-      bottom:14mm;
-      height:28mm;
-      z-index:2;
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:18px;
-      overflow:hidden;
-      padding:10px 14px;
-      background:
-        linear-gradient(
-          145deg,
-          rgba(255,255,255,.035) 0%,
-          rgba(255,255,255,.02) 100%
-        );
-      box-shadow:
-        0 12px 30px rgba(0,0,0,.24),
-        inset 0 0 0 1px rgba(255,255,255,.018);
-      display:grid;
-      grid-template-columns:1fr 1px 1fr;
-      gap:12px;
-      align-items:center;
-    }
-
-    .pdpS4__ownerCol{
-      min-width:0;
-    }
-
-    .pdpS4__ownerDivider{
-      width:1px;
-      align-self:stretch;
-      background:
-        linear-gradient(
-          180deg,
-          rgba(255,255,255,.04) 0%,
-          color-mix(in srgb, var(--accent-primary, var(--accent)) 14%, rgba(255,255,255,.08)) 50%,
-          rgba(255,255,255,.04) 100%
-        );
-      border-radius:999px;
-      opacity:.9;
-    }
-
-    .pdpS4__ownerLabel{
-      font-size:7.9pt;
-      letter-spacing:.20em;
-      text-transform:uppercase;
-      color:rgba(255,255,255,.46);
-      font-weight:760;
-      margin-bottom:5px;
-      line-height:1.1;
-    }
-
-    .pdpS4__ownerValue{
-      font-size:10.9pt;
-      line-height:1.20;
-      color:rgba(255,255,255,.92);
-      font-weight:620;
+    .routeS5__subtitle{
+      margin-top:8px;
+      max-width:92%;
+      font-size:12.2pt;
+      line-height:1.18;
+      letter-spacing:-.018em;
+      font-weight:500;
+      color:rgba(255,255,255,.58);
       display:-webkit-box;
       -webkit-line-clamp:2;
       -webkit-box-orient:vertical;
       overflow:hidden;
+      text-wrap:balance;
     }
 
-    .pdpS4__ownerValue--secondary{
-      color:rgba(255,255,255,.80);
+    .routeS5__grid{
+      position:absolute;
+      left:28mm;
+      right:18mm;
+      top:72mm;
+      bottom:36mm;
+      z-index:3;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      grid-template-rows:1.05fr .92fr;
+      gap:10mm 12mm;
+    }
+
+    .routeS5__block{
+      min-width:0;
+      border-top:1px solid rgba(255,255,255,.045);
+      padding-top:8px;
+    }
+
+    .routeS5__block--primary{
+      border-top-color:rgba(255,255,255,.06);
+    }
+
+    .routeS5__label{
+      font-size:8.3pt;
+      line-height:1.1;
+      font-weight:720;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.38);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .routeS5__block--primary .routeS5__label{
+      color:rgba(255,255,255,.64);
+    }
+
+    .routeS5__list{
+      margin-top:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .routeS5__item{
+      display:flex;
+      align-items:flex-start;
+      gap:9px;
+      min-width:0;
+    }
+
+    .routeS5__dot{
+      width:6px;
+      height:6px;
+      margin-top:6px;
+      border-radius:999px;
+      background:var(--accent);
+      box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent),
+        0 0 8px color-mix(in srgb, var(--accent) 10%, transparent);
+      flex:0 0 auto;
+    }
+
+    .routeS5__itemText{
+      font-size:12.8pt;
+      line-height:1.24;
+      letter-spacing:-.012em;
       font-weight:560;
+      color:rgba(255,255,255,.84);
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      min-width:0;
+    }
+
+    .routeS5__block:not(.routeS5__block--primary) .routeS5__itemText{
+      font-size:11.6pt;
+      line-height:1.24;
+      font-weight:530;
+      color:rgba(255,255,255,.66);
+    }
+
+    .routeS5__alignment{
+      position:absolute;
+      left:28mm;
+      right:18mm;
+      bottom:16mm;
+      z-index:3;
+      border-top:1px solid rgba(255,255,255,.045);
+      padding-top:7px;
+    }
+
+    .routeS5__alignmentLabel{
+      font-size:7.8pt;
+      line-height:1.1;
+      font-weight:720;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.34);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .routeS5__alignmentGrid{
+      margin-top:7px;
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0, 1fr));
+      gap:8px;
+    }
+
+    .routeS5__alignmentItem{
+      min-width:0;
+    }
+
+    .routeS5__alignmentRole{
+      font-size:7.2pt;
+      line-height:1.1;
+      font-weight:700;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.44);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .routeS5__alignmentText{
+      margin-top:4px;
+      font-size:8.7pt;
+      line-height:1.22;
+      font-weight:500;
+      color:rgba(255,255,255,.58);
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      min-width:0;
     }
   </style>
 </section>

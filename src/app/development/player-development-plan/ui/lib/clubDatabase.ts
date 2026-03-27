@@ -532,6 +532,20 @@ export const clubDatabase: ClubDatabaseCountry[] = [
       },
     ],
   },
+
+  {
+    id: "sweden",
+    name: "Sweden",
+    logoUrl: "/logos/countries/sweden.png",
+    competitions: [
+      {
+        id: "allsvenskan",
+        name: "Allsvenskan",
+        logoUrl: "/logos/sweden/allsvenskan/allsvenskan.png",
+        clubs: [],
+      },
+    ],
+  },
 ];
 
 function norm(v: string) {

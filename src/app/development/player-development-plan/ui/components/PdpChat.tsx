@@ -38,6 +38,10 @@ export function PdpChat({
   onPlannerStateChange,
   onViewPlan,
   onDownloadPdf,
+  embedded = false,
+  minimalHeader = false,
+  hidePromptChips = false,
+  externalPrompt,
 }: {
   lang: Lang;
   draftPlan: Partial<DevelopmentPlanV1>;
@@ -45,6 +49,10 @@ export function PdpChat({
   onPlannerStateChange?: (planner: ChatPlannerState | null) => void;
   onViewPlan?: () => void;
   onDownloadPdf?: (version: "player" | "staff") => Promise<void>;
+  embedded?: boolean;
+  minimalHeader?: boolean;
+  hidePromptChips?: boolean;
+  externalPrompt?: string;
 }) {
   const isNl = lang === "nl";
 
@@ -120,6 +128,10 @@ export function PdpChat({
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const shouldStickToBottomRef = useRef(true);
+  const lastAppliedExternalPromptRef = useRef<string | null>(null);
+
+  const showHeader = !minimalHeader;
+  const showPromptChips = !hidePromptChips;
 
   useEffect(() => {
     onPlannerStateChange?.(planner);
@@ -137,6 +149,7 @@ export function PdpChat({
     setGenerating(false);
     setPlanReady(false);
     setPlanner(null);
+    lastAppliedExternalPromptRef.current = null;
   }, [copy.introQuestion]);
 
   useEffect(() => {
@@ -177,6 +190,14 @@ export function PdpChat({
       autoResizeTextarea();
     });
   }
+
+  useEffect(() => {
+    if (!externalPrompt?.trim()) return;
+    if (externalPrompt === lastAppliedExternalPromptRef.current) return;
+
+    lastAppliedExternalPromptRef.current = externalPrompt;
+    applyPrompt(externalPrompt);
+  }, [externalPrompt]);
 
   async function send() {
     if (!input.trim() || busy) return;
@@ -304,89 +325,135 @@ export function PdpChat({
     }
   }
 
-  const statusLabel = planReady ? copy.ready : copy.live;
-
   return (
-    <div className="overflow-hidden rounded-[24px] border border-white/8 bg-[#0a0e13]">
-      <div className="border-b border-white/8 px-5 py-5 sm:px-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="max-w-[58ch]">
-            <div className="text-[11px] uppercase tracking-[0.18em] text-white/36">
-              {copy.layerLabel}
+    <div
+      className={
+        embedded
+          ? "flex h-full flex-col bg-transparent"
+          : "overflow-hidden rounded-[24px] border border-white/8 bg-[#0a0e13]"
+      }
+    >
+      {showHeader ? (
+        <div
+          className={
+            embedded
+              ? "pb-4"
+              : "border-b border-white/8 px-5 py-5 sm:px-6"
+          }
+        >
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="max-w-[58ch]">
+              <div className="text-[11px] uppercase tracking-[0.18em] text-white/36">
+                {copy.layerLabel}
+              </div>
+
+              <h3 className="mt-2 text-[24px] font-medium leading-[1.02] tracking-[-0.03em] text-white/92 sm:text-[28px]">
+                {copy.title}
+              </h3>
+
+              <p className="mt-3 text-[14px] leading-relaxed text-white/52">
+                {copy.body}
+              </p>
             </div>
 
-            <h3 className="mt-2 text-[24px] font-medium leading-[1.02] tracking-[-0.03em] text-white/92 sm:text-[28px]">
-              {copy.title}
-            </h3>
-
-            <p className="mt-3 text-[14px] leading-relaxed text-white/52">
-              {copy.body}
-            </p>
+            {!embedded ? (
+              <div
+                className={[
+                  "rounded-full border px-3 py-1.5 text-[11px] tracking-[0.18em]",
+                  planReady
+                    ? "border-emerald-300/20 bg-emerald-300/10 text-white/84"
+                    : "border-white/10 bg-white/[0.03] text-white/48",
+                ].join(" ")}
+              >
+                {planReady ? copy.ready : copy.live}
+              </div>
+            ) : null}
           </div>
 
-          <div
-            className={[
-              "rounded-full border px-3 py-1.5 text-[11px] tracking-[0.18em]",
-              planReady
-                ? "border-emerald-300/20 bg-emerald-300/10 text-white/84"
-                : "border-white/10 bg-white/[0.03] text-white/48",
-            ].join(" ")}
-          >
-            {statusLabel}
+          {showPromptChips ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {copy.quickPrompts.map((prompt) => (
+                <button
+                  key={prompt}
+                  type="button"
+                  onClick={() => applyPrompt(prompt)}
+                  className="rounded-full border border-white/8 bg-white/[0.02] px-3 py-1.5 text-[12px] text-white/56 transition hover:border-white/16 hover:bg-white/[0.04] hover:text-white/84"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {!showHeader && showPromptChips ? (
+        <div className={embedded ? "pb-4" : "px-5 pb-4 pt-4 sm:px-6"}>
+          <div className="flex flex-wrap gap-2">
+            {copy.quickPrompts.map((prompt) => (
+              <button
+                key={prompt}
+                type="button"
+                onClick={() => applyPrompt(prompt)}
+                className="rounded-full border border-white/8 bg-white/[0.02] px-3 py-1.5 text-[12px] text-white/56 transition hover:border-white/16 hover:bg-white/[0.04] hover:text-white/84"
+              >
+                {prompt}
+              </button>
+            ))}
           </div>
         </div>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          {copy.quickPrompts.map((prompt) => (
-            <button
-              key={prompt}
-              type="button"
-              onClick={() => applyPrompt(prompt)}
-              className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[12px] text-white/66 transition hover:border-white/18 hover:text-white"
-            >
-              {prompt}
-            </button>
-          ))}
-        </div>
-      </div>
+      ) : null}
 
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="max-h-[420px] min-h-[240px] space-y-4 overflow-y-auto px-5 py-5 sm:px-6"
+        className={[
+          "overflow-y-auto",
+          embedded
+            ? "flex-1 min-h-[360px] max-h-[720px] border-t border-white/8 py-5"
+            : "min-h-[240px] max-h-[420px] px-5 py-5 sm:px-6",
+        ].join(" ")}
       >
-        {messages.map((message, index) => {
-          const assistant = message.role === "assistant";
+        <div className="space-y-4">
+          {messages.map((message, index) => {
+            const assistant = message.role === "assistant";
 
-          return (
-            <div
-              key={`${message.role}-${index}`}
-              className={`flex ${assistant ? "justify-start" : "justify-end"}`}
-            >
+            return (
               <div
-                className={[
-                  "max-w-[85%] rounded-[20px] px-4 py-3 text-[14px] leading-relaxed",
-                  assistant
-                    ? "border border-white/8 bg-white/[0.04] text-white/84"
-                    : "bg-white text-black",
-                ].join(" ")}
+                key={`${message.role}-${index}`}
+                className={`flex ${assistant ? "justify-start" : "justify-end"}`}
               >
-                {message.content}
+                <div
+                  className={[
+                    "max-w-[85%] rounded-[20px] px-4 py-3 text-[14px] leading-relaxed",
+                    assistant
+                      ? "border border-white/8 bg-white/[0.04] text-white/84"
+                      : "bg-white text-black",
+                  ].join(" ")}
+                >
+                  {message.content}
+                </div>
+              </div>
+            );
+          })}
+
+          {(busy || generating) && (
+            <div className="flex justify-start">
+              <div className="rounded-[20px] border border-white/8 bg-white/[0.04] px-4 py-3 text-[13px] text-white/46">
+                {busy ? copy.thinking : copy.building}
               </div>
             </div>
-          );
-        })}
-
-        {(busy || generating) && (
-          <div className="flex justify-start">
-            <div className="rounded-[20px] border border-white/8 bg-white/[0.04] px-4 py-3 text-[13px] text-white/46">
-              {busy ? copy.thinking : copy.building}
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      <div className="border-t border-white/8 px-5 py-4 sm:px-6">
+      <div
+        className={
+          embedded
+            ? "border-t border-white/8 py-4"
+            : "border-t border-white/8 px-5 py-4 sm:px-6"
+        }
+      >
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
             {planReady ? (

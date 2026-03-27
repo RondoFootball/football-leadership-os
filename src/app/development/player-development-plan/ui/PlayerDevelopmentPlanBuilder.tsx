@@ -156,7 +156,7 @@ const UI = {
     workspaceTitle: "Workspace",
     workspaceBody:
       "Van observatie naar plan. Bouw eerst gesprek of ontwikkelpunt, voeg daarna bewijs toe.",
-    controlLayer: "Control layer",
+    controlLayer: "Planstatus",
     clubContext: "Club context",
     pdfReady: "PDF-ready",
     playerIdentity: "Player identity",
@@ -289,7 +289,7 @@ const UI = {
     workspaceTitle: "Workspace",
     workspaceBody:
       "From observation to plan. Build the conversation or development point first, then add evidence.",
-    controlLayer: "Control layer",
+    controlLayer: "Plan status",
     clubContext: "Club context",
     pdfReady: "PDF-ready",
     playerIdentity: "Player identity",
@@ -432,6 +432,7 @@ export default function PlayerDevelopmentPlanBuilder() {
   const [mode, setMode] = useState<Mode>("chat");
   const [chatPlannerState, setChatPlannerState] =
     useState<ChatPlannerState | null>(null);
+  const [pendingChatPrompt, setPendingChatPrompt] = useState("");
 
   const [basicsOpen, setBasicsOpen] = useState(true);
   const [brandingOpen, setBrandingOpen] = useState(false);
@@ -780,9 +781,59 @@ export default function PlayerDevelopmentPlanBuilder() {
     a.click();
   }
 
-  function insertPrompt(_text: string) {
-    // later koppelen aan chat input
+  function insertPrompt(text: string) {
+  setPendingChatPrompt(`${text} `);
+}
+
+const contextualHints = useMemo(() => {
+  const hints: Array<{ label: string; prompt: string }> = [];
+
+  const planner = chatPlannerState;
+
+  if (!planner) {
+    return [
+      {
+        label: t.hintObservation,
+        prompt: "Beschrijf 1 concreet moment: wat doet de speler en wat gebeurt er daarna?",
+      },
+    ];
   }
+
+  // 1. Observatie ontbreekt
+  if (!plannerFilled(planner, "observations")) {
+    hints.push({
+      label: t.hintObservation,
+      prompt: "Beschrijf 1 concreet moment: wat doet de speler en wat gebeurt er daarna?",
+    });
+  }
+
+  // 2. Moment ontbreekt
+  if (!plannerFilled(planner, "whenObserved")) {
+    hints.push({
+      label: t.hintMoment,
+      prompt: "Wanneer in de wedstrijd gebeurt dit? (fase, positie, context)",
+    });
+  }
+
+  // 3. Effect ontbreekt
+  if (!plannerFilled(planner, "effectOnGame")) {
+    hints.push({
+      label: t.hintGoal,
+      prompt: "Wat is het effect op het spel of team als dit gebeurt?",
+    });
+  }
+
+  // fallback → verdieping
+  if (hints.length === 0) {
+    hints.push({
+      label: "Verdiep",
+      prompt:
+        "Maak het scherper: wat doet de speler exact anders dan nodig en wat is direct het gevolg?",
+    });
+  }
+
+  return hints.slice(0, 3);
+}, [chatPlannerState, t]);
 
   return (
     <div className="bg-transparent text-white">
@@ -806,8 +857,8 @@ export default function PlayerDevelopmentPlanBuilder() {
             <LangPill lang={lang} setLang={setLang} t={t} />
           </div>
 
-          <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-2">
-            <div className="overflow-visible rounded-[32px] border border-white/10 bg-white/[0.02]">
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+            <div className="h-full overflow-visible rounded-[32px] border border-white/10 bg-white/[0.02]">
               <button
                 onClick={() => setBasicsOpen((v) => !v)}
                 className="flex w-full items-center justify-between px-6 py-5 text-left"
@@ -1185,7 +1236,7 @@ export default function PlayerDevelopmentPlanBuilder() {
               )}
             </div>
 
-            <div className="rounded-[32px] border border-white/8 bg-white/[0.02] p-5">
+            <div className="h-full rounded-[32px] border border-white/8 bg-white/[0.02] p-5">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <div className="text-[12px] uppercase tracking-[0.16em] text-white/38">
@@ -1284,8 +1335,8 @@ export default function PlayerDevelopmentPlanBuilder() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="rounded-[30px] border border-white/10 bg-white/[0.02]">
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.55fr)_270px]">
+            <div className="h-full rounded-[30px] border border-white/10 bg-white/[0.02] flex flex-col">
               <div className="border-b border-white/8 px-6 py-5">
                 <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
                   {t.workspaceTitle}
@@ -1295,48 +1346,30 @@ export default function PlayerDevelopmentPlanBuilder() {
                 </div>
               </div>
 
-              <div className="space-y-5 px-6 py-6">
-                <div className="rounded-[24px] border border-white/8 bg-[#0b0f14]">
-                  {mode === "chat" ? (
-                    <div className="px-5 py-5 sm:px-6">
-                      <div className="mb-5 max-w-[52ch]">
-                        <div className="text-[12px] uppercase tracking-[0.18em] text-white/36">
-                          Conversation layer
-                        </div>
-                        <div className="mt-2 text-[28px] font-medium tracking-[-0.03em] text-white/92">
-                          {t.heroChatTitle}
-                        </div>
-                        <div className="mt-3 text-[14px] leading-relaxed text-white/52">
-                          {t.heroChatBody}
-                        </div>
+              <div className="flex flex-1 flex-col px-6 py-5">
+                {mode === "chat" ? (
+                  <div className="flex flex-1 flex-col gap-4">
+                    <div className="max-w-[62ch]">
+                      <div className="text-[30px] font-medium tracking-[-0.03em] text-white/92">
+                        {t.heroChatTitle}
                       </div>
-
-                      <div className="mb-5 flex flex-wrap gap-2">
-                        <Hint
-                          onClick={() =>
-                            insertPrompt("Beschrijf wat je concreet ziet in gedrag")
-                          }
-                        >
-                          {t.hintObservation}
-                        </Hint>
-                        <Hint
-                          onClick={() =>
-                            insertPrompt(
-                              "Beschrijf in welk wedstrijdmoment dit gebeurt"
-                            )
-                          }
-                        >
-                          {t.hintMoment}
-                        </Hint>
-                        <Hint
-                          onClick={() =>
-                            insertPrompt("Beschrijf wat het effect is op het spel")
-                          }
-                        >
-                          {t.hintGoal}
-                        </Hint>
+                      <div className="mt-3 text-[14px] leading-relaxed text-white/52">
+                        {t.heroChatBody}
                       </div>
+                    </div>
 
+                    <div className="flex flex-wrap gap-2">
+  {contextualHints.map((hint) => (
+    <Hint
+      key={hint.label}
+      onClick={() => insertPrompt(hint.prompt)}
+    >
+      {hint.label}
+    </Hint>
+  ))}
+</div>
+
+                    <div className="flex-1 min-h-[520px]">
                       <PdpChat
                         lang={lang}
                         draftPlan={plan}
@@ -1346,49 +1379,53 @@ export default function PlayerDevelopmentPlanBuilder() {
                           console.log("Current builder plan:", generatedPlan || plan);
                         }}
                         onDownloadPdf={(version) => download(version, lang)}
+                        embedded
+                        minimalHeader
+                        hidePromptChips
+                        externalPrompt={pendingChatPrompt}
                       />
                     </div>
-                  ) : (
-                    <div className="p-6">
-                      <div className="max-w-[40ch] text-[20px] font-medium text-white/92">
-                        {t.heroManualTitle}
-                      </div>
-                      <div className="mt-3 max-w-[52ch] text-[14px] leading-relaxed text-white/55">
-                        {t.heroManualBody}
-                      </div>
-
-                      <div className="mt-8 max-w-[520px]">
-                        <Input
-                          label={t.developmentPoint}
-                          value={plan.slide2?.focusBehaviour}
-                          onChange={(v) =>
-                            setPlan((prev) => ({
-                              ...prev,
-                              slide2: { ...prev.slide2, focusBehaviour: v },
-                            }))
-                          }
-                        />
-                      </div>
+                  </div>
+                ) : (
+                  <div className="py-1">
+                    <div className="max-w-[40ch] text-[20px] font-medium text-white/92">
+                      {t.heroManualTitle}
                     </div>
-                  )}
-                </div>
+                    <div className="mt-3 max-w-[52ch] text-[14px] leading-relaxed text-white/55">
+                      {t.heroManualBody}
+                    </div>
 
-                <div className="rounded-[24px] border border-white/8 bg-[#0b0f14]">
+                    <div className="mt-8 max-w-[520px]">
+                      <Input
+                        label={t.developmentPoint}
+                        value={plan.slide2?.focusBehaviour}
+                        onChange={(v) =>
+                          setPlan((prev) => ({
+                            ...prev,
+                            slide2: { ...prev.slide2, focusBehaviour: v },
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-4 rounded-[22px] border border-white/8 bg-[#0b0f14]">
                   <button
                     type="button"
                     onClick={() => setVideoOpen((v) => !v)}
-                    className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6"
+                    className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
                   >
-                    <div>
+                    <div className="min-w-0">
                       <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
                         {t.videoTitle}
                       </div>
-                      <div className="mt-2 max-w-[60ch] text-[14px] leading-relaxed text-white/56">
+                      <div className="mt-2 max-w-[58ch] text-[14px] leading-relaxed text-white/56">
                         {t.videoBody}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-2">
                       <MiniMetaPill>
                         {clipCount > 0
                           ? `${clipCount} ${t.compactVideoCount}`
@@ -1401,7 +1438,7 @@ export default function PlayerDevelopmentPlanBuilder() {
                   </button>
 
                   {videoOpen && (
-                    <div className="border-t border-white/8 px-5 pb-5 pt-4 sm:px-6">
+                    <div className="border-t border-white/8 px-5 pb-5 pt-4">
                       <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
                         <VideoCardCompact
                           title={t.videoClip1}
@@ -1440,22 +1477,22 @@ export default function PlayerDevelopmentPlanBuilder() {
               </div>
             </div>
 
-            <div className="xl:sticky xl:top-8">
-              <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+            <div className="xl:sticky xl:top-8 h-full">
+              <div className="h-full rounded-[24px] border border-white/10 bg-white/[0.03] p-5 flex flex-col">
                 <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
                   {t.controlLayer}
                 </div>
 
-                <div className="mt-5 border-t border-white/8 pt-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
+                <div className="mt-4 border-t border-white/8 pt-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
                       <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
                         {t.progressHeader}
                       </div>
-                      <div className="mt-3 text-[22px] font-medium text-white/92">
+                      <div className="mt-2 truncate text-[20px] font-medium text-white/92">
                         {plan.player.name || t.noPlayerYet}
                       </div>
-                      <div className="mt-2 text-[13px] text-white/48">
+                      <div className="mt-1 truncate text-[13px] text-white/48">
                         {plan.brand.clubName || t.club}
                       </div>
                       <div className="mt-1 text-[12px] text-white/34">
@@ -1466,33 +1503,33 @@ export default function PlayerDevelopmentPlanBuilder() {
                     {plan.player.headshotUrl ? (
                       <img
                         src={plan.player.headshotUrl}
-                        className="h-12 w-12 rounded-full border border-white/10 object-cover"
+                        className="h-11 w-11 rounded-full border border-white/10 object-cover"
                         alt=""
                       />
                     ) : (
-                      <div className="h-12 w-12 rounded-full border border-white/10 bg-white/[0.04]" />
+                      <div className="h-11 w-11 rounded-full border border-white/10 bg-white/[0.04]" />
                     )}
                   </div>
                 </div>
 
-                <div className="mt-5 border-t border-white/8 pt-5">
+                <div className="mt-4 border-t border-white/8 pt-4">
                   <div className="flex items-end justify-between gap-4">
                     <div>
                       <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
                         {t.totalProgress}
                       </div>
-                      <div className="mt-3 text-[42px] font-semibold leading-none tracking-[-0.04em] text-white/92">
+                      <div className="mt-2 text-[34px] font-semibold leading-none tracking-[-0.04em] text-white/92">
                         {totalProgress}%
                       </div>
                     </div>
 
-                    <div className="text-[13px] text-white/38">
+                    <div className="text-[12px] text-white/38">
                       {sections.filter((s) => s.progress === 100).length}/
                       {sections.length}
                     </div>
                   </div>
 
-                  <div className="mt-4 h-[8px] overflow-hidden rounded-full bg-white/8">
+                  <div className="mt-3 h-[8px] overflow-hidden rounded-full bg-white/8">
                     <div
                       className="h-full rounded-full transition-all"
                       style={{
@@ -1503,14 +1540,14 @@ export default function PlayerDevelopmentPlanBuilder() {
                   </div>
                 </div>
 
-                <div className="mt-5 border-t border-white/8 pt-5">
+                <div className="mt-4 border-t border-white/8 pt-4">
                   <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
                     {t.planProgress}
                   </div>
 
-                  <div className="mt-4 space-y-3">
+                  <div className="mt-3 space-y-2.5">
                     {sections.map((section) => (
-                      <ProgressRow
+                      <ProgressRowCompact
                         key={section.key}
                         label={section.label}
                         progress={section.progress}
@@ -1524,13 +1561,13 @@ export default function PlayerDevelopmentPlanBuilder() {
                   </div>
                 </div>
 
-                <div className="mt-5 border-t border-white/8 pt-5">
+                <div className="mt-4 border-t border-white/8 pt-4">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
                         {t.exportTitle}
                       </div>
-                      <div className="mt-3 text-[18px] font-medium leading-tight text-white/92">
+                      <div className="mt-2 text-[16px] font-medium leading-tight text-white/92">
                         {t.exportAlways}
                       </div>
                       <div className="mt-2 text-[13px] leading-relaxed text-white/50">
@@ -1543,7 +1580,7 @@ export default function PlayerDevelopmentPlanBuilder() {
                     </div>
                   </div>
 
-                  <div className="mt-5 space-y-3">
+                  <div className="mt-4 space-y-2.5">
                     <button
                       onClick={() => download("player", lang)}
                       className="w-full rounded-full bg-white py-3 text-sm font-medium text-black transition hover:bg-white/90"
@@ -1574,7 +1611,7 @@ export default function PlayerDevelopmentPlanBuilder() {
             </div>
           </div>
         </div>
-      </div>
+      </div>  
     </div>
   );
 }
@@ -2035,7 +2072,7 @@ function MiniMetaPill({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ProgressRow({
+function ProgressRowCompact({
   label,
   progress,
   filled,
@@ -2055,7 +2092,7 @@ function ProgressRow({
   const done = progress === 100;
 
   return (
-    <div className="rounded-[18px] border border-white/8 bg-white/[0.02] p-3">
+    <div className="rounded-[16px] border border-white/8 bg-white/[0.02] px-3 py-2.5">
       <div className="flex items-center justify-between gap-3">
         <div className="text-[13px] text-white/82">{label}</div>
         <div className="text-[11px] text-white/38">
@@ -2063,7 +2100,7 @@ function ProgressRow({
         </div>
       </div>
 
-      <div className="mt-3 h-[6px] overflow-hidden rounded-full bg-white/8">
+      <div className="mt-2.5 h-[5px] overflow-hidden rounded-full bg-white/8">
         <div
           className="h-full rounded-full transition-all"
           style={{
