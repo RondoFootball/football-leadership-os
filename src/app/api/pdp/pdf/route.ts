@@ -202,27 +202,18 @@ export async function POST(req: Request) {
       },
     });
   } catch (err: any) {
-    const message =
-      err?.message || (typeof err === "string" ? err : "Unknown error");
+  console.error("PDP PDF ERROR RAW:", err);
+  console.error("PDP PDF ERROR MESSAGE:", err?.message);
+  console.error("PDP PDF ERROR STACK:", err?.stack);
 
-    console.error("PDF ERROR FULL:", JSON.stringify(err, null, 2));
-
-    return NextResponse.json(
-      {
-        error: "PDF generation failed",
-        message,
-      },
-      { status: 500 }
-    );
-  } finally {
-    if (browser) {
-      try {
-        await browser.close();
-      } catch {
-        // ignore close errors
-      }
-    }
-  }
+  return NextResponse.json(
+    {
+      error: "PDF generation failed",
+      message: err?.message || "Unknown error",
+    },
+    { status: 500 }
+  );
+}
 }
 
 export async function GET() {
