@@ -142,7 +142,9 @@ export async function POST(req: Request) {
     const html = renderPdpHtml(plan, { lang, version });
 
     const token = process.env.BROWSERLESS_TOKEN;
-    console.log("TOKEN IN USE:", token);
+    console.log("BROWSERLESS TOKEN EXISTS:", !!process.env.BROWSERLESS_TOKEN);
+console.log("NODE ENV:", process.env.NODE_ENV);
+console.log("VERCEL ENV:", process.env.VERCEL_ENV);
 
 if (!token) {
   throw new Error("Missing BROWSERLESS_TOKEN");
