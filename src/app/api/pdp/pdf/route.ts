@@ -20,20 +20,20 @@ type PdfRequest = {
   filename?: string;
 };
 
-function safeStr(v: any, fallback = ""): string {
+function safeStr(v: unknown, fallback = ""): string {
   const s = typeof v === "string" ? v.trim() : "";
   if (!s) return fallback;
   if (/^[-—–\s]+$/.test(s)) return fallback;
   return s;
 }
 
-function inferLang(bodyLang: any, plan: any): Lang {
+function inferLang(bodyLang: unknown, plan: any): Lang {
   if (bodyLang === "en") return "en";
   if (plan?.meta?.lang === "en") return "en";
   return "nl";
 }
 
-function inferVersion(v: any): PlanVersion {
+function inferVersion(v: unknown): PlanVersion {
   return v === "player" ? "player" : "staff";
 }
 
@@ -96,15 +96,17 @@ async function parseBody(req: Request): Promise<Partial<PdfRequest>> {
     const filename = fd.get("filename");
 
     const out: Partial<PdfRequest> = {
-      lang: typeof lang === "string" ? (lang as any) : undefined,
-      version: typeof version === "string" ? (version as any) : undefined,
+      lang: typeof lang === "string" ? (lang as Lang) : undefined,
+      version: typeof version === "string" ? (version as PlanVersion) : undefined,
       filename: typeof filename === "string" ? filename : undefined,
     };
 
     if (typeof planStr === "string") {
       try {
         out.plan = JSON.parse(planStr) as DevelopmentPlanV1;
-      } catch {}
+      } catch {
+        // handled below
+      }
     }
 
     return out;
@@ -140,29 +142,45 @@ export async function POST(req: Request) {
 
     const html = renderPdpHtml(plan, { lang, version });
 
+    const executablePath = await chromium.executablePath();
+
+    if (!executablePath) {
+      throw new Error("Chromium executablePath could not be resolved.");
+    }
+
     browser = await puppeteer.launch({
-      args: chromium.args,
+      executablePath,
+      args: [...chromium.args],
       defaultViewport: {
         width: 1080,
         height: 1920,
         deviceScaleFactor: 2,
       },
-      executablePath: await chromium.executablePath(),
       headless: true,
     });
 
     const page = await browser.newPage();
+
     await page.emulateMediaType("print");
-    await page.setContent(html, { waitUntil: "networkidle0" });
+    await page.setContent(html, {
+      waitUntil: "networkidle0",
+      timeout: 60000,
+    });
 
     const pdfBytes = await page.pdf({
       format: "A4",
       printBackground: true,
       preferCSSPageSize: true,
+      margin: {
+        top: "0mm",
+        right: "0mm",
+        bottom: "0mm",
+        left: "0mm",
+      },
     });
 
     const u8 =
-      pdfBytes instanceof Uint8Array ? pdfBytes : new Uint8Array(pdfBytes);
+      pdfBytes instanceof Uint8Array ? pdfBytes : new Uint8Array(pdfBytes as any);
     const arrayBuffer = toTrueArrayBuffer(u8);
 
     const base = safeStr(body.filename, buildFilenameBase(plan, lang, version));
@@ -180,14 +198,23 @@ export async function POST(req: Request) {
   } catch (err: any) {
     const message =
       err?.message || (typeof err === "string" ? err : "Unknown error");
+
     console.error("PDP_PDF_ERROR:", err);
+
     return NextResponse.json(
-      { error: "PDF generation failed", message },
+      {
+        error: "PDF generation failed",
+        message,
+      },
       { status: 500 }
     );
   } finally {
     if (browser) {
-      await browser.close();
+      try {
+        await browser.close();
+      } catch {
+        // ignore close errors
+      }
     }
   }
 }
