@@ -7,6 +7,12 @@ import {
 } from "./lib/engineSchema";
 import { clubPresets, getClubPresetByName } from "./lib/clubPresets";
 import { PdpChat, type ChatPlannerState } from "./components/PdpChat";
+import {
+  getClubLogoUrl,
+  getCompetitionLogoUrl,
+  getCountryLogoUrl as getCountryLogoFromDb,
+  competitionsById,
+} from "./lib/clubDatabase";
 
 type Lang = "nl" | "en";
 type Mode = "chat" | "manual";
@@ -337,11 +343,15 @@ function slugify(value: string) {
 }
 
 function getCountryLogoUrl(country: string) {
-  return `/logos/countries/${slugify(country)}.png`;
+  return getCountryLogoFromDb(country);
 }
 
-function getLeagueLogoUrl(country: string, league: string) {
-  return `/logos/${slugify(country)}/${slugify(league)}/${slugify(league)}.png`;
+function getLeagueLogoUrlByName(leagueName: string) {
+  const competition = Object.values(competitionsById).find(
+    (c) => c.name === leagueName
+  );
+
+  return competition ? getCompetitionLogoUrl(competition.id) : "";
 }
 
 function createInitialPlan(): DevelopmentPlanV1 {
@@ -1463,7 +1473,7 @@ export default function PlayerDevelopmentPlanBuilder() {
                       items={availableLeagues.map((league) => ({
                         value: league,
                         label: league,
-                        iconUrl: getLeagueLogoUrl(selectedCountry, league),
+                        iconUrl: getLeagueLogoUrlByName(league),
                       }))}
                       onChange={(value) => {
                         setSelectedLeague(value);
