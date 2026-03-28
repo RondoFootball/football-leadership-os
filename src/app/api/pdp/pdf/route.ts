@@ -1,7 +1,6 @@
 // src/app/api/pdp/pdf/route.ts
 
 import { NextResponse } from "next/server";
-import puppeteer from "puppeteer-core";
 
 import type { DevelopmentPlanV1 } from "@/app/development/player-development-plan/ui/lib/engineSchema";
 import { renderPdpHtml } from "@/app/development/player-development-plan/ui/lib/renderPdfHtml";
@@ -37,18 +36,7 @@ function inferVersion(v: unknown): PlanVersion {
 }
 
 function safeAsciiFilename(input: string) {
-  const normalized = (input || "")
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "");
-
-  const cleaned = normalized
-    .replace(/[^\x20-\x7E]/g, "")
-    .replace(/["\\]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  const name = cleaned || "pdp.pdf";
-  return name.toLowerCase().endsWith(".pdf") ? name : `${name}.pdf`;
+  return input.replace(/[^\x20-\x7E]/g, "").replace(/["\\]/g, "");
 }
 
 function buildFilenameBase(
@@ -69,46 +57,7 @@ function buildFilenameBase(
   return `Player Development Plan - ${v} - ${player} - ${club}.pdf`;
 }
 
-function toTrueArrayBuffer(bytes: Uint8Array): ArrayBuffer {
-  const ab = new ArrayBuffer(bytes.byteLength);
-  new Uint8Array(ab).set(bytes);
-  return ab;
-}
-
 async function parseBody(req: Request): Promise<Partial<PdfRequest>> {
-  const ct = (req.headers.get("content-type") || "").toLowerCase();
-
-  if (ct.includes("application/json")) {
-    try {
-      return (await req.json()) as Partial<PdfRequest>;
-    } catch {
-      return {};
-    }
-  }
-
-  if (ct.includes("multipart/form-data")) {
-    const fd = await req.formData();
-
-    const planStr = fd.get("plan");
-    const lang = fd.get("lang");
-    const version = fd.get("version");
-    const filename = fd.get("filename");
-
-    const out: Partial<PdfRequest> = {
-      lang: typeof lang === "string" ? (lang as Lang) : undefined,
-      version: typeof version === "string" ? (version as PlanVersion) : undefined,
-      filename: typeof filename === "string" ? filename : undefined,
-    };
-
-    if (typeof planStr === "string") {
-      try {
-        out.plan = JSON.parse(planStr) as DevelopmentPlanV1;
-      } catch {}
-    }
-
-    return out;
-  }
-
   try {
     return (await req.json()) as Partial<PdfRequest>;
   } catch {
@@ -117,25 +66,14 @@ async function parseBody(req: Request): Promise<Partial<PdfRequest>> {
 }
 
 export async function POST(req: Request) {
-  let browser: any = null;
-
   try {
     const body = await parseBody(req);
 
     if (!body?.plan) {
       return NextResponse.json(
-        {
-          error: "Bad Request",
-          message:
-            "[PDP] Missing 'plan' in request body. Expected POST JSON: { plan, lang?: 'nl'|'en', version?: 'staff'|'player', filename?: string }",
-        },
+        { error: "Missing plan" },
         { status: 400 }
       );
-    }
-
-    const token = process.env.BROWSERLESS_TOKEN;
-    if (!token) {
-      throw new Error("Missing BROWSERLESS_TOKEN");
     }
 
     const plan = body.plan as DevelopmentPlanV1;
@@ -144,80 +82,53 @@ export async function POST(req: Request) {
 
     const html = renderPdpHtml(plan, { lang, version });
 
-    browser = await puppeteer.connect({
-      browserWSEndpoint: `wss://chrome.browserless.io?token=${token}`,
-    });
+    const apiKey = process.env.PDFSHIFT_API_KEY;
 
-    const page = await browser.newPage();
+    if (!apiKey) {
+      throw new Error("Missing PDFSHIFT_API_KEY");
+    }
 
-    await page.setViewport({
-      width: 1080,
-      height: 1920,
-      deviceScaleFactor: 2,
-    });
-
-    await page.emulateMediaType("print");
-
-    await page.setContent(html, {
-      waitUntil: "networkidle0",
-      timeout: 60000,
-    });
-
-    const pdfBytes = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      preferCSSPageSize: true,
-      margin: {
-        top: "0mm",
-        right: "0mm",
-        bottom: "0mm",
-        left: "0mm",
+    const response = await fetch("https://api.pdfshift.io/v3/convert/pdf", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Basic ${Buffer.from(
+          `${apiKey}:`
+        ).toString("base64")}`,
       },
+      body: JSON.stringify({
+        source: html,
+        landscape: false,
+        use_print: true,
+      }),
     });
 
-    const u8 =
-      pdfBytes instanceof Uint8Array ? pdfBytes : new Uint8Array(pdfBytes as any);
-    const arrayBuffer = toTrueArrayBuffer(u8);
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`PDFShift error: ${text}`);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
 
     const base = safeStr(body.filename, buildFilenameBase(plan, lang, version));
     const filenameAscii = safeAsciiFilename(base);
-    const filenameStar = `UTF-8''${encodeURIComponent(base)}`;
 
     return new NextResponse(arrayBuffer, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${filenameAscii}"; filename*=${filenameStar}`,
-        "Cache-Control": "no-store",
+        "Content-Disposition": `attachment; filename="${filenameAscii}"`,
       },
     });
   } catch (err: any) {
-    console.error("PDP PDF ERROR RAW:", err);
-    console.error("PDP PDF ERROR MESSAGE:", err?.message);
-    console.error("PDP PDF ERROR STACK:", err?.stack);
+    console.error("PDF ERROR:", err);
 
     return NextResponse.json(
       {
         error: "PDF generation failed",
-        message: err?.message || "Unknown error",
+        message: err?.message,
       },
       { status: 500 }
     );
-  } finally {
-    if (browser) {
-      try {
-        await browser.close();
-      } catch {}
-    }
   }
-}
-
-export async function GET() {
-  return NextResponse.json(
-    {
-      error: "Method Not Allowed",
-      message: "[PDP] Use POST and send JSON body with { plan }.",
-    },
-    { status: 405 }
-  );
 }
