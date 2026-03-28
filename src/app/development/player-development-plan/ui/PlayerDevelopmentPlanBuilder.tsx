@@ -8,10 +8,10 @@ import {
 import { clubPresets, getClubPresetByName } from "./lib/clubPresets";
 import { PdpChat, type ChatPlannerState } from "./components/PdpChat";
 import {
-  getClubLogoUrl,
   getCompetitionLogoUrl,
   getCountryLogoUrl as getCountryLogoFromDb,
   competitionsById,
+  countriesById,
 } from "./lib/clubDatabase";
 
 type Lang = "nl" | "en";
@@ -342,8 +342,12 @@ function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-function getCountryLogoUrl(country: string) {
-  return getCountryLogoFromDb(country);
+function getCountryLogoUrlByName(countryName: string) {
+  const country = Object.values(countriesById).find(
+    (c) => c.name === countryName
+  );
+
+  return country ? getCountryLogoFromDb(country.id) : "";
 }
 
 function getLeagueLogoUrlByName(leagueName: string) {
@@ -1443,7 +1447,7 @@ export default function PlayerDevelopmentPlanBuilder() {
                       items={availableCountries.map((country) => ({
                         value: country,
                         label: countryLabel(country, lang),
-                        iconUrl: getCountryLogoUrl(country),
+                        iconUrl: getCountryLogoUrlByName(country),
                       }))}
                       onChange={(value) => {
                         setSelectedCountry(value);
