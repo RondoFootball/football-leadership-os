@@ -154,10 +154,10 @@ const response = await fetch("https://chrome.browserless.io/content", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
+    "Authorization": `Bearer ${token}`,
   },
   body: JSON.stringify({
-    token: token,
-    html: html,
+    html,
     options: {
       format: "A4",
       printBackground: true,
