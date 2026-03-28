@@ -8,12 +8,40 @@ type ChatMsg = {
   content: string;
 };
 
+export type ChatPlannerSlotQuality =
+  | "empty"
+  | "draft"
+  | "usable"
+  | "strong";
+
+export type ChatPlannerSlotStatus = {
+  quality: ChatPlannerSlotQuality;
+  progress: number; // 0..100
+  slide?:
+    | "agreement"
+    | "role_context"
+    | "reality"
+    | "approach"
+    | "success";
+};
+
 export type ChatPlannerState = {
   filledSlots?: Record<string, boolean>;
+  usableSlots?: Record<string, boolean>;
+  strongSlots?: Record<string, boolean>;
+  slotStatuses?: Record<string, ChatPlannerSlotStatus>;
   missingFirstDraft?: string[];
   missingStrongDraft?: string[];
   intent?: "ask" | "summarise" | "draft_ready" | "strong_draft_ready";
   nextPrioritySlot?: string;
+  nextPrioritySlide?:
+    | "agreement"
+    | "role_context"
+    | "reality"
+    | "approach"
+    | "success";
+  firstDraftProgress?: number;
+  strongDraftProgress?: number;
 };
 
 type ApiQuestion = {
@@ -67,6 +95,7 @@ export function PdpChat({
               "Gebruik de chat om observatie, gedrag en context te vertalen naar een plan dat scherp genoeg is om mee te werken.",
             ready: "Plan ready",
             live: "Live",
+            draftReady: "Eerste draft mogelijk",
             thinking: "Denkt…",
             building: "Bouwt plan…",
             createDraft: "Maak eerste versie",
@@ -76,6 +105,10 @@ export function PdpChat({
             placeholder: "Beschrijf concreet wat je ziet…",
             send: "Verstuur",
             sendHint: "CMD/CTRL + ENTER om te versturen",
+            nextFocus: "Volgende focus",
+            missing: "Ontbreekt",
+            firstDraft: "First draft",
+            strongDraft: "Sterke draft",
             quickPrompts: [
               "Beschrijf het gedrag onder druk",
               "Beschrijf het moment in de wedstrijd",
@@ -92,6 +125,7 @@ export function PdpChat({
               "Use the chat to turn observation, behaviour and context into a plan sharp enough to actually work with.",
             ready: "Plan ready",
             live: "Live",
+            draftReady: "First draft ready",
             thinking: "Thinking…",
             building: "Building plan…",
             createDraft: "Create first draft",
@@ -101,6 +135,10 @@ export function PdpChat({
             placeholder: "Describe concretely what you see…",
             send: "Send",
             sendHint: "CMD/CTRL + ENTER to send",
+            nextFocus: "Next focus",
+            missing: "Missing",
+            firstDraft: "First draft",
+            strongDraft: "Strong draft",
             quickPrompts: [
               "Describe the behaviour under pressure",
               "Describe the moment in the match",
@@ -200,7 +238,7 @@ export function PdpChat({
   }, [externalPrompt]);
 
   async function send() {
-    if (!input.trim() || busy) return;
+    if (!input.trim() || busy || generating) return;
 
     const nextMessages: ChatMsg[] = [
       ...messages,
@@ -264,6 +302,8 @@ export function PdpChat({
   }
 
   async function generate() {
+    if (generating || busy) return;
+
     setGenerating(true);
     shouldStickToBottomRef.current = true;
 
@@ -277,6 +317,7 @@ export function PdpChat({
           messages,
           draftPlan,
           lang,
+          plannerState: planner,
         }),
       });
 
@@ -325,6 +366,17 @@ export function PdpChat({
     }
   }
 
+  const plannerIntentLabel = useMemo(() => {
+    if (!planner?.intent) return copy.live;
+    if (planner.intent === "strong_draft_ready") return copy.ready;
+    if (planner.intent === "draft_ready") return copy.draftReady;
+    return copy.live;
+  }, [planner?.intent, copy]);
+
+  const plannerMissingCount = planner?.missingStrongDraft?.length ?? 0;
+  const firstDraftProgress = planner?.firstDraftProgress ?? 0;
+  const strongDraftProgress = planner?.strongDraftProgress ?? 0;
+
   return (
     <div
       className={
@@ -362,12 +414,35 @@ export function PdpChat({
                   "rounded-full border px-3 py-1.5 text-[11px] tracking-[0.18em]",
                   planReady
                     ? "border-emerald-300/20 bg-emerald-300/10 text-white/84"
+                    : planner?.intent === "draft_ready" ||
+                      planner?.intent === "strong_draft_ready"
+                    ? "border-white/12 bg-white/[0.05] text-white/84"
                     : "border-white/10 bg-white/[0.03] text-white/48",
                 ].join(" ")}
               >
-                {planReady ? copy.ready : copy.live}
+                {planReady ? copy.ready : plannerIntentLabel}
               </div>
             ) : null}
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] text-white/68">
+              {copy.firstDraft}: {firstDraftProgress}%
+            </div>
+
+            <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] text-white/68">
+              {copy.strongDraft}: {strongDraftProgress}%
+            </div>
+
+            {planner?.nextPrioritySlot ? (
+              <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] text-white/68">
+                {copy.nextFocus}: {planner.nextPrioritySlot}
+              </div>
+            ) : null}
+
+            <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] text-white/68">
+              {copy.missing}: {plannerMissingCount}
+            </div>
           </div>
 
           {showPromptChips ? (
@@ -389,6 +464,22 @@ export function PdpChat({
 
       {!showHeader && showPromptChips ? (
         <div className={embedded ? "pb-4" : "px-5 pb-4 pt-4 sm:px-6"}>
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] text-white/68">
+              {copy.firstDraft}: {firstDraftProgress}%
+            </div>
+
+            <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] text-white/68">
+              {copy.strongDraft}: {strongDraftProgress}%
+            </div>
+
+            {planner?.nextPrioritySlot ? (
+              <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] text-white/68">
+                {copy.nextFocus}: {planner.nextPrioritySlot}
+              </div>
+            ) : null}
+          </div>
+
           <div className="flex flex-wrap gap-2">
             {copy.quickPrompts.map((prompt) => (
               <button
@@ -486,7 +577,7 @@ export function PdpChat({
               <button
                 type="button"
                 onClick={generate}
-                disabled={generating}
+                disabled={generating || busy}
                 className="rounded-full bg-white px-4 py-2 text-[13px] text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {copy.createDraft}
@@ -515,7 +606,7 @@ export function PdpChat({
           <button
             type="button"
             onClick={() => void send()}
-            disabled={busy || !input.trim()}
+            disabled={busy || generating || !input.trim()}
             className="rounded-[18px] bg-white px-4 py-3 text-[13px] text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-55"
           >
             {copy.send}

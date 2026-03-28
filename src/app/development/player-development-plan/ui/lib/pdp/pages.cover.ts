@@ -54,8 +54,7 @@ export function pageCoverLocked(args: {
     safeText(subjectLine) ||
     t(lang, "Player Development Plan", "Player Development Plan");
 
-  const safeSystem =
-    safeText(systemLine) || "PERFORMANCE DEVELOPMENT SYSTEM";
+  const safeSystem = safeClub;
 
   const photoHtml = safePhoto
     ? `<img class="coverX__photo" src="${esc(safePhoto)}" alt="${esc(
@@ -240,8 +239,8 @@ export function pageCoverLocked(args: {
       position:absolute;
       top:12mm;
       right:12mm;
-      width:28mm;
-      height:28mm;
+      width:26mm;
+      height:26mm;
       z-index:8;
 
       border-radius:14px;
@@ -295,15 +294,18 @@ export function pageCoverLocked(args: {
     }
 
     .coverX__name{
-      margin-top:6mm;
-      max-width:94%;
-      min-height:20mm;
-      font-size:48pt;
-      line-height:.94;
-      letter-spacing:-.07em;
-      font-weight:840;
-      color:#FFFFFF;
-    }
+  margin-top:6mm;
+  max-width:94%;
+  min-height:20mm;
+  font-size:48pt;
+  line-height:.94;
+  letter-spacing:-.07em;
+  font-weight:840;
+  color:#FFFFFF;
+  word-break:normal;
+  overflow-wrap:break-word;
+  text-wrap:pretty;
+}
 
     .coverX__heroRule{
       width:32mm;

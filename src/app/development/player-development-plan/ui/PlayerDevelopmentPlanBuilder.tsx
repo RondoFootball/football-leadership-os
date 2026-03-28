@@ -39,6 +39,9 @@ const UI = {
     basicsSubtitle:
       "Leg eerst vast voor wie dit plan geldt. Club, team en branding bepalen daarna automatisch de juiste context.",
 
+    basicsSectionClubContext: "Clubcontext",
+    basicsSectionPlanSetup: "Planinstelling",
+
     brandingTitle: "Live cover preview",
     brandingEdit: "Branding aanpassen",
     brandingCollapse: "Inklappen",
@@ -54,7 +57,7 @@ const UI = {
     ageCategory: "Leeftijdscategorie",
     chooseTeamType: "Kies team",
     chooseAgeCategory: "Kies leeftijdscategorie",
-    periodWeeks: "Periode ontwikkelplan (weken)",
+    periodWeeks: "Periode ontwikkelplan",
 
     country: "Land",
     chooseCountry: "Kies land",
@@ -82,6 +85,7 @@ const UI = {
     hintObservation: "Observatie",
     hintMoment: "Moment",
     hintGoal: "Effect",
+    hintRefine: "Verdiep",
 
     developmentPoint: "Ontwikkelpunt",
 
@@ -172,6 +176,9 @@ const UI = {
     basicsSubtitle:
       "First define who this plan is for. Club, team and branding then shape the right context automatically.",
 
+    basicsSectionClubContext: "Club context",
+    basicsSectionPlanSetup: "Plan setup",
+
     brandingTitle: "Live cover preview",
     brandingEdit: "Adjust branding",
     brandingCollapse: "Collapse",
@@ -187,7 +194,7 @@ const UI = {
     ageCategory: "Age category",
     chooseTeamType: "Choose team",
     chooseAgeCategory: "Choose age category",
-    periodWeeks: "Development plan period (weeks)",
+    periodWeeks: "Development plan period",
 
     country: "Country",
     chooseCountry: "Choose country",
@@ -215,6 +222,7 @@ const UI = {
     hintObservation: "Observation",
     hintMoment: "Moment",
     hintGoal: "Effect",
+    hintRefine: "Refine",
 
     developmentPoint: "Development point",
 
@@ -307,6 +315,7 @@ const COUNTRY_LABELS: Record<string, { nl: string; en: string }> = {
   Spain: { nl: "Spanje", en: "Spain" },
   Italy: { nl: "Italië", en: "Italy" },
   Portugal: { nl: "Portugal", en: "Portugal" },
+  Sweden: { nl: "Zweden", en: "Sweden" },
   Other: { nl: "Overig", en: "Other" },
 };
 
@@ -423,6 +432,39 @@ function plannerFilled(planner: ChatPlannerState | null, key: string) {
   return !!planner?.filledSlots?.[key];
 }
 
+const LEAGUE_ORDER: Record<string, string[]> = {
+  Netherlands: ["Eredivisie", "KKD"],
+  Belgium: ["Jupiler Pro League", "Challenger Pro League"],
+  Germany: ["Bundesliga", "2. Bundesliga"],
+  England: ["Premier League", "Championship", "League One"],
+  France: ["Ligue 1", "Ligue 2"],
+  Spain: ["La Liga", "Segunda División"],
+  Italy: ["Serie A", "Serie B"],
+  Portugal: ["Primeira Liga", "Liga Portugal 2"],
+  Sweden: ["Allsvenskan"],
+  Other: [],
+};
+
+function textProgress(value: unknown, thresholds = { light: 8, medium: 24 }) {
+  if (typeof value !== "string") return 0;
+
+  const length = value.trim().length;
+
+  if (length === 0) return 0;
+  if (length < thresholds.light) return 0.33;
+  if (length < thresholds.medium) return 0.66;
+  return 1;
+}
+
+function arrayProgress(value: unknown, maxItems = 3) {
+  if (!Array.isArray(value) || value.length === 0) return 0;
+  return Math.min(value.length / maxItems, 1);
+}
+
+function clampProgress(value: number) {
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
 export default function PlayerDevelopmentPlanBuilder() {
   const [plan, setPlan] = useState<DevelopmentPlanV1>(createInitialPlan());
   const [generatedPlan, setGeneratedPlan] =
@@ -473,122 +515,419 @@ export default function PlayerDevelopmentPlanBuilder() {
     hasText(plan.meta.team) &&
     hasText(plan.brand.primaryColor);
 
-  const agreementProgress = getSectionProgress([
-    hasText(plan.slide2?.focusBehaviour) ||
-      plannerFilled(chatPlannerState, "developmentPoint"),
-    hasText(plan.slide2?.developmentGoal) ||
-      plannerFilled(chatPlannerState, "targetBehaviour"),
-    hasText(plan.slide2?.matchSituation) ||
-      plannerFilled(chatPlannerState, "matchSituation"),
-  ]);
+  const basicsProgress = useMemo(() => {
+  let score = 0;
+  let total = 0;
 
-  const contextProgress = getSectionProgress([
-    hasItems(plan.slideContext?.gameMoments) ||
-      plannerFilled(chatPlannerState, "gameMoments"),
-    hasItems(plan.slideContext?.zones) ||
-      plannerFilled(chatPlannerState, "zones"),
-    hasItems(plan.slideContext?.principles) ||
-      plannerFilled(chatPlannerState, "principles"),
-  ]);
+  const add = (weight: number, progress: number) => {
+    total += weight;
+    score += weight * progress;
+  };
 
-  const realityProgress = getSectionProgress([
-    hasText(plan.slide3Baseline?.intro) ||
-      hasItems(plan.slide3Baseline?.observations) ||
-      plannerFilled(chatPlannerState, "observations"),
-    hasItems(plan.slide3?.what_we_see?.items) ||
-      plannerFilled(chatPlannerState, "observations"),
-    hasItems(plan.slide3?.moment?.items) ||
-      hasItems(plan.slide3Baseline?.moments) ||
-      plannerFilled(chatPlannerState, "whenObserved"),
-    hasItems(plan.slide3?.effect_on_match?.items) ||
-      hasItems(plan.slide3Baseline?.matchEffects) ||
-      plannerFilled(chatPlannerState, "effectOnGame"),
-  ]);
+  add(18, textProgress(plan.player.name));
+  add(12, textProgress(plan.player.role));
+  add(6, hasText(plan.player.headshotUrl) ? 1 : 0);
 
-  const approachProgress = getSectionProgress([
-    hasText(plan.slide4DevelopmentRoute?.developmentRoute?.training) ||
-      plannerFilled(chatPlannerState, "playerActions"),
-    hasText(plan.slide4DevelopmentRoute?.developmentRoute?.match) ||
-      plannerFilled(chatPlannerState, "playerActions"),
-    hasText(plan.slide4DevelopmentRoute?.developmentRoute?.video) ||
-      plannerFilled(chatPlannerState, "staffResponsibilities"),
-    hasText(plan.slide4DevelopmentRoute?.developmentRoute?.off_field) ||
-      plannerFilled(chatPlannerState, "staffResponsibilities"),
-    hasText(plan.slide4DevelopmentRoute?.playerOwnText) ||
-      plannerFilled(chatPlannerState, "playerActions"),
-  ]);
+  add(10, hasText(selectedCountry) ? 1 : 0);
+  add(10, hasText(selectedLeague) ? 1 : 0);
+  add(16, textProgress(plan.brand.clubName || plan.meta.club));
 
-  const successProgress = getSectionProgress([
-    hasItems(plan.slide6SuccessDefinition?.inGame) ||
-      plannerFilled(chatPlannerState, "successSignals"),
-    hasItems(plan.slide6SuccessDefinition?.behaviour) ||
-      plannerFilled(chatPlannerState, "successSignals"),
-    hasItems(plan.slide6SuccessDefinition?.signals) ||
-      plannerFilled(chatPlannerState, "successSignals"),
-  ]);
+  add(10, hasText(teamType) ? 1 : 0);
 
-  const evidenceProgress = getSectionProgress([
-    !!(plan as any)?.slide3Baseline?.videoClips?.[0]?.url || !!localVideoUploads[0],
-    !!(plan as any)?.slide3Baseline?.videoClips?.[1]?.url || !!localVideoUploads[1],
-    !!(plan as any)?.slide3Baseline?.videoClips?.[2]?.url || !!localVideoUploads[2],
-  ]);
+  const teamDetailProgress =
+    teamType === "academy"
+      ? hasText(academyAge) ? 1 : 0
+      : teamType === "first_team"
+      ? 1
+      : 0;
+
+  add(8, teamDetailProgress);
+
+  add(
+    10,
+    [1, 2, 4, 6, 8].includes(Number(plan.meta.blockLengthWeeks)) ? 1 : 0
+  );
+
+  const progress = total === 0 ? 0 : clampProgress((score / total) * 100);
+
+  return {
+  progress,
+  filled: Math.round(score),
+  total,
+};
+}, [
+  plan.player.name,
+  plan.player.role,
+  plan.player.headshotUrl,
+  plan.brand.clubName,
+  plan.meta.club,
+  plan.meta.blockLengthWeeks,
+  selectedCountry,
+  selectedLeague,
+  teamType,
+  academyAge,
+]);  
+
+  const agreementProgress = useMemo(() => {
+  let score = 0;
+  let total = 0;
+
+  const add = (weight: number, progress: number) => {
+    total += weight;
+    score += weight * progress;
+  };
+
+  add(
+    40,
+    Math.max(
+      textProgress(plan.slide2?.focusBehaviour),
+      plannerFilled(chatPlannerState, "developmentPoint") ? 0.66 : 0
+    )
+  );
+
+  add(
+    35,
+    Math.max(
+      textProgress(plan.slide2?.developmentGoal),
+      plannerFilled(chatPlannerState, "targetBehaviour") ? 0.66 : 0
+    )
+  );
+
+  add(
+    25,
+    Math.max(
+      textProgress(plan.slide2?.matchSituation),
+      plannerFilled(chatPlannerState, "matchSituation") ? 0.66 : 0
+    )
+  );
+
+  const progress = total === 0 ? 0 : clampProgress((score / total) * 100);
+
+  return {
+    total,
+    filled: Math.round(score),
+    progress,
+  };
+}, [
+  plan.slide2?.focusBehaviour,
+  plan.slide2?.developmentGoal,
+  plan.slide2?.matchSituation,
+  chatPlannerState,
+]);
+
+  const contextProgress = useMemo(() => {
+  let score = 0;
+  let total = 0;
+
+  const add = (weight: number, progress: number) => {
+    total += weight;
+    score += weight * progress;
+  };
+
+  add(
+    34,
+    Math.max(
+      arrayProgress(plan.slideContext?.gameMoments),
+      plannerFilled(chatPlannerState, "gameMoments") ? 0.66 : 0
+    )
+  );
+
+  add(
+    33,
+    Math.max(
+      arrayProgress(plan.slideContext?.zones),
+      plannerFilled(chatPlannerState, "zones") ? 0.66 : 0
+    )
+  );
+
+  add(
+    33,
+    Math.max(
+      arrayProgress(plan.slideContext?.principles),
+      plannerFilled(chatPlannerState, "principles") ? 0.66 : 0
+    )
+  );
+
+  const progress = total === 0 ? 0 : clampProgress((score / total) * 100);
+
+  return {
+    total,
+    filled: Math.round(score),
+    progress,
+  };
+}, [
+  plan.slideContext?.gameMoments,
+  plan.slideContext?.zones,
+  plan.slideContext?.principles,
+  chatPlannerState,
+]);
+
+  const realityProgress = useMemo(() => {
+  let score = 0;
+  let total = 0;
+
+  const add = (weight: number, progress: number) => {
+    total += weight;
+    score += weight * progress;
+  };
+
+  add(
+    28,
+    Math.max(
+      textProgress(plan.slide3Baseline?.intro),
+      arrayProgress(plan.slide3Baseline?.observations),
+      plannerFilled(chatPlannerState, "observations") ? 0.66 : 0
+    )
+  );
+
+  add(
+    24,
+    Math.max(
+      arrayProgress(plan.slide3?.what_we_see?.items),
+      plannerFilled(chatPlannerState, "observations") ? 0.66 : 0
+    )
+  );
+
+  add(
+    24,
+    Math.max(
+      arrayProgress(plan.slide3?.moment?.items),
+      arrayProgress(plan.slide3Baseline?.moments),
+      plannerFilled(chatPlannerState, "whenObserved") ? 0.66 : 0
+    )
+  );
+
+  add(
+    24,
+    Math.max(
+      arrayProgress(plan.slide3?.effect_on_match?.items),
+      arrayProgress(plan.slide3Baseline?.matchEffects),
+      plannerFilled(chatPlannerState, "effectOnGame") ? 0.66 : 0
+    )
+  );
+
+  const progress = total === 0 ? 0 : clampProgress((score / total) * 100);
+
+  return {
+    total,
+    filled: Math.round(score),
+    progress,
+  };
+}, [
+  plan.slide3Baseline?.intro,
+  plan.slide3Baseline?.observations,
+  plan.slide3?.what_we_see?.items,
+  plan.slide3?.moment?.items,
+  plan.slide3Baseline?.moments,
+  plan.slide3?.effect_on_match?.items,
+  plan.slide3Baseline?.matchEffects,
+  chatPlannerState,
+]);
+
+  const approachProgress = useMemo(() => {
+  let score = 0;
+  let total = 0;
+
+  const add = (weight: number, progress: number) => {
+    total += weight;
+    score += weight * progress;
+  };
+
+  add(
+    20,
+    Math.max(
+      textProgress(plan.slide4DevelopmentRoute?.developmentRoute?.training),
+      plannerFilled(chatPlannerState, "playerActions") ? 0.66 : 0
+    )
+  );
+
+  add(
+    20,
+    Math.max(
+      textProgress(plan.slide4DevelopmentRoute?.developmentRoute?.match),
+      plannerFilled(chatPlannerState, "playerActions") ? 0.66 : 0
+    )
+  );
+
+  add(
+    20,
+    Math.max(
+      textProgress(plan.slide4DevelopmentRoute?.developmentRoute?.video),
+      plannerFilled(chatPlannerState, "staffResponsibilities") ? 0.66 : 0
+    )
+  );
+
+  add(
+    20,
+    Math.max(
+      textProgress(plan.slide4DevelopmentRoute?.developmentRoute?.off_field),
+      plannerFilled(chatPlannerState, "staffResponsibilities") ? 0.66 : 0
+    )
+  );
+
+  add(
+    20,
+    Math.max(
+      textProgress(plan.slide4DevelopmentRoute?.playerOwnText),
+      plannerFilled(chatPlannerState, "playerActions") ? 0.66 : 0
+    )
+  );
+
+  const progress = total === 0 ? 0 : clampProgress((score / total) * 100);
+
+  return {
+    total,
+    filled: Math.round(score),
+    progress,
+  };
+}, [
+  plan.slide4DevelopmentRoute?.developmentRoute?.training,
+  plan.slide4DevelopmentRoute?.developmentRoute?.match,
+  plan.slide4DevelopmentRoute?.developmentRoute?.video,
+  plan.slide4DevelopmentRoute?.developmentRoute?.off_field,
+  plan.slide4DevelopmentRoute?.playerOwnText,
+  chatPlannerState,
+]);
+
+  const successProgress = useMemo(() => {
+  let score = 0;
+  let total = 0;
+
+  const add = (weight: number, progress: number) => {
+    total += weight;
+    score += weight * progress;
+  };
+
+  add(
+    34,
+    Math.max(
+      arrayProgress(plan.slide6SuccessDefinition?.inGame),
+      plannerFilled(chatPlannerState, "successSignals") ? 0.66 : 0
+    )
+  );
+
+  add(
+    33,
+    Math.max(
+      arrayProgress(plan.slide6SuccessDefinition?.behaviour),
+      plannerFilled(chatPlannerState, "successSignals") ? 0.66 : 0
+    )
+  );
+
+  add(
+    33,
+    Math.max(
+      arrayProgress(plan.slide6SuccessDefinition?.signals),
+      plannerFilled(chatPlannerState, "successSignals") ? 0.66 : 0
+    )
+  );
+
+  const progress = total === 0 ? 0 : clampProgress((score / total) * 100);
+
+  return {
+    total,
+    filled: Math.round(score),
+    progress,
+  };
+}, [
+  plan.slide6SuccessDefinition?.inGame,
+  plan.slide6SuccessDefinition?.behaviour,
+  plan.slide6SuccessDefinition?.signals,
+  chatPlannerState,
+]);
+
+  const evidenceProgress = useMemo(() => {
+  let score = 0;
+  let total = 0;
+
+  const clips: number[] = [0, 1, 2].map((idx) => {
+  const hasUrl = !!(plan as any)?.slide3Baseline?.videoClips?.[idx]?.url;
+  const hasUpload = !!localVideoUploads[idx];
+  return hasUrl || hasUpload ? 1 : 0;
+});
+
+  total = 3;
+  score = clips.reduce((sum, item) => sum + item, 0);
+
+  return {
+    total,
+    filled: score,
+    progress: clampProgress((score / total) * 100),
+  };
+}, [plan, localVideoUploads]);
 
   const sections = [
-    {
-      key: "cover",
-      label: t.coverSlide,
-      progress: coverReady ? 100 : 0,
-      filled: coverReady ? 4 : 0,
-      total: 4,
-    },
-    {
-      key: "agreement",
-      label: t.statusPoint,
-      progress: agreementProgress.progress,
-      filled: agreementProgress.filled,
-      total: agreementProgress.total,
-    },
-    {
-      key: "context",
-      label: t.statusContext,
-      progress: contextProgress.progress,
-      filled: contextProgress.filled,
-      total: contextProgress.total,
-    },
-    {
-      key: "reality",
-      label: t.statusReality,
-      progress: realityProgress.progress,
-      filled: realityProgress.filled,
-      total: realityProgress.total,
-    },
-    {
-      key: "approach",
-      label: t.statusApproach,
-      progress: approachProgress.progress,
-      filled: approachProgress.filled,
-      total: approachProgress.total,
-    },
-    {
-      key: "success",
-      label: t.statusSuccess,
-      progress: successProgress.progress,
-      filled: successProgress.filled,
-      total: successProgress.total,
-    },
-    {
-      key: "evidence",
-      label: t.videoTitle,
-      progress: evidenceProgress.progress,
-      filled: evidenceProgress.filled,
-      total: evidenceProgress.total,
-    },
-  ];
+  {
+    key: "basics",
+    label: t.basicsTitle,
+    progress: basicsProgress.progress,
+    filled: basicsProgress.filled,
+    total: basicsProgress.total,
+    weight: 7,
+  },
+  {
+    key: "cover",
+    label: t.coverSlide,
+    progress: coverReady ? 100 : 0,
+    filled: coverReady ? 1 : 0,
+    total: 1,
+    weight: 3,
+  },
+  {
+    key: "agreement",
+    label: t.statusPoint,
+    progress: agreementProgress.progress,
+    filled: agreementProgress.filled,
+    total: agreementProgress.total,
+    weight: 15,
+  },
+  {
+    key: "context",
+    label: t.statusContext,
+    progress: contextProgress.progress,
+    filled: contextProgress.filled,
+    total: contextProgress.total,
+    weight: 16,
+  },
+  {
+    key: "reality",
+    label: t.statusReality,
+    progress: realityProgress.progress,
+    filled: realityProgress.filled,
+    total: realityProgress.total,
+    weight: 21,
+  },
+  {
+    key: "approach",
+    label: t.statusApproach,
+    progress: approachProgress.progress,
+    filled: approachProgress.filled,
+    total: approachProgress.total,
+    weight: 16,
+  },
+  {
+    key: "success",
+    label: t.statusSuccess,
+    progress: successProgress.progress,
+    filled: successProgress.filled,
+    total: successProgress.total,
+    weight: 11,
+  },
+  {
+    key: "evidence",
+    label: t.videoTitle,
+    progress: evidenceProgress.progress,
+    filled: evidenceProgress.filled,
+    total: evidenceProgress.total,
+    weight: 11,
+  },
+];
 
   const totalProgress = Math.round(
-    sections.reduce((sum, section) => sum + section.progress, 0) /
-      sections.length
-  );
+  sections.reduce((sum, section) => {
+    return sum + (section.progress * section.weight) / 100;
+  }, 0)
+);
 
   const selectableClubPresets = useMemo(
     () => clubPresets.filter((club) => club.id !== "custom-club"),
@@ -603,14 +942,29 @@ export default function PlayerDevelopmentPlanBuilder() {
 
   const availableLeagues = useMemo(() => {
     if (!selectedCountry) return [];
-    return Array.from(
+
+    const leagues = Array.from(
       new Set(
         selectableClubPresets
           .filter((club) => club.country === selectedCountry)
           .map((club) => club.league)
           .filter(Boolean)
       )
-    ).sort((a, b) => a.localeCompare(b));
+    );
+
+    const order = LEAGUE_ORDER[selectedCountry] || [];
+
+    return leagues.sort((a, b) => {
+      const aIndex = order.indexOf(a);
+      const bIndex = order.indexOf(b);
+
+      const aRank = aIndex === -1 ? Number.MAX_SAFE_INTEGER : aIndex;
+      const bRank = bIndex === -1 ? Number.MAX_SAFE_INTEGER : bIndex;
+
+      if (aRank !== bRank) return aRank - bRank;
+
+      return a.localeCompare(b);
+    });
   }, [selectableClubPresets, selectedCountry]);
 
   const availableClubs = useMemo(() => {
@@ -635,6 +989,34 @@ export default function PlayerDevelopmentPlanBuilder() {
     const merged = mergeGeneratedPlanWithLockedBasics(plan, next);
     setPlan(merged);
     setGeneratedPlan(merged);
+  }
+
+  function setTeamTypeValue(value: TeamType | "") {
+    setPlan((prev) => {
+      const next = structuredClone(prev);
+      setGeneratedPlan(null);
+
+      (next.player as any).teamType = value as TeamType;
+
+      if (value === "first_team") {
+        (next.player as any).academyAgeCategory = "";
+        next.player.team = t.firstTeam;
+        next.meta.team = t.firstTeam;
+      }
+
+      if (value === "academy") {
+        next.player.team = "";
+        next.meta.team = "";
+      }
+
+      if (!value) {
+        next.player.team = "";
+        next.meta.team = "";
+        (next.player as any).academyAgeCategory = "";
+      }
+
+      return next;
+    });
   }
 
   function applyClubPreset(clubName: string) {
@@ -754,109 +1136,119 @@ export default function PlayerDevelopmentPlanBuilder() {
   }
 
   async function download(version: "player" | "staff", exportLang: Lang) {
-  try {
-    const exportPlan = generatedPlan || plan;
+    try {
+      const exportPlan = generatedPlan || plan;
 
-    const res = await fetch(`/api/pdp/pdf`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        plan: {
-          ...exportPlan,
-          meta: {
-            ...exportPlan.meta,
-            lang: exportLang,
+      const res = await fetch(`/api/pdp/pdf`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          plan: {
+            ...exportPlan,
+            meta: {
+              ...exportPlan.meta,
+              lang: exportLang,
+            },
           },
-        },
-        version,
-        lang: exportLang,
-      }),
-    });
+          version,
+          lang: exportLang,
+        }),
+      });
 
-    const contentType = res.headers.get("content-type") || "";
+      const contentType = res.headers.get("content-type") || "";
 
-    if (!res.ok) {
-  const errorText = await res.text();
-  alert(errorText);
-  return;
-}
+      if (!res.ok) {
+        const errorText = await res.text();
+        alert(errorText);
+        return;
+      }
 
-    if (!contentType.toLowerCase().includes("pdf")) {
-  const errorText = await res.text();
-  alert(errorText);
-  return;
-}
+      if (!contentType.toLowerCase().includes("pdf")) {
+        const errorText = await res.text();
+        alert(errorText);
+        return;
+      }
 
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `pdp-${version}-${exportLang}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `pdp-${version}-${exportLang}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
 
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  } catch (error) {
-    console.error("Download failed:", error);
-    alert("Er ging iets mis bij het downloaden van de PDF.");
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (error) {
+      console.error("Download failed:", error);
+      alert("Er ging iets mis bij het downloaden van de PDF.");
+    }
   }
-}
 
   function insertPrompt(text: string) {
-  setPendingChatPrompt(`${text} `);
-}
+    setPendingChatPrompt(`${text} `);
+  }
 
-const contextualHints = useMemo(() => {
-  const hints: Array<{ label: string; prompt: string }> = [];
+  const contextualHints = useMemo(() => {
+    const hints: Array<{ label: string; prompt: string }> = [];
 
-  const planner = chatPlannerState;
+    const planner = chatPlannerState;
 
-  if (!planner) {
-    return [
-      {
+    if (!planner) {
+      return [
+        {
+          label: t.hintObservation,
+          prompt:
+            lang === "nl"
+              ? "Beschrijf 1 concreet moment: wat doet de speler en wat gebeurt er daarna?"
+              : "Describe 1 concrete moment: what does the player do and what happens next?",
+        },
+      ];
+    }
+
+    if (!plannerFilled(planner, "observations")) {
+      hints.push({
         label: t.hintObservation,
-        prompt: "Beschrijf 1 concreet moment: wat doet de speler en wat gebeurt er daarna?",
-      },
-    ];
-  }
+        prompt:
+          lang === "nl"
+            ? "Beschrijf 1 concreet moment: wat doet de speler en wat gebeurt er daarna?"
+            : "Describe 1 concrete moment: what does the player do and what happens next?",
+      });
+    }
 
-  // 1. Observatie ontbreekt
-  if (!plannerFilled(planner, "observations")) {
-    hints.push({
-      label: t.hintObservation,
-      prompt: "Beschrijf 1 concreet moment: wat doet de speler en wat gebeurt er daarna?",
-    });
-  }
+    if (!plannerFilled(planner, "whenObserved")) {
+      hints.push({
+        label: t.hintMoment,
+        prompt:
+          lang === "nl"
+            ? "Wanneer in de wedstrijd gebeurt dit? (fase, positie, context)"
+            : "When in the match does this happen? (phase, position, context)",
+      });
+    }
 
-  // 2. Moment ontbreekt
-  if (!plannerFilled(planner, "whenObserved")) {
-    hints.push({
-      label: t.hintMoment,
-      prompt: "Wanneer in de wedstrijd gebeurt dit? (fase, positie, context)",
-    });
-  }
+    if (!plannerFilled(planner, "effectOnGame")) {
+      hints.push({
+        label: t.hintGoal,
+        prompt:
+          lang === "nl"
+            ? "Wat is het effect op het spel of team als dit gebeurt?"
+            : "What is the effect on the game or team when this happens?",
+      });
+    }
 
-  // 3. Effect ontbreekt
-  if (!plannerFilled(planner, "effectOnGame")) {
-    hints.push({
-      label: t.hintGoal,
-      prompt: "Wat is het effect op het spel of team als dit gebeurt?",
-    });
-  }
+    if (hints.length === 0) {
+      hints.push({
+        label: t.hintRefine,
+        prompt:
+          lang === "nl"
+            ? "Maak het scherper: wat doet de speler exact anders dan nodig en wat is direct het gevolg?"
+            : "Make it sharper: what exactly does the player do differently than needed, and what is the direct consequence?",
+      });
+    }
 
-  // fallback → verdieping
-  if (hints.length === 0) {
-    hints.push({
-      label: "Verdiep",
-      prompt:
-        "Maak het scherper: wat doet de speler exact anders dan nodig en wat is direct het gevolg?",
-    });
-  }
-
-  return hints.slice(0, 3);
-}, [chatPlannerState, t]);
+    return hints.slice(0, 3);
+  }, [chatPlannerState, t, lang]);
 
   return (
     <div className="bg-transparent text-white">
@@ -1028,6 +1420,12 @@ const contextualHints = useMemo(() => {
                   </div>
 
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="sm:col-span-2 pt-1">
+                      <div className="text-[11px] uppercase tracking-[0.16em] text-white/34">
+                        {t.basicsSectionClubContext}
+                      </div>
+                    </div>
+
                     <SimpleDropdown
                       label={t.country}
                       value={selectedCountry}
@@ -1061,6 +1459,7 @@ const contextualHints = useMemo(() => {
                       label={t.league}
                       value={selectedLeague}
                       placeholder={t.chooseLeague}
+                      disabled={!selectedCountry}
                       items={availableLeagues.map((league) => ({
                         value: league,
                         label: league,
@@ -1142,6 +1541,7 @@ const contextualHints = useMemo(() => {
                           label=""
                           value={plan.brand.clubName || ""}
                           placeholder={t.chooseClub}
+                          disabled={!selectedLeague}
                           items={availableClubs.map((club) => ({
                             value: club.name,
                             label: club.name,
@@ -1172,43 +1572,32 @@ const contextualHints = useMemo(() => {
                       )}
                     </div>
 
+                    <div className="sm:col-span-2 pt-2">
+                      <div className="text-[11px] uppercase tracking-[0.16em] text-white/34">
+                        {t.basicsSectionPlanSetup}
+                      </div>
+                    </div>
+
                     <div>
-                      <SimpleDropdown
-                        label={t.teamType}
-                        value={teamType}
-                        placeholder={t.chooseTeamType}
-                        items={[
-                          { value: "academy", label: t.academy },
-                          { value: "first_team", label: t.firstTeam },
-                        ]}
-                        onChange={(value) =>
-                          setPlan((prev) => {
-                            const next = structuredClone(prev);
-                            setGeneratedPlan(null);
+                      <div className="mb-2 text-[11px] uppercase tracking-wide text-white/40">
+                        {t.teamType}
+                      </div>
 
-                            (next.player as any).teamType = value as TeamType;
+                      <div className="flex gap-2">
+                        <ChoicePill
+                          active={teamType === "academy"}
+                          onClick={() => setTeamTypeValue("academy")}
+                        >
+                          {t.academy}
+                        </ChoicePill>
 
-                            if (value === "first_team") {
-                              (next.player as any).academyAgeCategory = "";
-                              next.player.team = t.firstTeam;
-                              next.meta.team = t.firstTeam;
-                            }
-
-                            if (value === "academy") {
-                              next.player.team = "";
-                              next.meta.team = "";
-                            }
-
-                            if (!value) {
-                              next.player.team = "";
-                              next.meta.team = "";
-                              (next.player as any).academyAgeCategory = "";
-                            }
-
-                            return next;
-                          })
-                        }
-                      />
+                        <ChoicePill
+                          active={teamType === "first_team"}
+                          onClick={() => setTeamTypeValue("first_team")}
+                        >
+                          {t.firstTeam}
+                        </ChoicePill>
+                      </div>
                     </div>
 
                     {teamType === "academy" ? (
@@ -1241,19 +1630,22 @@ const contextualHints = useMemo(() => {
                       <div />
                     )}
 
-                    <Input
-                      label={t.periodWeeks}
-                      value={String(plan.meta.blockLengthWeeks || 8)}
-                      onChange={(v) =>
-                        setPlan((prev) => ({
-                          ...prev,
-                          meta: {
-                            ...prev.meta,
-                            blockLengthWeeks: Number(v) || 8,
-                          },
-                        }))
-                      }
-                    />
+                    <div className="sm:col-span-2">
+                      <WeekLengthPicker
+                        label={t.periodWeeks}
+                        value={plan.meta.blockLengthWeeks || 8}
+                        lang={lang}
+                        onChange={(value) =>
+                          setPlan((prev) => ({
+                            ...prev,
+                            meta: {
+                              ...prev.meta,
+                              blockLengthWeeks: value,
+                            },
+                          }))
+                        }
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -1382,15 +1774,15 @@ const contextualHints = useMemo(() => {
                     </div>
 
                     <div className="flex flex-wrap gap-2">
-  {contextualHints.map((hint) => (
-    <Hint
-      key={hint.label}
-      onClick={() => insertPrompt(hint.prompt)}
-    >
-      {hint.label}
-    </Hint>
-  ))}
-</div>
+                      {contextualHints.map((hint) => (
+                        <Hint
+                          key={hint.label}
+                          onClick={() => insertPrompt(hint.prompt)}
+                        >
+                          {hint.label}
+                        </Hint>
+                      ))}
+                    </div>
 
                     <div className="flex-1 min-h-[520px]">
                       <PdpChat
@@ -1633,8 +2025,8 @@ const contextualHints = useMemo(() => {
               </div>
             </div>
           </div>
-        </div>
-      </div>  
+        </div>  
+      </div>
     </div>
   );
 }
@@ -1646,6 +2038,7 @@ function SimpleDropdown({
   items,
   onChange,
   hideLabel = false,
+  disabled = false,
 }: {
   label: string;
   value?: string;
@@ -1653,6 +2046,7 @@ function SimpleDropdown({
   items: Array<{ value: string; label: string; iconUrl?: string }>;
   onChange: (v: string) => void;
   hideLabel?: boolean;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -1690,6 +2084,13 @@ function SimpleDropdown({
     el?.scrollIntoView({ block: "nearest" });
   }, [activeIndex, open]);
 
+  useEffect(() => {
+    if (disabled && open) {
+      setOpen(false);
+      setActiveIndex(-1);
+    }
+  }, [disabled, open]);
+
   function commitActive() {
     const item = items[activeIndex];
     if (!item) return;
@@ -1699,6 +2100,8 @@ function SimpleDropdown({
   }
 
   function onKeyDown(e: React.KeyboardEvent) {
+    if (disabled) return;
+
     if (!open && (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ")) {
       e.preventDefault();
       setOpen(true);
@@ -1743,9 +2146,16 @@ function SimpleDropdown({
       <div className="relative">
         <button
           type="button"
-          onClick={() => setOpen((v) => !v)}
+          disabled={disabled}
+          onClick={() => {
+            if (!disabled) setOpen((v) => !v);
+          }}
           onKeyDown={onKeyDown}
-          className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-left transition hover:border-white/16 focus:border-white/24 focus:bg-white/[0.06] focus:outline-none"
+          className={`w-full rounded-xl px-4 py-3 text-left transition focus:outline-none ${
+            disabled
+              ? "cursor-not-allowed border border-white/6 bg-white/[0.02]"
+              : "border border-white/10 bg-white/[0.04] hover:border-white/16 focus:border-white/24 focus:bg-white/[0.06]"
+          }`}
           aria-haspopup="listbox"
           aria-expanded={open}
         >
@@ -1761,12 +2171,16 @@ function SimpleDropdown({
                 <div className="h-5 w-5 shrink-0 rounded-full border border-white/10 bg-white/[0.03]" />
               )}
 
-              <div className="truncate text-[14px] text-white/90">
+              <div
+                className={`truncate text-[14px] ${
+                  disabled ? "text-white/28" : "text-white/90"
+                }`}
+              >
                 {selectedItem?.label || placeholder}
               </div>
             </div>
 
-            <div className="shrink-0 text-white/35">
+            <div className={`shrink-0 ${disabled ? "text-white/20" : "text-white/35"}`}>
               <svg
                 width="14"
                 height="14"
@@ -1971,6 +2385,58 @@ function InputCompact({
   );
 }
 
+function WeekLengthPicker({
+  label,
+  value,
+  lang,
+  onChange,
+}: {
+  label: string;
+  value?: number;
+  lang: Lang;
+  onChange: (v: number) => void;
+}) {
+  const options = [1, 2, 4, 6, 8];
+  const current = value || 8;
+
+  return (
+    <div>
+      <div className="mb-2 text-[11px] uppercase tracking-wide text-white/40">
+        {label}
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {options.map((option) => {
+          const active = current === option;
+          const suffix =
+            lang === "nl"
+              ? option === 1
+                ? "week"
+                : "weken"
+              : option === 1
+              ? "week"
+              : "weeks";
+
+          return (
+            <button
+              key={option}
+              type="button"
+              onClick={() => onChange(option)}
+              className={`rounded-full px-3 py-2 text-[13px] transition ${
+                active
+                  ? "bg-white text-black"
+                  : "border border-white/10 bg-white/[0.04] text-white/72 hover:border-white/20 hover:text-white"
+              }`}
+            >
+              {option} {suffix}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function ChoicePill({
   active,
   children,
@@ -2119,8 +2585,8 @@ function ProgressRowCompact({
       <div className="flex items-center justify-between gap-3">
         <div className="text-[13px] text-white/82">{label}</div>
         <div className="text-[11px] text-white/38">
-          {done ? readyLabel : `${filled}/${total}`}
-        </div>
+  {done ? readyLabel : `${progress}%`}
+</div>
       </div>
 
       <div className="mt-2.5 h-[5px] overflow-hidden rounded-full bg-white/8">
@@ -2160,13 +2626,13 @@ function CoverPreviewStage({
   teamLabel: string;
 }) {
   return (
-    <div className="rounded-[28px] border border-white/8 bg-[radial-gradient(90%_90%_at_70%_15%,rgba(37,211,120,0.07),transparent_60%)] p-5">
-      <div className="mb-5 flex items-center justify-between">
+    <div className="rounded-[28px] border border-white/8 bg-[rgba(255,255,255,0.02)] p-4 sm:p-5">
+      <div className="mb-4 flex items-center justify-between gap-3">
         <MiniMetaPill>{t.clubContext}</MiniMetaPill>
         <MiniMetaPill>{t.pdfReady}</MiniMetaPill>
       </div>
 
-      <div className="rounded-[26px] border border-white/8 bg-black/18 p-6">
+      <div className="rounded-[24px] border border-white/8 bg-black/20 p-3 sm:p-4">
         <CoverPreviewCard
           clubName={clubName}
           logoUrl={logoUrl}
@@ -2179,7 +2645,7 @@ function CoverPreviewStage({
         />
       </div>
 
-      <div className="mt-5 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-wrap gap-2">
         <MiniMetaPill>{t.playerIdentity}</MiniMetaPill>
         <MiniMetaPill>
           {t.brandingMetaClub}: {clubName}
@@ -2211,95 +2677,126 @@ function CoverPreviewCard({
   balance: number;
   systemLine: string;
 }) {
+  const safePlayer = playerName?.trim() || "Player";
+const safeClub = clubName?.trim() || "Club";
+const safeSystem =
+  systemLine?.trim() || "Performance Development System";
+const safeFooterClub = clubName?.trim() || "Club";
+
   return (
-    <div className="relative mx-auto aspect-[210/297] w-full max-w-[540px] overflow-hidden rounded-[28px] border border-white/16 shadow-[0_30px_100px_rgba(0,0,0,0.36)]">
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(135deg, ${primary} ${balance}%, ${secondary} 100%)`,
-        }}
-      />
+    <div className="relative mx-auto aspect-[210/297] w-full max-w-[540px] overflow-hidden rounded-[26px] border border-white/12 bg-[#07090C] shadow-[0_30px_100px_rgba(0,0,0,0.34)]">
+      <div className="absolute inset-0 bg-[#07090C]" />
 
       {playerImageUrl ? (
         <img
           src={playerImageUrl}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover opacity-[0.92]"
+          className="absolute inset-0 h-full w-full object-cover"
           style={{
-            objectPosition: "center 20%",
-            filter: "saturate(.95) contrast(1.03)",
+            objectPosition: "center 22%",
             transform: "scale(1.03)",
+            opacity: 0.9,
+            filter: "saturate(.94) contrast(1.03)",
           }}
         />
-      ) : null}
+      ) : (
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `
+              radial-gradient(circle at 74% 24%, rgba(255,255,255,.07) 0%, transparent 18%),
+              radial-gradient(circle at 84% 78%, ${primary}33 0%, transparent 28%),
+              linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0)),
+              #0A0D11
+            `,
+          }}
+        />
+      )}
 
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,.62)_0%,rgba(0,0,0,.18)_48%,rgba(0,0,0,.3)_100%)]" />
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.08)_0%,rgba(0,0,0,.24)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,.88)_0%,rgba(0,0,0,.58)_38%,rgba(0,0,0,.52)_58%,rgba(0,0,0,.76)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.08)_0%,rgba(0,0,0,.34)_100%)]" />
 
       <div
-        className="absolute inset-0 opacity-[0.12]"
+        className="absolute -left-[8%] -top-[8%] h-[48%] w-[48%] rounded-full blur-3xl"
         style={{
-          background: `
-            radial-gradient(circle at 76% 78%, rgba(255,255,255,0.32) 0%, transparent 22%),
-            radial-gradient(circle at 20% 62%, ${primary}77 0%, transparent 20%)
-          `,
+          background: `radial-gradient(circle, ${primary}55 0%, transparent 68%)`,
+          opacity: 0.5,
         }}
       />
 
       <div
-        className="absolute inset-0 opacity-[0.03]"
+        className="absolute -bottom-[12%] -right-[12%] h-[46%] w-[46%] rounded-full blur-3xl"
+        style={{
+          background: `radial-gradient(circle, ${secondary}22 0%, transparent 72%)`,
+          opacity: 0.22,
+        }}
+      />
+
+      <div
+        className="absolute inset-0 opacity-[0.025]"
         style={{
           backgroundImage: `
-            linear-gradient(rgba(255,255,255,.14) 1px, transparent 1px),
+            linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px),
             linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px)
           `,
           backgroundSize: "4px 4px",
         }}
       />
 
-      <div className="absolute inset-[18px] rounded-[22px] border border-white/8" />
+      <div className="absolute inset-[14px] rounded-[22px] border border-white/8" />
 
-      <div className="relative z-10 h-full w-full">
-        <div
-          className="absolute bottom-[34px] left-[34px] top-[34px] w-[4px] rounded-full"
-          style={{ background: primary }}
-        />
+      <div
+        className="absolute bottom-[6%] left-[8.5%] top-[6%] w-[3px] rounded-full"
+        style={{
+          background: `linear-gradient(180deg, ${primary} 0%, rgba(255,255,255,0.08) 100%)`,
+          boxShadow: `0 0 12px ${primary}33`,
+        }}
+      />
 
-        <div className="absolute left-[58px] right-[120px] top-[34px]">
-          <div className="text-[clamp(14px,1.2vw,22px)] font-semibold uppercase tracking-[0.16em] text-white/96">
-            {clubName}
-          </div>
-          <div className="mt-2 text-[clamp(12px,1vw,18px)] text-white/76">
-            {systemLine}
-          </div>
-        </div>
-
-        {logoUrl ? (
-          <div className="absolute right-[28px] top-[28px] flex h-[72px] w-[72px] items-center justify-center rounded-[20px] border border-white/16 bg-white/10 shadow-[0_14px_40px_rgba(0,0,0,0.24)] backdrop-blur-md">
-            <img
-              src={logoUrl}
-              className="h-[36px] w-[36px] object-contain"
-              alt=""
-            />
-          </div>
-        ) : null}
-
-        <div className="absolute bottom-[90px] left-[58px] right-[40px]">
-          <div className="break-words text-[clamp(34px,4.4vw,72px)] font-semibold leading-[0.92] tracking-[-0.05em] text-white drop-shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
-            {playerName}
-          </div>
-        </div>
-
-        <div className="absolute bottom-[32px] left-[58px] right-[40px] flex items-center justify-between gap-6">
-          <div className="text-[clamp(11px,0.85vw,15px)] uppercase tracking-[0.32em] text-white/74">
-            {systemLine}
-          </div>
-
-          <div
-            className="h-[3px] w-[84px] rounded-full"
-            style={{ background: primary }}
+      {logoUrl ? (
+        <div className="absolute right-[5.5%] top-[5%] z-20 flex h-[12.5%] w-[12.5%] min-h-[50px] min-w-[50px] max-h-[72px] max-w-[72px] items-center justify-center overflow-hidden rounded-[18px] border border-white/16 bg-white/10 shadow-[0_10px_28px_rgba(0,0,0,0.28)] backdrop-blur-md">
+          <img
+            src={logoUrl}
+            alt=""
+            className="h-[56%] w-[56%] object-contain"
           />
         </div>
+      ) : (
+        <div className="absolute right-[5.5%] top-[5%] z-20 flex h-[12.5%] w-[12.5%] min-h-[50px] min-w-[50px] max-h-[72px] max-w-[72px] items-center justify-center overflow-hidden rounded-[18px] border border-white/12 bg-white/[0.06] backdrop-blur-md">
+          <div className="h-[44%] w-[44%] rounded-full bg-white/20" />
+        </div>
+      )}
+
+      <div className="absolute left-[12.5%] right-[18%] bottom-[12%] z-20">
+        <div className="text-[clamp(7px,0.8vw,9px)] uppercase tracking-[0.22em] text-white/55">
+          {safeSystem}
+        </div>
+
+        <div className="mt-[5.2%] max-w-[94%] break-words text-[clamp(22px,4.6vw,44px)] font-semibold leading-[0.92] tracking-[-0.06em] text-white drop-shadow-[0_8px_24px_rgba(0,0,0,0.24)]">
+          {safePlayer}
+        </div>
+
+        <div
+          className="mt-[7%] h-[2px] w-[24%] min-w-[48px] max-w-[84px] rounded-full"
+          style={{
+            background: `linear-gradient(90deg, ${primary} 0%, transparent 100%)`,
+            boxShadow: `0 0 12px ${primary}2E`,
+          }}
+        />
+      </div>
+
+      <div className="absolute bottom-[5.4%] left-[12.5%] right-[5.5%] z-20 flex items-center justify-between gap-4">
+  <div className="min-w-0 max-w-[74%] truncate text-[clamp(7px,0.82vw,9.5px)] uppercase tracking-[0.22em] text-white/68">
+  {safeFooterClub}
+</div>
+
+        <div
+          className="ml-auto h-[2px] w-[18%] min-w-[42px] max-w-[74px] rounded-full"
+          style={{
+            background: `linear-gradient(90deg, ${primary} 0%, ${secondary} 100%)`,
+            boxShadow: `0 0 10px ${primary}24`,
+          }}
+        />
       </div>
     </div>
   );
