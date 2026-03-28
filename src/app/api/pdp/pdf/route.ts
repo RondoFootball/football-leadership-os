@@ -82,26 +82,24 @@ export async function POST(req: Request) {
 
     const html = renderPdpHtml(plan, { lang, version });
 
-    const apiKey = process.env.PDFSHIFT_API_KEY;
+    const apiKey = (process.env.PDFSHIFT_API_KEY || "").trim();
 
     if (!apiKey) {
       throw new Error("Missing PDFSHIFT_API_KEY");
     }
 
     const response = await fetch("https://api.pdfshift.io/v3/convert/pdf", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Basic ${Buffer.from(
-          `${apiKey}:`
-        ).toString("base64")}`,
-      },
-      body: JSON.stringify({
-        source: html,
-        landscape: false,
-        use_print: true,
-      }),
-    });
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "X-API-Key": apiKey,
+  },
+  body: JSON.stringify({
+    source: html,
+    landscape: false,
+    use_print: true,
+  }),
+});
 
     if (!response.ok) {
       const text = await response.text();
