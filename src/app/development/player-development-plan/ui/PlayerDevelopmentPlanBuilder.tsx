@@ -1388,29 +1388,31 @@ export default function PlayerDevelopmentPlanBuilder() {
                         />
 
                         <div className="flex flex-wrap items-center gap-2 pt-1">
-                          <button
-                            type="button"
-                            onClick={() => setIdentityPhotoOpen((v) => !v)}
-                            className="rounded-full border border-white/12 bg-white/[0.04] px-3 py-1.5 text-[12px] text-white/78 hover:border-white/24 hover:text-white"
-                          >
-                            {plan.player.headshotUrl ? t.editPhoto : t.addPhoto}
-                          </button>
+  {plan.player.headshotUrl && (
+    <button
+      type="button"
+      onClick={() => setIdentityPhotoOpen((v) => !v)}
+      className="rounded-full border border-white/12 bg-white/[0.04] px-3 py-1.5 text-[12px] text-white/78 hover:border-white/24 hover:text-white"
+    >
+      {t.editPhoto}
+    </button>
+  )}
 
-                          {plan.player.headshotUrl && (
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setPlan((prev) => ({
-                                  ...prev,
-                                  player: { ...prev.player, headshotUrl: "" },
-                                }))
-                              }
-                              className="rounded-full border border-white/10 px-3 py-1.5 text-[12px] text-white/45 hover:text-white/75"
-                            >
-                              {t.removePhoto}
-                            </button>
-                          )}
-                        </div>
+  {plan.player.headshotUrl && (
+    <button
+      type="button"
+      onClick={() =>
+        setPlan((prev) => ({
+          ...prev,
+          player: { ...prev.player, headshotUrl: "" },
+        }))
+      }
+      className="rounded-full border border-white/10 px-3 py-1.5 text-[12px] text-white/45 hover:text-white/75"
+    >
+      {t.removePhoto}
+    </button>
+  )}
+</div>
 
                         {identityPhotoOpen && (
                           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
@@ -2015,13 +2017,6 @@ export default function PlayerDevelopmentPlanBuilder() {
                       className="w-full rounded-full bg-white py-3 text-sm font-medium text-black transition hover:bg-white/90"
                     >
                       {t.downloadPlayer}
-                    </button>
-
-                    <button
-                      onClick={() => download("staff", lang)}
-                      className="w-full rounded-full border border-white/16 py-3 text-sm text-white/88 transition hover:border-white/28"
-                    >
-                      {t.downloadStaff}
                     </button>
 
                     <div className="pt-1 text-center text-[11px] text-white/35">
