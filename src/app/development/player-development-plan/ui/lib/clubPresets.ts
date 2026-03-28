@@ -31,6 +31,7 @@ export type ClubPreset = {
   secondaryColor: string;
   tertiaryColor?: string;
   colorMix: ClubColorMix;
+  colorBalance: number;
   aliases?: string[];
 };
 
@@ -1975,17 +1976,18 @@ export const clubPresets: ClubPreset[] = Object.values(clubVisualPresetsById)
     const country = competition ? countriesById[competition.countryId] : undefined;
 
     return {
-      id: club.id,
-      name: club.name,
-      ...(club.aliases ? { aliases: club.aliases } : {}),
-      logoUrl: getClubLogoUrl(club.id),
-      country: country?.name ?? "Other",
-      league: competition?.name ?? "Other",
-      primaryColor: visual.primaryColor,
-      secondaryColor: visual.secondaryColor,
-      ...(visual.tertiaryColor ? { tertiaryColor: visual.tertiaryColor } : {}),
-      colorMix: visual.colorMix,
-    };
+  id: club.id,
+  name: club.name,
+  ...(club.aliases ? { aliases: club.aliases } : {}),
+  logoUrl: getClubLogoUrl(club.id),
+  country: country?.name ?? "Other",
+  league: competition?.name ?? "Other",
+  primaryColor: visual.primaryColor,
+  secondaryColor: visual.secondaryColor,
+  ...(visual.tertiaryColor ? { tertiaryColor: visual.tertiaryColor } : {}),
+  colorMix: visual.colorMix,
+  colorBalance: visual.colorMix.primary,
+};
   })
   .filter((club): club is ClubPreset => club !== null);
 
