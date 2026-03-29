@@ -67,6 +67,7 @@ export const countriesById: Record<CountryId, Country> = {
   england: { id: "england", name: "England" },
   spain: { id: "spain", name: "Spain" },
   sweden: { id: "sweden", name: "Sweden" },
+  portugal: { id: "portugal", name: "Portugal" },
 };
 
 export const competitionsById: Record<CompetitionId, Competition> = {
@@ -151,6 +152,17 @@ export const competitionsById: Record<CompetitionId, Competition> = {
     id: "superettan",
     countryId: "sweden",
     name: "Superettan",
+  },
+
+  "primeira-liga": {
+    id: "primeira-liga",
+    countryId: "portugal",
+    name: "Primeira Liga",
+  },
+  "liga-portugal-2": {
+    id: "liga-portugal-2",
+    countryId: "portugal",
+    name: "Liga Portugal 2",
   },
 };
 
@@ -1626,6 +1638,98 @@ export const clubsById: Record<ClubId, Club> = {
     aliases: ["Cultural Leonesa"],
   },
 
+    /* =========================
+     PORTUGAL
+     ========================= */
+
+  /* Primeira Liga */
+  alverca: {
+    id: "alverca",
+    name: "Alverca",
+    aliases: ["FC Alverca"],
+  },
+  arouca: {
+    id: "arouca",
+    name: "Arouca",
+    aliases: ["FC Arouca"],
+  },
+  avs: {
+    id: "avs",
+    name: "AVS Futebol SAD",
+    aliases: ["AVS"],
+  },
+  benfica: {
+    id: "benfica",
+    name: "Benfica",
+    aliases: ["SL Benfica"],
+  },
+  braga: {
+    id: "braga",
+    name: "Braga",
+    aliases: ["Sporting Braga"],
+  },
+  "casa-pia": {
+    id: "casa-pia",
+    name: "Casa Pia",
+    aliases: ["Casa Pia AC"],
+  },
+  estoril: {
+    id: "estoril",
+    name: "Estoril",
+    aliases: ["Estoril Praia"],
+  },
+  famalicao: {
+    id: "famalicao",
+    name: "Famalicão",
+    aliases: ["FC Famalicão", "Famalicao"],
+  },
+  "gil-vicente": {
+    id: "gil-vicente",
+    name: "Gil Vicente",
+    aliases: ["Gil Vicente FC"],
+  },
+  moreirense: {
+    id: "moreirense",
+    name: "Moreirense",
+    aliases: ["Moreirense FC"],
+  },
+  nacional: {
+    id: "nacional",
+    name: "Nacional",
+    aliases: ["CD Nacional"],
+  },
+  porto: {
+    id: "porto",
+    name: "Porto",
+    aliases: ["FC Porto"],
+  },
+  "rio-ave": {
+    id: "rio-ave",
+    name: "Rio Ave",
+    aliases: ["Rio Ave FC"],
+  },
+  "santa-clara": {
+    id: "santa-clara",
+    name: "Santa Clara",
+    aliases: ["CD Santa Clara"],
+  },
+  "sporting-cp": {
+    id: "sporting-cp",
+    name: "Sporting",
+    aliases: ["Sporting CP", "Sporting Lisbon"],
+  },
+  tondela: {
+    id: "tondela",
+    name: "Tondela",
+    aliases: ["CD Tondela"],
+  },
+  "vitoria-guimaraes": {
+    id: "vitoria-guimaraes",
+    name: "Vitória",
+    aliases: ["Vitória Guimarães", "Guimarães", "Vitória SC"],
+  },
+
+
   /* =========================
      OTHER / PLACEHOLDER
      ========================= */
@@ -1960,6 +2064,26 @@ export const competitionClubIds: Record<CompetitionId, ClubId[]> = {
     "sporting-gijon",
     "valladolid",
     "zaragoza",
+  ],
+  "primeira-liga": [
+    "alverca",
+    "arouca",
+    "avs",
+    "benfica",
+    "braga",
+    "casa-pia",
+    "estoril",
+    "estrela",
+    "famalicao",
+    "gil-vicente",
+    "moreirense",
+    "nacional",
+    "porto",
+    "rio-ave",
+    "santa-clara",
+    "sporting-cp",
+    "tondela",
+    "vitoria-guimaraes",
   ],
 };
 

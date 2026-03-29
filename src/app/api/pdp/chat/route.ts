@@ -348,7 +348,6 @@ export async function POST(req: Request) {
 
     const response = await client.responses.create({
       model: "gpt-4.1",
-      temperature: 0.35,
       input: [
         {
           role: "system",
@@ -463,21 +462,32 @@ Output rules:
       },
     });
   } catch (error: any) {
-    console.error("/api/pdp/chat error", error);
+  console.error("/api/pdp/chat error");
+  console.error("message:", error?.message);
+  console.error("status:", error?.status);
+  console.error("name:", error?.name);
+  console.error("code:", error?.code);
+  console.error("type:", error?.type);
+  console.error("param:", error?.param);
 
-    return NextResponse.json(
-      {
-        type: "error",
-        message:
-          error?.message ||
-          localMessage(
-            "nl",
-            "Er ging iets mis tijdens het verwerken van het gesprek.",
-            "Something went wrong while processing the conversation."
-          ),
-        done: false,
-      },
-      { status: 500 }
-    );
+  if (error?.response) {
+    console.error("response status:", error.response.status);
+    console.error("response data:", error.response.data);
   }
+
+  return NextResponse.json(
+    {
+      type: "error",
+      message:
+        error?.message ||
+        localMessage(
+          "nl",
+          "Er ging iets mis tijdens het verwerken van het gesprek.",
+          "Something went wrong while processing the conversation."
+        ),
+      done: false,
+    },
+    { status: 500 }
+  );
+}
 }

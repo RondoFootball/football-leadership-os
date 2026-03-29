@@ -16,7 +16,7 @@ export type ChatPlannerSlotQuality =
 
 export type ChatPlannerSlotStatus = {
   quality: ChatPlannerSlotQuality;
-  progress: number; // 0..100
+  progress: number;
   slide?:
     | "agreement"
     | "role_context"
@@ -58,6 +58,32 @@ type ApiPlan = {
   done: true;
   derived?: { planner?: ChatPlannerState };
 };
+
+type ApiError = {
+  type?: "error";
+  message?: string;
+  done?: false;
+};
+
+function extractReadableErrorMessage(
+  raw: string | null | undefined,
+  fallback: string
+) {
+  if (!raw) return fallback;
+
+  const trimmed = raw.trim();
+
+  try {
+    const parsed = JSON.parse(trimmed) as ApiError;
+    if (parsed?.message && typeof parsed.message === "string") {
+      return parsed.message;
+    }
+  } catch {
+    // ignore
+  }
+
+  return trimmed || fallback;
+}
 
 export function PdpChat({
   lang,
@@ -265,7 +291,8 @@ export function PdpChat({
       });
 
       if (!res.ok) {
-        throw new Error(copy.errorChat);
+        const errorText = await res.text();
+        throw new Error(extractReadableErrorMessage(errorText, copy.errorChat));
       }
 
       const data = (await res.json()) as ApiQuestion | ApiPlan;
@@ -284,13 +311,16 @@ export function PdpChat({
         setPlanReady(true);
       }
     } catch (error) {
-      console.error("PDP chat error:", error);
+      const message =
+        error instanceof Error && error.message ? error.message : copy.errorChat;
+
+      console.error("PDP chat error:", message);
 
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: copy.errorChat,
+          content: message,
         },
       ]);
     } finally {
@@ -322,7 +352,10 @@ export function PdpChat({
       });
 
       if (!res.ok) {
-        throw new Error(copy.errorGenerate);
+        const errorText = await res.text();
+        throw new Error(
+          extractReadableErrorMessage(errorText, copy.errorGenerate)
+        );
       }
 
       const data = await res.json();
@@ -345,13 +378,18 @@ export function PdpChat({
         ]);
       }
     } catch (error) {
-      console.error("PDP generate error:", error);
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : copy.errorGenerate;
+
+      console.error("PDP generate error:", message);
 
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: copy.errorGenerate,
+          content: message,
         },
       ]);
     } finally {
@@ -381,18 +419,12 @@ export function PdpChat({
     <div
       className={
         embedded
-          ? "flex h-full flex-col bg-transparent"
-          : "overflow-hidden rounded-[24px] border border-white/8 bg-[#0a0e13]"
+          ? "flex h-full min-h-[620px] flex-col rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(5,10,18,0.96)_0%,rgba(3,8,15,0.98)_100%)] shadow-[0_30px_100px_rgba(0,0,0,0.28)]"
+          : "flex min-h-[620px] flex-col overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(10,14,19,0.98)_0%,rgba(7,11,16,0.98)_100%)] shadow-[0_28px_80px_rgba(0,0,0,0.34)]"
       }
     >
       {showHeader ? (
-        <div
-          className={
-            embedded
-              ? "pb-4"
-              : "border-b border-white/8 px-5 py-5 sm:px-6"
-          }
-        >
+        <div className={embedded ? "px-6 pt-6 pb-5" : "px-6 pt-6 pb-5 sm:px-7"}>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="max-w-[58ch]">
               <div className="text-[11px] uppercase tracking-[0.18em] text-white/36">
@@ -463,7 +495,7 @@ export function PdpChat({
       ) : null}
 
       {!showHeader && showPromptChips ? (
-        <div className={embedded ? "pb-4" : "px-5 pb-4 pt-4 sm:px-6"}>
+        <div className={embedded ? "px-6 pt-5 pb-4" : "px-6 pt-5 pb-4 sm:px-7"}>
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] text-white/68">
               {copy.firstDraft}: {firstDraftProgress}%
@@ -495,122 +527,120 @@ export function PdpChat({
         </div>
       ) : null}
 
-      <div
-        ref={scrollRef}
-        onScroll={handleScroll}
-        className={[
-          "overflow-y-auto",
-          embedded
-            ? "flex-1 min-h-[360px] max-h-[720px] border-t border-white/8 py-5"
-            : "min-h-[240px] max-h-[420px] px-5 py-5 sm:px-6",
-        ].join(" ")}
-      >
-        <div className="space-y-4">
-          {messages.map((message, index) => {
-            const assistant = message.role === "assistant";
+      <div className="relative flex-1 px-6 pt-2 pb-6 sm:px-7 sm:pt-3 sm:pb-7">
+        <div className="flex h-full min-h-[420px] flex-col overflow-hidden rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(2,9,20,0.97)_0%,rgba(3,8,16,0.98)_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+          <div className="px-6 pt-5 sm:px-7 sm:pt-6">
+            <div className="h-px w-full rounded-full bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.10)_18%,rgba(255,255,255,0.04)_55%,transparent_100%)]" />
+            <div className="mt-1 h-px w-[72%] rounded-full bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.04)_20%,transparent_100%)]" />
+          </div>
 
-            return (
-              <div
-                key={`${message.role}-${index}`}
-                className={`flex ${assistant ? "justify-start" : "justify-end"}`}
-              >
-                <div
-                  className={[
-                    "max-w-[85%] rounded-[20px] px-4 py-3 text-[14px] leading-relaxed",
-                    assistant
-                      ? "border border-white/8 bg-white/[0.04] text-white/84"
-                      : "bg-white text-black",
-                  ].join(" ")}
-                >
-                  {message.content}
+          <div
+            ref={scrollRef}
+            onScroll={handleScroll}
+            className="flex-1 overflow-y-auto px-6 pt-5 pb-5 sm:px-7 sm:pt-6 sm:pb-6"
+          >
+            <div className="space-y-5">
+              {messages.map((message, index) => {
+                const assistant = message.role === "assistant";
+
+                return (
+                  <div
+                    key={`${message.role}-${index}`}
+                    className={`flex ${assistant ? "justify-start" : "justify-end"}`}
+                  >
+                    <div
+                      className={[
+                        "max-w-[84%] rounded-[22px] px-5 py-4 text-[14px] leading-relaxed shadow-[0_10px_30px_rgba(0,0,0,0.12)]",
+                        assistant
+                          ? "border border-white/8 bg-white/[0.05] text-white/84"
+                          : "bg-white text-black",
+                      ].join(" ")}
+                    >
+                      {message.content}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {(busy || generating) && (
+                <div className="flex justify-start">
+                  <div className="rounded-[22px] border border-white/8 bg-white/[0.05] px-5 py-4 text-[13px] text-white/46">
+                    {busy ? copy.thinking : copy.building}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              )}
+            </div>
+          </div>
 
-          {(busy || generating) && (
-            <div className="flex justify-start">
-              <div className="rounded-[20px] border border-white/8 bg-white/[0.04] px-4 py-3 text-[13px] text-white/46">
-                {busy ? copy.thinking : copy.building}
+          <div className="border-t border-white/8 px-6 py-5 sm:px-7 sm:py-6">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                {planReady ? (
+                  <>
+                    <div className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1.5 text-[11px] text-white/82">
+                      {copy.generated}
+                    </div>
+
+                    {onViewPlan ? (
+                      <button
+                        type="button"
+                        onClick={onViewPlan}
+                        className="rounded-full border border-white/12 bg-white/[0.03] px-3 py-1.5 text-[12px] text-white/72 transition hover:border-white/20 hover:text-white"
+                      >
+                        {copy.viewPlan}
+                      </button>
+                    ) : null}
+
+                    {onDownloadPdf ? (
+                      <button
+                        type="button"
+                        onClick={() => onDownloadPdf("player")}
+                        className="rounded-full border border-white/12 bg-white px-3 py-1.5 text-[12px] text-black transition hover:bg-white/90"
+                      >
+                        {copy.downloadPdf}
+                      </button>
+                    ) : null}
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={generate}
+                    disabled={generating || busy}
+                    className="rounded-full bg-white px-4 py-2 text-[13px] text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {copy.createDraft}
+                  </button>
+                )}
+              </div>
+
+              <div className="text-[10px] uppercase tracking-[0.18em] text-white/28">
+                {copy.sendHint}
               </div>
             </div>
-          )}
-        </div>
-      </div>
 
-      <div
-        className={
-          embedded
-            ? "border-t border-white/8 py-4"
-            : "border-t border-white/8 px-5 py-4 sm:px-6"
-        }
-      >
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
-            {planReady ? (
-              <>
-                <div className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1.5 text-[11px] text-white/82">
-                  {copy.generated}
-                </div>
+            <div className="flex items-end gap-3">
+              <div className="flex-1 rounded-[24px] border border-white/10 bg-black/30 px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                <textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={onInputKeyDown}
+                  rows={1}
+                  placeholder={copy.placeholder}
+                  className="max-h-[180px] min-h-[28px] w-full resize-none bg-transparent text-[14px] leading-relaxed text-white placeholder:text-white/26 focus:outline-none"
+                />
+              </div>
 
-                {onViewPlan ? (
-                  <button
-                    type="button"
-                    onClick={onViewPlan}
-                    className="rounded-full border border-white/12 bg-white/[0.03] px-3 py-1.5 text-[12px] text-white/72 transition hover:border-white/20 hover:text-white"
-                  >
-                    {copy.viewPlan}
-                  </button>
-                ) : null}
-
-                {onDownloadPdf ? (
-                  <button
-                    type="button"
-                    onClick={() => onDownloadPdf("player")}
-                    className="rounded-full border border-white/12 bg-white px-3 py-1.5 text-[12px] text-black transition hover:bg-white/90"
-                  >
-                    {copy.downloadPdf}
-                  </button>
-                ) : null}
-              </>
-            ) : (
               <button
                 type="button"
-                onClick={generate}
-                disabled={generating || busy}
-                className="rounded-full bg-white px-4 py-2 text-[13px] text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={() => void send()}
+                disabled={busy || generating || !input.trim()}
+                className="rounded-[20px] bg-white px-5 py-3.5 text-[13px] text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-55"
               >
-                {copy.createDraft}
+                {copy.send}
               </button>
-            )}
+            </div>
           </div>
-
-          <div className="text-[10px] uppercase tracking-[0.18em] text-white/28">
-            {copy.sendHint}
-          </div>
-        </div>
-
-        <div className="flex items-end gap-3">
-          <div className="flex-1 rounded-[22px] border border-white/10 bg-black/28 px-4 py-3">
-            <textarea
-              ref={textareaRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={onInputKeyDown}
-              rows={1}
-              placeholder={copy.placeholder}
-              className="max-h-[180px] min-h-[28px] w-full resize-none bg-transparent text-[14px] leading-relaxed text-white placeholder:text-white/26 focus:outline-none"
-            />
-          </div>
-
-          <button
-            type="button"
-            onClick={() => void send()}
-            disabled={busy || generating || !input.trim()}
-            className="rounded-[18px] bg-white px-4 py-3 text-[13px] text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-55"
-          >
-            {copy.send}
-          </button>
         </div>
       </div>
     </div>

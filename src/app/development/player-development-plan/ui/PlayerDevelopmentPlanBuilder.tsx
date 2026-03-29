@@ -61,7 +61,6 @@ const UI = {
     academy: "Academie",
     firstTeam: "1e elftal",
     ageCategory: "Leeftijdscategorie",
-    chooseTeamType: "Kies team",
     chooseAgeCategory: "Kies leeftijdscategorie",
     periodWeeks: "Periode ontwikkelplan",
 
@@ -77,7 +76,8 @@ const UI = {
 
     primaryColor: "Primaire kleur",
     secondaryColor: "Secundaire kleur",
-    colorBalance: "Kleurverdeling (%)",
+    tertiaryColor: "Tertiaire kleur",
+    colorBalance: "Primaire balans (%)",
     logoUrl: "Clublogo URL",
 
     heroChatTitle: "Werk vanuit wat je concreet ziet.",
@@ -104,34 +104,47 @@ const UI = {
     noPlayerYet: "Speler",
 
     downloadPlayer: "Download spelerplan",
-    downloadStaff: "Download staffplan",
     availableOther: "Ook beschikbaar in het Engels",
     downloadOther: "Download EN",
-    exportAlways: "Altijd beschikbaar",
+    exportTitle: "Download Plan",
+    exportAlways: "Direct exporteerbaar",
     exportStrong:
-      "Je kunt het plan op ieder moment exporteren — ook als het nog niet volledig is afgerond.",
+      "Je kunt op elk moment een bruikbare PDF downloaden, ook als het plan nog niet volledig is uitgewerkt.",
 
-    videoTitle: "Video / clips",
+    progressTitle: "Planvoortgang",
+    progressBody:
+      "Deze voortgang combineert planbasis, inhoudelijke uitwerking en bewijs.",
+
+    evidenceTitle: "Evidence",
+    evidenceBody:
+      "Voeg bewijs toe wanneer het helpt om observatie, context en opvolging scherper te maken.",
+
+    videoTitle: "Video evidence",
     videoBody:
-      "Video is optioneel. Voeg alleen bewijs toe wanneer het helpt om observatie en context aan te scherpen.",
+      "Voeg clips toe als visueel bewijs voor het ontwikkelpunt. Houd het concreet en relevant.",
+    dataTitle: "Data evidence",
+    dataBody:
+      "Koppel later databronnen en indicatoren aan het plan. Deze functie komt in een volgende versie.",
+    notYetAvailable: "Nog niet beschikbaar",
+
     videoClip1: "Clip 1",
     videoClip2: "Clip 2",
     videoClip3: "Clip 3",
     videoName: "Titel",
     videoUrl: "Video URL",
-    videoMoment: "Datum / voorbeeldmoment",
+    videoMoment: "Datum / moment",
     videoSource: "Bron",
     videoMatch: "Wedstrijd",
     videoTraining: "Training",
     videoUpload: "Upload video",
-    videoChosen: "Gekozen bestand",
-    videoOr: "of",
     videoUploadHelp:
       "Upload werkt in deze versie binnen je sessie. Voor vaste opslag koppelen we later een upload-API.",
     compactVideoOpen: "Open",
     compactVideoClose: "Sluit",
     compactVideoEmpty: "Geen clips",
     compactVideoCount: "clips",
+    openClip: "Open clip",
+    closeClip: "Sluit clip",
 
     langNl: "NL",
     langEn: "EN",
@@ -140,7 +153,6 @@ const UI = {
     step1Title: "Voor wie is dit plan?",
     step1Body:
       "Leg vast voor welke speler dit plan wordt gebouwd. Naam en positie vormen de basis. Een foto is optioneel, maar helpt om het plan visueel eigen en direct herkenbaar te maken in preview en PDF.",
-    addPhoto: "Foto toevoegen",
     editPhoto: "Foto aanpassen",
     removePhoto: "Verwijderen",
     playerVisualIdentity: "Visuele identiteit",
@@ -156,22 +168,18 @@ const UI = {
     presetActive: "Clubpreset actief",
     coverSystemLine: "Persoonlijk Ontwikkelplan",
 
-    progressHeader: "We maken dit plan voor",
-    totalProgress: "Totale voortgang",
-    planProgress: "Planvoortgang",
-    exportTitle: "Download plan",
-    coverSlide: "Cover",
-    ready: "Klaar",
-
     workspaceTitle: "Workspace",
     workspaceBody:
-      "Van observatie naar plan. Bouw eerst gesprek of ontwikkelpunt, voeg daarna bewijs toe.",
+      "Van observatie naar plan. Bouw eerst het gesprek of ontwikkelpunt, voeg daarna bewijs toe.",
+
     controlLayer: "Planstatus",
     clubContext: "Club context",
     pdfReady: "PDF-ready",
     playerIdentity: "Player identity",
     brandingMetaClub: "Club",
     brandingMetaTeam: "Team",
+    completion: "Compleet",
+    completed: "Voltooid",
   },
 
   en: {
@@ -198,7 +206,6 @@ const UI = {
     academy: "Academy",
     firstTeam: "First team",
     ageCategory: "Age category",
-    chooseTeamType: "Choose team",
     chooseAgeCategory: "Choose age category",
     periodWeeks: "Development plan period",
 
@@ -214,7 +221,8 @@ const UI = {
 
     primaryColor: "Primary color",
     secondaryColor: "Secondary color",
-    colorBalance: "Color balance (%)",
+    tertiaryColor: "Tertiary color",
+    colorBalance: "Primary balance (%)",
     logoUrl: "Club logo URL",
 
     heroChatTitle: "Work from what you concretely see.",
@@ -241,34 +249,47 @@ const UI = {
     noPlayerYet: "Player",
 
     downloadPlayer: "Download player plan",
-    downloadStaff: "Download staff plan",
     availableOther: "Also available in Dutch",
     downloadOther: "Download NL",
-    exportAlways: "Always available",
+    exportTitle: "Download Plan",
+    exportAlways: "Directly exportable",
     exportStrong:
-      "You can export the plan at any moment — even if it is not fully completed yet.",
+      "You can download a usable PDF at any moment, even if the plan is not fully completed yet.",
 
-    videoTitle: "Video / clips",
+    progressTitle: "Plan progress",
+    progressBody:
+      "This progress combines basics, content completion and supporting evidence.",
+
+    evidenceTitle: "Evidence",
+    evidenceBody:
+      "Add evidence when it helps sharpen observation, context and follow-up.",
+
+    videoTitle: "Video evidence",
     videoBody:
-      "Video is optional. Only add evidence when it helps sharpen observation and context.",
+      "Add clips as visual evidence for the development point. Keep them concrete and relevant.",
+    dataTitle: "Data evidence",
+    dataBody:
+      "Later you can connect data sources and indicators to the plan. This feature will be added in a future version.",
+    notYetAvailable: "Not yet available",
+
     videoClip1: "Clip 1",
     videoClip2: "Clip 2",
     videoClip3: "Clip 3",
     videoName: "Title",
     videoUrl: "Video URL",
-    videoMoment: "Date / example moment",
+    videoMoment: "Date / moment",
     videoSource: "Source",
     videoMatch: "Match",
     videoTraining: "Training",
     videoUpload: "Upload video",
-    videoChosen: "Chosen file",
-    videoOr: "or",
     videoUploadHelp:
       "Upload works in this version within your session. We can connect fixed storage later with an upload API.",
     compactVideoOpen: "Open",
     compactVideoClose: "Close",
     compactVideoEmpty: "No clips",
     compactVideoCount: "clips",
+    openClip: "Open clip",
+    closeClip: "Close clip",
 
     langNl: "NL",
     langEn: "EN",
@@ -277,7 +298,6 @@ const UI = {
     step1Title: "Who is this plan for?",
     step1Body:
       "Define the player this plan is built for. Name and position set the foundation. A photo is optional, but helps make the plan feel personal and instantly recognizable in preview and PDF.",
-    addPhoto: "Add photo",
     editPhoto: "Edit photo",
     removePhoto: "Remove",
     playerVisualIdentity: "Visual identity",
@@ -293,22 +313,18 @@ const UI = {
     presetActive: "Club preset active",
     coverSystemLine: "Personal Development Plan",
 
-    progressHeader: "We build this plan for",
-    totalProgress: "Overall progress",
-    planProgress: "Plan progress",
-    exportTitle: "Download plan",
-    coverSlide: "Cover",
-    ready: "Ready",
-
     workspaceTitle: "Workspace",
     workspaceBody:
       "From observation to plan. Build the conversation or development point first, then add evidence.",
+
     controlLayer: "Plan status",
     clubContext: "Club context",
     pdfReady: "PDF-ready",
     playerIdentity: "Player identity",
     brandingMetaClub: "Club",
     brandingMetaTeam: "Team",
+    completion: "Completion",
+    completed: "Completed",
   },
 } as const;
 
@@ -331,22 +347,10 @@ function countryLabel(country: string, lang: Lang) {
   return country;
 }
 
-function slugify(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/&/g, "and")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 function getCountryLogoUrlByName(countryName: string) {
   const country = Object.values(countriesById).find(
     (c) => c.name === countryName
   );
-
   return country ? getCountryLogoFromDb(country.id) : "";
 }
 
@@ -354,7 +358,6 @@ function getLeagueLogoUrlByName(leagueName: string) {
   const competition = Object.values(competitionsById).find(
     (c) => c.name === leagueName
   );
-
   return competition ? getCompetitionLogoUrl(competition.id) : "";
 }
 
@@ -384,12 +387,35 @@ function clampPercent(v: string | number | undefined, fallback = 70) {
   return Math.max(0, Math.min(100, Math.round(n)));
 }
 
+function withAlpha(hex: string, alphaHex: string) {
+  const safe = clampHex(hex, "#111111");
+  return `${safe}${alphaHex}`;
+}
+
 function hasText(value: unknown) {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-function hasItems(value: unknown) {
-  return Array.isArray(value) && value.length > 0;
+function textProgress(value: unknown, thresholds = { light: 8, medium: 24 }) {
+  if (typeof value !== "string") return 0;
+  const length = value.trim().length;
+  if (length === 0) return 0;
+  if (length < thresholds.light) return 0.33;
+  if (length < thresholds.medium) return 0.66;
+  return 1;
+}
+
+function arrayProgress(value: unknown, maxItems = 3) {
+  if (!Array.isArray(value) || value.length === 0) return 0;
+  return Math.min(value.length / maxItems, 1);
+}
+
+function clampProgress(value: number) {
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+function plannerFilled(planner: ChatPlannerState | null, key: string) {
+  return !!planner?.filledSlots?.[key];
 }
 
 function mergeGeneratedPlanWithLockedBasics(
@@ -430,22 +456,6 @@ function mergeGeneratedPlanWithLockedBasics(
   return next;
 }
 
-function getSectionProgress(items: boolean[]) {
-  const total = items.length;
-  const filled = items.filter(Boolean).length;
-  const progress = total === 0 ? 0 : Math.round((filled / total) * 100);
-
-  return {
-    total,
-    filled,
-    progress,
-  };
-}
-
-function plannerFilled(planner: ChatPlannerState | null, key: string) {
-  return !!planner?.filledSlots?.[key];
-}
-
 const LEAGUE_ORDER: Record<string, string[]> = {
   Netherlands: ["Eredivisie", "KKD"],
   Belgium: ["Jupiler Pro League", "Challenger Pro League"],
@@ -455,29 +465,9 @@ const LEAGUE_ORDER: Record<string, string[]> = {
   Spain: ["La Liga", "Segunda División"],
   Italy: ["Serie A", "Serie B"],
   Portugal: ["Primeira Liga", "Liga Portugal 2"],
-  Sweden: ["Allsvenskan"],
+  Sweden: ["Allsvenskan", "Superettan"],
   Other: [],
 };
-
-function textProgress(value: unknown, thresholds = { light: 8, medium: 24 }) {
-  if (typeof value !== "string") return 0;
-
-  const length = value.trim().length;
-
-  if (length === 0) return 0;
-  if (length < thresholds.light) return 0.33;
-  if (length < thresholds.medium) return 0.66;
-  return 1;
-}
-
-function arrayProgress(value: unknown, maxItems = 3) {
-  if (!Array.isArray(value) || value.length === 0) return 0;
-  return Math.min(value.length / maxItems, 1);
-}
-
-function clampProgress(value: number) {
-  return Math.max(0, Math.min(100, Math.round(value)));
-}
 
 export default function PlayerDevelopmentPlanBuilder() {
   const [plan, setPlan] = useState<DevelopmentPlanV1>(createInitialPlan());
@@ -493,9 +483,10 @@ export default function PlayerDevelopmentPlanBuilder() {
   const [basicsOpen, setBasicsOpen] = useState(true);
   const [brandingOpen, setBrandingOpen] = useState(false);
   const [identityPhotoOpen, setIdentityPhotoOpen] = useState(false);
-  const [videoOpen, setVideoOpen] = useState(false);
+  const [videoPanelOpen, setVideoPanelOpen] = useState(false);
+  const [openClipIndex, setOpenClipIndex] = useState<number | null>(null);
 
-  const [selectedCountry, setSelectedCountry] = useState("Netherlands");
+  const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedLeague, setSelectedLeague] = useState("");
   const [clubMode, setClubMode] = useState<ClubMode>("preset");
 
@@ -516,9 +507,13 @@ export default function PlayerDevelopmentPlanBuilder() {
     plan.meta.blockLengthWeeks,
   ]);
 
+  const activePreset = getClubPresetByName(plan.brand.clubName);
+  const activePresetAny = activePreset as any;
+
   const primary = clampHex(plan.brand.primaryColor, "#111111");
   const secondary = clampHex(plan.brand.secondaryColor, "#FFFFFF");
-  const balance = clampPercent(plan.brand.colorBalance, 70);
+  const tertiary = clampHex(activePresetAny?.tertiaryColor, primary);
+  const balance = clampPercent((plan.brand as any).colorBalance, 70);
 
   const teamType = (((plan.player as any)?.teamType || "") as TeamType | "");
   const academyAge = (((plan.player as any)?.academyAgeCategory || "") as string);
@@ -528,420 +523,6 @@ export default function PlayerDevelopmentPlanBuilder() {
     hasText(plan.brand.clubName) &&
     hasText(plan.meta.team) &&
     hasText(plan.brand.primaryColor);
-
-  const basicsProgress = useMemo(() => {
-  let score = 0;
-  let total = 0;
-
-  const add = (weight: number, progress: number) => {
-    total += weight;
-    score += weight * progress;
-  };
-
-  add(18, textProgress(plan.player.name));
-  add(12, textProgress(plan.player.role));
-  add(6, hasText(plan.player.headshotUrl) ? 1 : 0);
-
-  add(10, hasText(selectedCountry) ? 1 : 0);
-  add(10, hasText(selectedLeague) ? 1 : 0);
-  add(16, textProgress(plan.brand.clubName || plan.meta.club));
-
-  add(10, hasText(teamType) ? 1 : 0);
-
-  const teamDetailProgress =
-    teamType === "academy"
-      ? hasText(academyAge) ? 1 : 0
-      : teamType === "first_team"
-      ? 1
-      : 0;
-
-  add(8, teamDetailProgress);
-
-  add(
-    10,
-    [1, 2, 4, 6, 8].includes(Number(plan.meta.blockLengthWeeks)) ? 1 : 0
-  );
-
-  const progress = total === 0 ? 0 : clampProgress((score / total) * 100);
-
-  return {
-  progress,
-  filled: Math.round(score),
-  total,
-};
-}, [
-  plan.player.name,
-  plan.player.role,
-  plan.player.headshotUrl,
-  plan.brand.clubName,
-  plan.meta.club,
-  plan.meta.blockLengthWeeks,
-  selectedCountry,
-  selectedLeague,
-  teamType,
-  academyAge,
-]);  
-
-  const agreementProgress = useMemo(() => {
-  let score = 0;
-  let total = 0;
-
-  const add = (weight: number, progress: number) => {
-    total += weight;
-    score += weight * progress;
-  };
-
-  add(
-    40,
-    Math.max(
-      textProgress(plan.slide2?.focusBehaviour),
-      plannerFilled(chatPlannerState, "developmentPoint") ? 0.66 : 0
-    )
-  );
-
-  add(
-    35,
-    Math.max(
-      textProgress(plan.slide2?.developmentGoal),
-      plannerFilled(chatPlannerState, "targetBehaviour") ? 0.66 : 0
-    )
-  );
-
-  add(
-    25,
-    Math.max(
-      textProgress(plan.slide2?.matchSituation),
-      plannerFilled(chatPlannerState, "matchSituation") ? 0.66 : 0
-    )
-  );
-
-  const progress = total === 0 ? 0 : clampProgress((score / total) * 100);
-
-  return {
-    total,
-    filled: Math.round(score),
-    progress,
-  };
-}, [
-  plan.slide2?.focusBehaviour,
-  plan.slide2?.developmentGoal,
-  plan.slide2?.matchSituation,
-  chatPlannerState,
-]);
-
-  const contextProgress = useMemo(() => {
-  let score = 0;
-  let total = 0;
-
-  const add = (weight: number, progress: number) => {
-    total += weight;
-    score += weight * progress;
-  };
-
-  add(
-    34,
-    Math.max(
-      arrayProgress(plan.slideContext?.gameMoments),
-      plannerFilled(chatPlannerState, "gameMoments") ? 0.66 : 0
-    )
-  );
-
-  add(
-    33,
-    Math.max(
-      arrayProgress(plan.slideContext?.zones),
-      plannerFilled(chatPlannerState, "zones") ? 0.66 : 0
-    )
-  );
-
-  add(
-    33,
-    Math.max(
-      arrayProgress(plan.slideContext?.principles),
-      plannerFilled(chatPlannerState, "principles") ? 0.66 : 0
-    )
-  );
-
-  const progress = total === 0 ? 0 : clampProgress((score / total) * 100);
-
-  return {
-    total,
-    filled: Math.round(score),
-    progress,
-  };
-}, [
-  plan.slideContext?.gameMoments,
-  plan.slideContext?.zones,
-  plan.slideContext?.principles,
-  chatPlannerState,
-]);
-
-  const realityProgress = useMemo(() => {
-  let score = 0;
-  let total = 0;
-
-  const add = (weight: number, progress: number) => {
-    total += weight;
-    score += weight * progress;
-  };
-
-  add(
-    28,
-    Math.max(
-      textProgress(plan.slide3Baseline?.intro),
-      arrayProgress(plan.slide3Baseline?.observations),
-      plannerFilled(chatPlannerState, "observations") ? 0.66 : 0
-    )
-  );
-
-  add(
-    24,
-    Math.max(
-      arrayProgress(plan.slide3?.what_we_see?.items),
-      plannerFilled(chatPlannerState, "observations") ? 0.66 : 0
-    )
-  );
-
-  add(
-    24,
-    Math.max(
-      arrayProgress(plan.slide3?.moment?.items),
-      arrayProgress(plan.slide3Baseline?.moments),
-      plannerFilled(chatPlannerState, "whenObserved") ? 0.66 : 0
-    )
-  );
-
-  add(
-    24,
-    Math.max(
-      arrayProgress(plan.slide3?.effect_on_match?.items),
-      arrayProgress(plan.slide3Baseline?.matchEffects),
-      plannerFilled(chatPlannerState, "effectOnGame") ? 0.66 : 0
-    )
-  );
-
-  const progress = total === 0 ? 0 : clampProgress((score / total) * 100);
-
-  return {
-    total,
-    filled: Math.round(score),
-    progress,
-  };
-}, [
-  plan.slide3Baseline?.intro,
-  plan.slide3Baseline?.observations,
-  plan.slide3?.what_we_see?.items,
-  plan.slide3?.moment?.items,
-  plan.slide3Baseline?.moments,
-  plan.slide3?.effect_on_match?.items,
-  plan.slide3Baseline?.matchEffects,
-  chatPlannerState,
-]);
-
-  const approachProgress = useMemo(() => {
-  let score = 0;
-  let total = 0;
-
-  const add = (weight: number, progress: number) => {
-    total += weight;
-    score += weight * progress;
-  };
-
-  add(
-    20,
-    Math.max(
-      textProgress(plan.slide4DevelopmentRoute?.developmentRoute?.training),
-      plannerFilled(chatPlannerState, "playerActions") ? 0.66 : 0
-    )
-  );
-
-  add(
-    20,
-    Math.max(
-      textProgress(plan.slide4DevelopmentRoute?.developmentRoute?.match),
-      plannerFilled(chatPlannerState, "playerActions") ? 0.66 : 0
-    )
-  );
-
-  add(
-    20,
-    Math.max(
-      textProgress(plan.slide4DevelopmentRoute?.developmentRoute?.video),
-      plannerFilled(chatPlannerState, "staffResponsibilities") ? 0.66 : 0
-    )
-  );
-
-  add(
-    20,
-    Math.max(
-      textProgress(plan.slide4DevelopmentRoute?.developmentRoute?.off_field),
-      plannerFilled(chatPlannerState, "staffResponsibilities") ? 0.66 : 0
-    )
-  );
-
-  add(
-    20,
-    Math.max(
-      textProgress(plan.slide4DevelopmentRoute?.playerOwnText),
-      plannerFilled(chatPlannerState, "playerActions") ? 0.66 : 0
-    )
-  );
-
-  const progress = total === 0 ? 0 : clampProgress((score / total) * 100);
-
-  return {
-    total,
-    filled: Math.round(score),
-    progress,
-  };
-}, [
-  plan.slide4DevelopmentRoute?.developmentRoute?.training,
-  plan.slide4DevelopmentRoute?.developmentRoute?.match,
-  plan.slide4DevelopmentRoute?.developmentRoute?.video,
-  plan.slide4DevelopmentRoute?.developmentRoute?.off_field,
-  plan.slide4DevelopmentRoute?.playerOwnText,
-  chatPlannerState,
-]);
-
-  const successProgress = useMemo(() => {
-  let score = 0;
-  let total = 0;
-
-  const add = (weight: number, progress: number) => {
-    total += weight;
-    score += weight * progress;
-  };
-
-  add(
-    34,
-    Math.max(
-      arrayProgress(plan.slide6SuccessDefinition?.inGame),
-      plannerFilled(chatPlannerState, "successSignals") ? 0.66 : 0
-    )
-  );
-
-  add(
-    33,
-    Math.max(
-      arrayProgress(plan.slide6SuccessDefinition?.behaviour),
-      plannerFilled(chatPlannerState, "successSignals") ? 0.66 : 0
-    )
-  );
-
-  add(
-    33,
-    Math.max(
-      arrayProgress(plan.slide6SuccessDefinition?.signals),
-      plannerFilled(chatPlannerState, "successSignals") ? 0.66 : 0
-    )
-  );
-
-  const progress = total === 0 ? 0 : clampProgress((score / total) * 100);
-
-  return {
-    total,
-    filled: Math.round(score),
-    progress,
-  };
-}, [
-  plan.slide6SuccessDefinition?.inGame,
-  plan.slide6SuccessDefinition?.behaviour,
-  plan.slide6SuccessDefinition?.signals,
-  chatPlannerState,
-]);
-
-  const evidenceProgress = useMemo(() => {
-  let score = 0;
-  let total = 0;
-
-  const clips: number[] = [0, 1, 2].map((idx) => {
-  const hasUrl = !!(plan as any)?.slide3Baseline?.videoClips?.[idx]?.url;
-  const hasUpload = !!localVideoUploads[idx];
-  return hasUrl || hasUpload ? 1 : 0;
-});
-
-  total = 3;
-  score = clips.reduce((sum, item) => sum + item, 0);
-
-  return {
-    total,
-    filled: score,
-    progress: clampProgress((score / total) * 100),
-  };
-}, [plan, localVideoUploads]);
-
-  const sections = [
-  {
-    key: "basics",
-    label: t.basicsTitle,
-    progress: basicsProgress.progress,
-    filled: basicsProgress.filled,
-    total: basicsProgress.total,
-    weight: 7,
-  },
-  {
-    key: "cover",
-    label: t.coverSlide,
-    progress: coverReady ? 100 : 0,
-    filled: coverReady ? 1 : 0,
-    total: 1,
-    weight: 3,
-  },
-  {
-    key: "agreement",
-    label: t.statusPoint,
-    progress: agreementProgress.progress,
-    filled: agreementProgress.filled,
-    total: agreementProgress.total,
-    weight: 15,
-  },
-  {
-    key: "context",
-    label: t.statusContext,
-    progress: contextProgress.progress,
-    filled: contextProgress.filled,
-    total: contextProgress.total,
-    weight: 16,
-  },
-  {
-    key: "reality",
-    label: t.statusReality,
-    progress: realityProgress.progress,
-    filled: realityProgress.filled,
-    total: realityProgress.total,
-    weight: 21,
-  },
-  {
-    key: "approach",
-    label: t.statusApproach,
-    progress: approachProgress.progress,
-    filled: approachProgress.filled,
-    total: approachProgress.total,
-    weight: 16,
-  },
-  {
-    key: "success",
-    label: t.statusSuccess,
-    progress: successProgress.progress,
-    filled: successProgress.filled,
-    total: successProgress.total,
-    weight: 11,
-  },
-  {
-    key: "evidence",
-    label: t.videoTitle,
-    progress: evidenceProgress.progress,
-    filled: evidenceProgress.filled,
-    total: evidenceProgress.total,
-    weight: 11,
-  },
-];
-
-  const totalProgress = Math.round(
-  sections.reduce((sum, section) => {
-    return sum + (section.progress * section.weight) / 100;
-  }, 0)
-);
 
   const selectableClubPresets = useMemo(
     () => clubPresets.filter((club) => club.id !== "custom-club"),
@@ -976,7 +557,6 @@ export default function PlayerDevelopmentPlanBuilder() {
       const bRank = bIndex === -1 ? Number.MAX_SAFE_INTEGER : bIndex;
 
       if (aRank !== bRank) return aRank - bRank;
-
       return a.localeCompare(b);
     });
   }, [selectableClubPresets, selectedCountry]);
@@ -991,13 +571,372 @@ export default function PlayerDevelopmentPlanBuilder() {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [selectableClubPresets, selectedCountry, selectedLeague]);
 
-  const activePreset = getClubPresetByName(plan.brand.clubName);
+  const basicsProgress = useMemo(() => {
+    let score = 0;
+    let total = 0;
+
+    const add = (weight: number, progress: number) => {
+      total += weight;
+      score += weight * progress;
+    };
+
+    add(18, textProgress(plan.player.name));
+    add(12, textProgress(plan.player.role));
+    add(6, hasText(plan.player.headshotUrl) ? 1 : 0);
+    add(10, hasText(selectedCountry) ? 1 : 0);
+    add(10, hasText(selectedLeague) ? 1 : 0);
+    add(16, textProgress(plan.brand.clubName || plan.meta.club));
+    add(10, hasText(teamType) ? 1 : 0);
+
+    const teamDetailProgress =
+      teamType === "academy"
+        ? hasText(academyAge)
+          ? 1
+          : 0
+        : teamType === "first_team"
+        ? 1
+        : 0;
+
+    add(8, teamDetailProgress);
+
+    add(
+      10,
+      [1, 2, 4, 6, 8].includes(Number(plan.meta.blockLengthWeeks)) ? 1 : 0
+    );
+
+    const progress = total === 0 ? 0 : clampProgress((score / total) * 100);
+
+    return {
+      progress,
+      filled: Math.round(score),
+      total,
+    };
+  }, [
+    plan.player.name,
+    plan.player.role,
+    plan.player.headshotUrl,
+    plan.brand.clubName,
+    plan.meta.club,
+    plan.meta.blockLengthWeeks,
+    selectedCountry,
+    selectedLeague,
+    teamType,
+    academyAge,
+  ]);
+
+  const agreementProgress = useMemo(() => {
+    let score = 0;
+    let total = 0;
+
+    const add = (weight: number, progress: number) => {
+      total += weight;
+      score += weight * progress;
+    };
+
+    add(
+      40,
+      Math.max(
+        textProgress(plan.slide2?.focusBehaviour),
+        plannerFilled(chatPlannerState, "developmentPoint") ? 0.66 : 0
+      )
+    );
+
+    add(
+      35,
+      Math.max(
+        textProgress(plan.slide2?.developmentGoal),
+        plannerFilled(chatPlannerState, "targetBehaviour") ? 0.66 : 0
+      )
+    );
+
+    add(
+      25,
+      Math.max(
+        textProgress(plan.slide2?.matchSituation),
+        plannerFilled(chatPlannerState, "matchSituation") ? 0.66 : 0
+      )
+    );
+
+    return {
+      total,
+      filled: Math.round(score),
+      progress: total === 0 ? 0 : clampProgress((score / total) * 100),
+    };
+  }, [
+    plan.slide2?.focusBehaviour,
+    plan.slide2?.developmentGoal,
+    plan.slide2?.matchSituation,
+    chatPlannerState,
+  ]);
+
+  const contextProgress = useMemo(() => {
+    let score = 0;
+    let total = 0;
+
+    const add = (weight: number, progress: number) => {
+      total += weight;
+      score += weight * progress;
+    };
+
+    add(
+      34,
+      Math.max(
+        arrayProgress(plan.slideContext?.gameMoments),
+        plannerFilled(chatPlannerState, "gameMoments") ? 0.66 : 0
+      )
+    );
+
+    add(
+      33,
+      Math.max(
+        arrayProgress(plan.slideContext?.zones),
+        plannerFilled(chatPlannerState, "zones") ? 0.66 : 0
+      )
+    );
+
+    add(
+      33,
+      Math.max(
+        arrayProgress(plan.slideContext?.principles),
+        plannerFilled(chatPlannerState, "principles") ? 0.66 : 0
+      )
+    );
+
+    return {
+      total,
+      filled: Math.round(score),
+      progress: total === 0 ? 0 : clampProgress((score / total) * 100),
+    };
+  }, [
+    plan.slideContext?.gameMoments,
+    plan.slideContext?.zones,
+    plan.slideContext?.principles,
+    chatPlannerState,
+  ]);
+
+  const realityProgress = useMemo(() => {
+    let score = 0;
+    let total = 0;
+
+    const add = (weight: number, progress: number) => {
+      total += weight;
+      score += weight * progress;
+    };
+
+    add(
+      28,
+      Math.max(
+        textProgress(plan.slide3Baseline?.intro),
+        arrayProgress(plan.slide3Baseline?.observations),
+        plannerFilled(chatPlannerState, "observations") ? 0.66 : 0
+      )
+    );
+
+    add(
+      24,
+      Math.max(
+        arrayProgress(plan.slide3?.what_we_see?.items),
+        plannerFilled(chatPlannerState, "observations") ? 0.66 : 0
+      )
+    );
+
+    add(
+      24,
+      Math.max(
+        arrayProgress(plan.slide3?.moment?.items),
+        arrayProgress(plan.slide3Baseline?.moments),
+        plannerFilled(chatPlannerState, "whenObserved") ? 0.66 : 0
+      )
+    );
+
+    add(
+      24,
+      Math.max(
+        arrayProgress(plan.slide3?.effect_on_match?.items),
+        arrayProgress(plan.slide3Baseline?.matchEffects),
+        plannerFilled(chatPlannerState, "effectOnGame") ? 0.66 : 0
+      )
+    );
+
+    return {
+      total,
+      filled: Math.round(score),
+      progress: total === 0 ? 0 : clampProgress((score / total) * 100),
+    };
+  }, [
+    plan.slide3Baseline?.intro,
+    plan.slide3Baseline?.observations,
+    plan.slide3?.what_we_see?.items,
+    plan.slide3?.moment?.items,
+    plan.slide3Baseline?.moments,
+    plan.slide3?.effect_on_match?.items,
+    plan.slide3Baseline?.matchEffects,
+    chatPlannerState,
+  ]);
+
+  const approachProgress = useMemo(() => {
+    let score = 0;
+    let total = 0;
+
+    const add = (weight: number, progress: number) => {
+      total += weight;
+      score += weight * progress;
+    };
+
+    add(
+      20,
+      Math.max(
+        textProgress(plan.slide4DevelopmentRoute?.developmentRoute?.training),
+        plannerFilled(chatPlannerState, "playerActions") ? 0.66 : 0
+      )
+    );
+
+    add(
+      20,
+      Math.max(
+        textProgress(plan.slide4DevelopmentRoute?.developmentRoute?.match),
+        plannerFilled(chatPlannerState, "playerActions") ? 0.66 : 0
+      )
+    );
+
+    add(
+      20,
+      Math.max(
+        textProgress(plan.slide4DevelopmentRoute?.developmentRoute?.video),
+        plannerFilled(chatPlannerState, "staffResponsibilities") ? 0.66 : 0
+      )
+    );
+
+    add(
+      20,
+      Math.max(
+        textProgress(plan.slide4DevelopmentRoute?.developmentRoute?.off_field),
+        plannerFilled(chatPlannerState, "staffResponsibilities") ? 0.66 : 0
+      )
+    );
+
+    add(
+      20,
+      Math.max(
+        textProgress(plan.slide4DevelopmentRoute?.playerOwnText),
+        plannerFilled(chatPlannerState, "playerActions") ? 0.66 : 0
+      )
+    );
+
+    return {
+      total,
+      filled: Math.round(score),
+      progress: total === 0 ? 0 : clampProgress((score / total) * 100),
+    };
+  }, [
+    plan.slide4DevelopmentRoute?.developmentRoute?.training,
+    plan.slide4DevelopmentRoute?.developmentRoute?.match,
+    plan.slide4DevelopmentRoute?.developmentRoute?.video,
+    plan.slide4DevelopmentRoute?.developmentRoute?.off_field,
+    plan.slide4DevelopmentRoute?.playerOwnText,
+    chatPlannerState,
+  ]);
+
+  const successProgress = useMemo(() => {
+    let score = 0;
+    let total = 0;
+
+    const add = (weight: number, progress: number) => {
+      total += weight;
+      score += weight * progress;
+    };
+
+    add(
+      34,
+      Math.max(
+        arrayProgress(plan.slide6SuccessDefinition?.inGame),
+        plannerFilled(chatPlannerState, "successSignals") ? 0.66 : 0
+      )
+    );
+
+    add(
+      33,
+      Math.max(
+        arrayProgress(plan.slide6SuccessDefinition?.behaviour),
+        plannerFilled(chatPlannerState, "successSignals") ? 0.66 : 0
+      )
+    );
+
+    add(
+      33,
+      Math.max(
+        arrayProgress(plan.slide6SuccessDefinition?.signals),
+        plannerFilled(chatPlannerState, "successSignals") ? 0.66 : 0
+      )
+    );
+
+    return {
+      total,
+      filled: Math.round(score),
+      progress: total === 0 ? 0 : clampProgress((score / total) * 100),
+    };
+  }, [
+    plan.slide6SuccessDefinition?.inGame,
+    plan.slide6SuccessDefinition?.behaviour,
+    plan.slide6SuccessDefinition?.signals,
+    chatPlannerState,
+  ]);
+
+  const evidenceProgress = useMemo(() => {
+    const clips: number[] = [0, 1, 2].map((idx) => {
+      const hasUrl = !!(plan as any)?.slide3Baseline?.videoClips?.[idx]?.url;
+      const hasUpload = !!localVideoUploads[idx];
+      return hasUrl || hasUpload ? 1 : 0;
+    });
+
+    const total = 3;
+    const score = clips.reduce((sum, item) => sum + item, 0);
+
+    return {
+      total,
+      filled: score,
+      progress: clampProgress((score / total) * 100),
+    };
+  }, [plan, localVideoUploads]);
+
+  const sections = [
+    { key: "basics", progress: basicsProgress.progress, weight: 18 },
+    { key: "cover", progress: coverReady ? 100 : 0, weight: 7 },
+    { key: "agreement", progress: agreementProgress.progress, weight: 14 },
+    { key: "context", progress: contextProgress.progress, weight: 14 },
+    { key: "reality", progress: realityProgress.progress, weight: 17 },
+    { key: "approach", progress: approachProgress.progress, weight: 14 },
+    { key: "success", progress: successProgress.progress, weight: 10 },
+    { key: "evidence", progress: evidenceProgress.progress, weight: 6 },
+  ];
+
+  const totalProgress = Math.round(
+    sections.reduce((sum, section) => {
+      return sum + (section.progress * section.weight) / 100;
+    }, 0)
+  );
+
+  const completedSections = sections.filter((s) => s.progress === 100).length;
 
   const clipCount = [0, 1, 2].filter(
     (idx) =>
       !!(plan as any)?.slide3Baseline?.videoClips?.[idx]?.url ||
       !!localVideoUploads[idx]
   ).length;
+
+  const chatShellStyle = useMemo(() => {
+    return {
+      background: `
+        radial-gradient(circle at 8% 8%, ${withAlpha(primary, "18")} 0%, transparent 22%),
+        radial-gradient(circle at 92% 14%, ${withAlpha(secondary, "12")} 0%, transparent 18%),
+        radial-gradient(circle at 86% 88%, ${withAlpha(tertiary, "0B")} 0%, transparent 16%),
+        linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)),
+        rgba(255,255,255,0.02)
+      `,
+      borderColor: withAlpha(primary, "22"),
+      boxShadow: `inset 0 1px 0 ${withAlpha(primary, "22")}`,
+    } as React.CSSProperties;
+  }, [primary, secondary, tertiary]);
 
   function onPlanGenerated(next: DevelopmentPlanV1) {
     const merged = mergeGeneratedPlanWithLockedBasics(plan, next);
@@ -1035,6 +974,7 @@ export default function PlayerDevelopmentPlanBuilder() {
 
   function applyClubPreset(clubName: string) {
     const preset = getClubPresetByName(clubName);
+    const presetAny = preset as any;
 
     setPlan((prev) => {
       const next = structuredClone(prev);
@@ -1047,7 +987,8 @@ export default function PlayerDevelopmentPlanBuilder() {
         next.brand.logoUrl = preset.logoUrl || "";
         next.brand.primaryColor = preset.primaryColor;
         next.brand.secondaryColor = preset.secondaryColor;
-        next.brand.colorBalance = preset.colorBalance ?? 70;
+        (next.brand as any).tertiaryColor = presetAny?.tertiaryColor || "";
+        (next.brand as any).colorBalance = presetAny?.colorBalance ?? 70;
         setBrandingOpen(false);
       } else {
         setBrandingOpen(true);
@@ -1206,7 +1147,6 @@ export default function PlayerDevelopmentPlanBuilder() {
 
   const contextualHints = useMemo(() => {
     const hints: Array<{ label: string; prompt: string }> = [];
-
     const planner = chatPlannerState;
 
     if (!planner) {
@@ -1267,7 +1207,7 @@ export default function PlayerDevelopmentPlanBuilder() {
   return (
     <div className="bg-transparent text-white">
       <div className="px-6 py-6 sm:px-8 sm:py-8">
-        <div className="mx-auto max-w-[1240px] space-y-8">
+        <div className="mx-auto max-w-[1340px] space-y-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex justify-start sm:justify-center">
               <div className="flex gap-1 rounded-full border border-white/10 bg-white/[0.04] p-1">
@@ -1286,7 +1226,7 @@ export default function PlayerDevelopmentPlanBuilder() {
             <LangPill lang={lang} setLang={setLang} t={t} />
           </div>
 
-          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(380px,0.95fr)]">
             <div className="h-full overflow-visible rounded-[32px] border border-white/10 bg-white/[0.02]">
               <button
                 onClick={() => setBasicsOpen((v) => !v)}
@@ -1388,31 +1328,31 @@ export default function PlayerDevelopmentPlanBuilder() {
                         />
 
                         <div className="flex flex-wrap items-center gap-2 pt-1">
-  {plan.player.headshotUrl && (
-    <button
-      type="button"
-      onClick={() => setIdentityPhotoOpen((v) => !v)}
-      className="rounded-full border border-white/12 bg-white/[0.04] px-3 py-1.5 text-[12px] text-white/78 hover:border-white/24 hover:text-white"
-    >
-      {t.editPhoto}
-    </button>
-  )}
+                          {plan.player.headshotUrl && (
+                            <button
+                              type="button"
+                              onClick={() => setIdentityPhotoOpen((v) => !v)}
+                              className="rounded-full border border-white/12 bg-white/[0.04] px-3 py-1.5 text-[12px] text-white/78 hover:border-white/24 hover:text-white"
+                            >
+                              {t.editPhoto}
+                            </button>
+                          )}
 
-  {plan.player.headshotUrl && (
-    <button
-      type="button"
-      onClick={() =>
-        setPlan((prev) => ({
-          ...prev,
-          player: { ...prev.player, headshotUrl: "" },
-        }))
-      }
-      className="rounded-full border border-white/10 px-3 py-1.5 text-[12px] text-white/45 hover:text-white/75"
-    >
-      {t.removePhoto}
-    </button>
-  )}
-</div>
+                          {plan.player.headshotUrl && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setPlan((prev) => ({
+                                  ...prev,
+                                  player: { ...prev.player, headshotUrl: "" },
+                                }))
+                              }
+                              className="rounded-full border border-white/10 px-3 py-1.5 text-[12px] text-white/45 hover:text-white/75"
+                            >
+                              {t.removePhoto}
+                            </button>
+                          )}
+                        </div>
 
                         {identityPhotoOpen && (
                           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
@@ -1471,122 +1411,128 @@ export default function PlayerDevelopmentPlanBuilder() {
                       }}
                     />
 
-                    <SimpleDropdown
-                      label={t.league}
-                      value={selectedLeague}
-                      placeholder={t.chooseLeague}
-                      disabled={!selectedCountry}
-                      items={availableLeagues.map((league) => ({
-                        value: league,
-                        label: league,
-                        iconUrl: getLeagueLogoUrlByName(league),
-                      }))}
-                      onChange={(value) => {
-                        setSelectedLeague(value);
-                        setClubMode("preset");
-                        setGeneratedPlan(null);
-                        setPlan((prev) => ({
-                          ...prev,
-                          brand: {
-                            ...prev.brand,
-                            clubName: "",
-                            logoUrl: "",
-                          },
-                          meta: {
-                            ...prev.meta,
-                            club: "",
-                          },
-                        }));
-                      }}
-                    />
+                    {selectedCountry ? (
+                      <SimpleDropdown
+                        label={t.league}
+                        value={selectedLeague}
+                        placeholder={t.chooseLeague}
+                        disabled={!selectedCountry}
+                        items={availableLeagues.map((league) => ({
+                          value: league,
+                          label: league,
+                          iconUrl: getLeagueLogoUrlByName(league),
+                        }))}
+                        onChange={(value) => {
+                          setSelectedLeague(value);
+                          setClubMode("preset");
+                          setGeneratedPlan(null);
+                          setPlan((prev) => ({
+                            ...prev,
+                            brand: {
+                              ...prev.brand,
+                              clubName: "",
+                              logoUrl: "",
+                            },
+                            meta: {
+                              ...prev.meta,
+                              club: "",
+                            },
+                          }));
+                        }}
+                      />
+                    ) : (
+                      <div />
+                    )}
 
-                    <div className="rounded-2xl border border-white/10 bg-black/20 p-4 sm:col-span-2">
-                      <div className="mb-3 text-[11px] uppercase tracking-wide text-white/40">
-                        {t.club}
-                      </div>
+                    {(selectedCountry || selectedLeague) && (
+                      <div className="rounded-2xl border border-white/10 bg-black/20 p-4 sm:col-span-2">
+                        <div className="mb-3 text-[11px] uppercase tracking-wide text-white/40">
+                          {t.club}
+                        </div>
 
-                      <div className="mb-4 flex flex-wrap gap-2">
-                        <ChoicePill
-                          active={clubMode === "preset"}
-                          onClick={() => {
-                            setClubMode("preset");
-                            setGeneratedPlan(null);
-                            setPlan((prev) => ({
-                              ...prev,
-                              brand: {
-                                ...prev.brand,
-                                clubName: "",
-                                logoUrl: "",
-                              },
-                              meta: {
-                                ...prev.meta,
-                                club: "",
-                              },
-                            }));
-                          }}
-                        >
-                          {t.clubModePreset}
-                        </ChoicePill>
-
-                        <ChoicePill
-                          active={clubMode === "custom"}
-                          onClick={() => {
-                            setClubMode("custom");
-                            setBrandingOpen(true);
-                            setGeneratedPlan(null);
-                            setPlan((prev) => ({
-                              ...prev,
-                              brand: {
-                                ...prev.brand,
-                                clubName: "",
-                                logoUrl: "",
-                              },
-                              meta: {
-                                ...prev.meta,
-                                club: "",
-                              },
-                            }));
-                          }}
-                        >
-                          {t.clubModeCustom}
-                        </ChoicePill>
-                      </div>
-
-                      {clubMode === "preset" ? (
-                        <SimpleDropdown
-                          label=""
-                          value={plan.brand.clubName || ""}
-                          placeholder={t.chooseClub}
-                          disabled={!selectedLeague}
-                          items={availableClubs.map((club) => ({
-                            value: club.name,
-                            label: club.name,
-                            iconUrl: club.logoUrl,
-                          }))}
-                          onChange={(value) => {
-                            applyClubPreset(value);
-                          }}
-                          hideLabel
-                        />
-                      ) : (
-                        <div>
-                          <Input
-                            label={t.customClub}
-                            value={plan.meta.club || ""}
-                            onChange={(v) =>
+                        <div className="mb-4 flex flex-wrap gap-2">
+                          <ChoicePill
+                            active={clubMode === "preset"}
+                            onClick={() => {
+                              setClubMode("preset");
+                              setGeneratedPlan(null);
                               setPlan((prev) => ({
                                 ...prev,
-                                meta: { ...prev.meta, club: v },
-                                brand: { ...prev.brand, clubName: v },
-                              }))
-                            }
-                          />
-                          <div className="mt-2 text-[11px] leading-relaxed text-white/35">
-                            {t.customClubHelp}
-                          </div>
+                                brand: {
+                                  ...prev.brand,
+                                  clubName: "",
+                                  logoUrl: "",
+                                },
+                                meta: {
+                                  ...prev.meta,
+                                  club: "",
+                                },
+                              }));
+                            }}
+                          >
+                            {t.clubModePreset}
+                          </ChoicePill>
+
+                          <ChoicePill
+                            active={clubMode === "custom"}
+                            onClick={() => {
+                              setClubMode("custom");
+                              setBrandingOpen(true);
+                              setGeneratedPlan(null);
+                              setPlan((prev) => ({
+                                ...prev,
+                                brand: {
+                                  ...prev.brand,
+                                  clubName: "",
+                                  logoUrl: "",
+                                },
+                                meta: {
+                                  ...prev.meta,
+                                  club: "",
+                                },
+                              }));
+                            }}
+                          >
+                            {t.clubModeCustom}
+                          </ChoicePill>
                         </div>
-                      )}
-                    </div>
+
+                        {clubMode === "preset" ? (
+                          <SimpleDropdown
+                            label=""
+                            value={plan.brand.clubName || ""}
+                            placeholder={t.chooseClub}
+                            disabled={!selectedLeague}
+                            items={availableClubs.map((club) => ({
+                              value: club.name,
+                              label: club.name,
+                              iconUrl: club.logoUrl,
+                            }))}
+                            onChange={(value) => {
+                              applyClubPreset(value);
+                            }}
+                            hideLabel
+                          />
+                        ) : (
+                          <div>
+                            <Input
+                              label={t.customClub}
+                              value={plan.meta.club || ""}
+                              onChange={(v) =>
+                                setPlan((prev) => ({
+                                  ...prev,
+                                  meta: { ...prev.meta, club: v },
+                                  brand: { ...prev.brand, clubName: v },
+                                }))
+                              }
+                            />
+                            <div className="mt-2 text-[11px] leading-relaxed text-white/35">
+                              {t.customClubHelp}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     <div className="sm:col-span-2 pt-2">
                       <div className="text-[11px] uppercase tracking-[0.16em] text-white/34">
@@ -1594,56 +1540,42 @@ export default function PlayerDevelopmentPlanBuilder() {
                       </div>
                     </div>
 
-                    <div>
-                      <div className="mb-2 text-[11px] uppercase tracking-wide text-white/40">
-                        {t.teamType}
-                      </div>
-
-                      <div className="flex gap-2">
-                        <ChoicePill
-                          active={teamType === "academy"}
-                          onClick={() => setTeamTypeValue("academy")}
-                        >
-                          {t.academy}
-                        </ChoicePill>
-
-                        <ChoicePill
-                          active={teamType === "first_team"}
-                          onClick={() => setTeamTypeValue("first_team")}
-                        >
-                          {t.firstTeam}
-                        </ChoicePill>
-                      </div>
-                    </div>
+                    <SegmentedToggle
+                      label={t.teamType}
+                      value={teamType}
+                      leftValue="academy"
+                      rightValue="first_team"
+                      leftLabel={t.academy}
+                      rightLabel={t.firstTeam}
+                      onChange={(value) => setTeamTypeValue(value as TeamType)}
+                    />
 
                     {teamType === "academy" ? (
-                      <div>
-                        <SimpleDropdown
-                          label={t.ageCategory}
-                          value={academyAge}
-                          placeholder={t.chooseAgeCategory}
-                          items={ACADEMY_AGES.map((age) => ({
-                            value: age,
-                            label: age,
-                          }))}
-                          onChange={(value) =>
-                            setPlan((prev) => ({
-                              ...prev,
-                              player: {
-                                ...prev.player,
-                                academyAgeCategory: value,
-                                team: value,
-                              } as any,
-                              meta: {
-                                ...prev.meta,
-                                team: value,
-                              },
-                            }))
-                          }
-                        />
-                      </div>
+                      <SimpleDropdown
+                        label={t.ageCategory}
+                        value={academyAge}
+                        placeholder={t.chooseAgeCategory}
+                        items={ACADEMY_AGES.map((age) => ({
+                          value: age,
+                          label: age,
+                        }))}
+                        onChange={(value) =>
+                          setPlan((prev) => ({
+                            ...prev,
+                            player: {
+                              ...prev.player,
+                              academyAgeCategory: value,
+                              team: value,
+                            } as any,
+                            meta: {
+                              ...prev.meta,
+                              team: value,
+                            },
+                          }))
+                        }
+                      />
                     ) : (
-                      <div />
+                      <div className="hidden sm:block" />
                     )}
 
                     <div className="sm:col-span-2">
@@ -1738,36 +1670,52 @@ export default function PlayerDevelopmentPlanBuilder() {
                   />
 
                   <Input
+                    label={t.tertiaryColor}
+                    value={(plan.brand as any).tertiaryColor || ""}
+                    onChange={(v) =>
+                      setPlan((prev) => ({
+                        ...prev,
+                        brand: { ...(prev.brand as any), tertiaryColor: v },
+                      }))
+                    }
+                  />
+
+                  <Input
                     label={t.colorBalance}
-                    value={String(plan.brand.colorBalance || 70)}
+                    value={String((plan.brand as any).colorBalance || 70)}
                     onChange={(v) =>
                       setPlan((prev) => ({
                         ...prev,
                         brand: {
-                          ...prev.brand,
+                          ...(prev.brand as any),
                           colorBalance: Number(v),
                         },
                       }))
                     }
                   />
 
-                  <Input
-                    label={t.logoUrl}
-                    value={plan.brand.logoUrl}
-                    onChange={(v) =>
-                      setPlan((prev) => ({
-                        ...prev,
-                        brand: { ...prev.brand, logoUrl: v },
-                      }))
-                    }
-                  />
+                  <div className="sm:col-span-2">
+                    <Input
+                      label={t.logoUrl}
+                      value={plan.brand.logoUrl}
+                      onChange={(v) =>
+                        setPlan((prev) => ({
+                          ...prev,
+                          brand: { ...prev.brand, logoUrl: v },
+                        }))
+                      }
+                    />
+                  </div>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.55fr)_270px]">
-            <div className="h-full rounded-[30px] border border-white/10 bg-white/[0.02] flex flex-col">
+          <div className="grid grid-cols-1 items-stretch gap-6 xl:grid-cols-[minmax(0,1.42fr)_360px]">
+            <div
+              className="flex min-h-[760px] flex-col rounded-[30px] border bg-white/[0.02]"
+              style={chatShellStyle}
+            >
               <div className="border-b border-white/8 px-6 py-5">
                 <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
                   {t.workspaceTitle}
@@ -1781,7 +1729,7 @@ export default function PlayerDevelopmentPlanBuilder() {
                 {mode === "chat" ? (
                   <div className="flex flex-1 flex-col gap-4">
                     <div className="max-w-[62ch]">
-                      <div className="text-[30px] font-medium tracking-[-0.03em] text-white/92">
+                      <div className="text-[28px] font-medium tracking-[-0.03em] text-white/92">
                         {t.heroChatTitle}
                       </div>
                       <div className="mt-3 text-[14px] leading-relaxed text-white/52">
@@ -1794,27 +1742,40 @@ export default function PlayerDevelopmentPlanBuilder() {
                         <Hint
                           key={hint.label}
                           onClick={() => insertPrompt(hint.prompt)}
+                          subtleColor={primary}
                         >
                           {hint.label}
                         </Hint>
                       ))}
                     </div>
 
-                    <div className="flex-1 min-h-[520px]">
-                      <PdpChat
-                        lang={lang}
-                        draftPlan={plan}
-                        onPlanGenerated={onPlanGenerated}
-                        onPlannerStateChange={setChatPlannerState}
-                        onViewPlan={() => {
-                          console.log("Current builder plan:", generatedPlan || plan);
+                    <div className="mt-1 flex-1 overflow-hidden rounded-[26px] border border-white/10 bg-[#0d1117]/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                      <div
+                        className="h-full w-full"
+                        style={{
+                          background: `
+                            linear-gradient(180deg, ${withAlpha(primary, "0E")} 0%, transparent 18%),
+                            radial-gradient(circle at 100% 0%, ${withAlpha(secondary, "0A")} 0%, transparent 22%)
+                          `,
                         }}
-                        onDownloadPdf={(version) => download(version, lang)}
-                        embedded
-                        minimalHeader
-                        hidePromptChips
-                        externalPrompt={pendingChatPrompt}
-                      />
+                      >
+                        <div className="h-full min-h-[560px]">
+                          <PdpChat
+                            lang={lang}
+                            draftPlan={plan}
+                            onPlanGenerated={onPlanGenerated}
+                            onPlannerStateChange={setChatPlannerState}
+                            onViewPlan={() => {
+                              console.log("Current builder plan:", generatedPlan || plan);
+                            }}
+                            onDownloadPdf={(version) => download(version, lang)}
+                            embedded
+                            minimalHeader
+                            hidePromptChips
+                            externalPrompt={pendingChatPrompt}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -1840,201 +1801,195 @@ export default function PlayerDevelopmentPlanBuilder() {
                     </div>
                   </div>
                 )}
-
-                <div className="mt-4 rounded-[22px] border border-white/8 bg-[#0b0f14]">
-                  <button
-                    type="button"
-                    onClick={() => setVideoOpen((v) => !v)}
-                    className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
-                  >
-                    <div className="min-w-0">
-                      <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
-                        {t.videoTitle}
-                      </div>
-                      <div className="mt-2 max-w-[58ch] text-[14px] leading-relaxed text-white/56">
-                        {t.videoBody}
-                      </div>
-                    </div>
-
-                    <div className="flex shrink-0 items-center gap-2">
-                      <MiniMetaPill>
-                        {clipCount > 0
-                          ? `${clipCount} ${t.compactVideoCount}`
-                          : t.compactVideoEmpty}
-                      </MiniMetaPill>
-                      <div className="rounded-full border border-white/12 bg-white/[0.03] px-3 py-1.5 text-[12px] text-white/72">
-                        {videoOpen ? t.compactVideoClose : t.compactVideoOpen}
-                      </div>
-                    </div>
-                  </button>
-
-                  {videoOpen && (
-                    <div className="border-t border-white/8 px-5 pb-5 pt-4">
-                      <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
-                        <VideoCardCompact
-                          title={t.videoClip1}
-                          clip={(plan as any)?.slide3Baseline?.videoClips?.[0]}
-                          upload={localVideoUploads[0]}
-                          t={t}
-                          onChange={(patch) => updateVideoClip(0, patch)}
-                          onUpload={(file) => handleVideoUpload(0, file)}
-                        />
-
-                        <VideoCardCompact
-                          title={t.videoClip2}
-                          clip={(plan as any)?.slide3Baseline?.videoClips?.[1]}
-                          upload={localVideoUploads[1]}
-                          t={t}
-                          onChange={(patch) => updateVideoClip(1, patch)}
-                          onUpload={(file) => handleVideoUpload(1, file)}
-                        />
-
-                        <VideoCardCompact
-                          title={t.videoClip3}
-                          clip={(plan as any)?.slide3Baseline?.videoClips?.[2]}
-                          upload={localVideoUploads[2]}
-                          t={t}
-                          onChange={(patch) => updateVideoClip(2, patch)}
-                          onUpload={(file) => handleVideoUpload(2, file)}
-                        />
-                      </div>
-
-                      <div className="mt-3 text-[12px] leading-relaxed text-white/34">
-                        {t.videoUploadHelp}
-                      </div>
-                    </div>
-                  )}
-                </div>
               </div>
             </div>
 
-            <div className="xl:sticky xl:top-8 h-full">
-              <div className="h-full rounded-[24px] border border-white/10 bg-white/[0.03] p-5 flex flex-col">
+            <div className="flex min-h-[760px] flex-col gap-4">
+              <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
                 <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
-                  {t.controlLayer}
+                  {t.progressTitle}
+                </div>
+                <div className="mt-2 text-[13px] leading-relaxed text-white/52">
+                  {t.progressBody}
                 </div>
 
-                <div className="mt-4 border-t border-white/8 pt-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
-                        {t.progressHeader}
-                      </div>
-                      <div className="mt-2 truncate text-[20px] font-medium text-white/92">
-                        {plan.player.name || t.noPlayerYet}
-                      </div>
-                      <div className="mt-1 truncate text-[13px] text-white/48">
-                        {plan.brand.clubName || t.club}
-                      </div>
-                      <div className="mt-1 text-[12px] text-white/34">
-                        {plan.meta.team || t.teamType}
-                      </div>
+                <div className="mt-5 flex items-end justify-between gap-4">
+                  <div>
+                    <div className="text-[34px] font-semibold leading-none tracking-[-0.04em] text-white/94">
+                      {totalProgress}%
                     </div>
+                    <div className="mt-2 text-[12px] text-white/40">
+                      {completedSections}/{sections.length} {t.completed.toLowerCase()}
+                    </div>
+                  </div>
 
-                    {plan.player.headshotUrl ? (
-                      <img
-                        src={plan.player.headshotUrl}
-                        className="h-11 w-11 rounded-full border border-white/10 object-cover"
-                        alt=""
-                      />
-                    ) : (
-                      <div className="h-11 w-11 rounded-full border border-white/10 bg-white/[0.04]" />
+                  <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] text-white/68">
+                    {t.completion}
+                  </div>
+                </div>
+
+                <div className="mt-4 h-[10px] overflow-hidden rounded-full bg-white/8">
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      width: `${totalProgress}%`,
+                      background: `linear-gradient(90deg, ${primary} 0%, ${secondary} 72%, ${tertiary} 100%)`,
+                      boxShadow: `0 0 16px ${withAlpha(primary, "40")}`,
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+                <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
+                  {t.evidenceTitle}
+                </div>
+                <div className="mt-2 text-[13px] leading-relaxed text-white/52">
+                  {t.evidenceBody}
+                </div>
+
+                <div className="mt-4 space-y-3">
+                  <div className="rounded-[18px] border border-white/8 bg-[#0b0f14]">
+                    <button
+                      type="button"
+                      onClick={() => setVideoPanelOpen((v) => !v)}
+                      className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left"
+                    >
+                      <div className="min-w-0">
+                        <div className="text-[13px] font-medium text-white/88">
+                          {t.videoTitle}
+                        </div>
+                        <div className="mt-1 text-[12px] leading-relaxed text-white/45">
+                          {t.videoBody}
+                        </div>
+                      </div>
+
+                      <div className="flex shrink-0 items-center gap-2">
+                        <MiniMetaPill>
+                          {clipCount > 0
+                            ? `${clipCount} ${t.compactVideoCount}`
+                            : t.compactVideoEmpty}
+                        </MiniMetaPill>
+                        <div className="rounded-full border border-white/12 bg-white/[0.03] px-3 py-1.5 text-[12px] text-white/72">
+                          {videoPanelOpen ? t.compactVideoClose : t.compactVideoOpen}
+                        </div>
+                      </div>
+                    </button>
+
+                    {videoPanelOpen && (
+                      <div className="border-t border-white/8 px-4 pb-4 pt-3">
+                        <div className="space-y-3">
+                          {[0, 1, 2].map((idx) => {
+                            const titles = [t.videoClip1, t.videoClip2, t.videoClip3];
+                            const clip = (plan as any)?.slide3Baseline?.videoClips?.[idx];
+                            const upload = localVideoUploads[idx];
+                            const isOpen = openClipIndex === idx;
+                            const isActive = !!upload?.fileName || !!clip?.url;
+
+                            return (
+                              <div
+                                key={idx}
+                                className="overflow-hidden rounded-[16px] border border-white/8 bg-white/[0.02]"
+                              >
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setOpenClipIndex((prev) => (prev === idx ? null : idx))
+                                  }
+                                  className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+                                >
+                                  <div className="min-w-0">
+                                    <div className="text-[13px] font-medium text-white/86">
+                                      {titles[idx]}
+                                    </div>
+                                    <div className="mt-1 text-[11px] text-white/40">
+                                      {isActive ? "Active" : "Optional"}
+                                    </div>
+                                  </div>
+
+                                  <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] text-white/68">
+                                    {isOpen ? t.closeClip : t.openClip}
+                                  </div>
+                                </button>
+
+                                {isOpen && (
+                                  <div className="border-t border-white/8 px-4 pb-4 pt-3">
+                                    <VideoCardCompact
+                                      title={titles[idx]}
+                                      clip={clip}
+                                      upload={upload}
+                                      t={t}
+                                      onChange={(patch) => updateVideoClip(idx, patch)}
+                                      onUpload={(file) => handleVideoUpload(idx, file)}
+                                      compact
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        <div className="mt-3 text-[12px] leading-relaxed text-white/34">
+                          {t.videoUploadHelp}
+                        </div>
+                      </div>
                     )}
                   </div>
-                </div>
 
-                <div className="mt-4 border-t border-white/8 pt-4">
-                  <div className="flex items-end justify-between gap-4">
-                    <div>
-                      <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
-                        {t.totalProgress}
+                  <div className="rounded-[18px] border border-white/8 bg-white/[0.02] p-4 opacity-65">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <div className="text-[13px] font-medium text-white/82">
+                          {t.dataTitle}
+                        </div>
+                        <div className="mt-1 text-[12px] leading-relaxed text-white/42">
+                          {t.dataBody}
+                        </div>
                       </div>
-                      <div className="mt-2 text-[34px] font-semibold leading-none tracking-[-0.04em] text-white/92">
-                        {totalProgress}%
+
+                      <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] text-white/60">
+                        {t.notYetAvailable}
                       </div>
                     </div>
-
-                    <div className="text-[12px] text-white/38">
-                      {sections.filter((s) => s.progress === 100).length}/
-                      {sections.length}
-                    </div>
-                  </div>
-
-                  <div className="mt-3 h-[8px] overflow-hidden rounded-full bg-white/8">
-                    <div
-                      className="h-full rounded-full transition-all"
-                      style={{
-                        width: `${totalProgress}%`,
-                        background: `linear-gradient(90deg, ${primary} 0%, ${secondary} 100%)`,
-                      }}
-                    />
                   </div>
                 </div>
+              </div>
 
-                <div className="mt-4 border-t border-white/8 pt-4">
-                  <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
-                    {t.planProgress}
-                  </div>
-
-                  <div className="mt-3 space-y-2.5">
-                    {sections.map((section) => (
-                      <ProgressRowCompact
-                        key={section.key}
-                        label={section.label}
-                        progress={section.progress}
-                        filled={section.filled}
-                        total={section.total}
-                        primary={primary}
-                        secondary={secondary}
-                        readyLabel={t.ready}
-                      />
-                    ))}
-                  </div>
+              <div className="mt-auto rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+                <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
+                  {t.exportTitle}
+                </div>
+                <div className="mt-2 text-[16px] font-medium leading-tight text-white/92">
+                  {t.exportAlways}
+                </div>
+                <div className="mt-2 text-[13px] leading-relaxed text-white/50">
+                  {t.exportStrong}
                 </div>
 
-                <div className="mt-4 border-t border-white/8 pt-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
-                        {t.exportTitle}
-                      </div>
-                      <div className="mt-2 text-[16px] font-medium leading-tight text-white/92">
-                        {t.exportAlways}
-                      </div>
-                      <div className="mt-2 text-[13px] leading-relaxed text-white/50">
-                        {t.exportStrong}
-                      </div>
-                    </div>
+                <div className="mt-4 space-y-2.5">
+                  <button
+                    onClick={() => download("player", lang)}
+                    className="w-full rounded-full bg-white py-3 text-sm font-medium text-black transition hover:bg-white/90"
+                  >
+                    {t.downloadPlayer}
+                  </button>
 
-                    <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] text-white/68">
-                      PDF
-                    </div>
+                  <div className="pt-1 text-center text-[11px] text-white/35">
+                    {t.availableOther}
                   </div>
 
-                  <div className="mt-4 space-y-2.5">
-                    <button
-                      onClick={() => download("player", lang)}
-                      className="w-full rounded-full bg-white py-3 text-sm font-medium text-black transition hover:bg-white/90"
-                    >
-                      {t.downloadPlayer}
-                    </button>
-
-                    <div className="pt-1 text-center text-[11px] text-white/35">
-                      {t.availableOther}
-                    </div>
-
-                    <button
-                      onClick={() => download("player", otherLang)}
-                      className="w-full rounded-full border border-white/10 bg-white/[0.02] py-2.5 text-[12px] text-white/72 transition hover:border-white/18 hover:text-white"
-                    >
-                      {t.downloadOther}
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => download("player", otherLang)}
+                    className="w-full rounded-full border border-white/10 bg-white/[0.02] py-2.5 text-[12px] text-white/72 transition hover:border-white/18 hover:text-white"
+                  >
+                    {t.downloadOther}
+                  </button>
                 </div>
               </div>
             </div>
           </div>
-        </div>  
+        </div>
       </div>
     </div>
   );
@@ -2074,9 +2029,7 @@ function SimpleDropdown({
     }
 
     document.addEventListener("mousedown", onDocClick);
-    return () => {
-      document.removeEventListener("mousedown", onDocClick);
-    };
+    return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
   useEffect(() => {
@@ -2160,7 +2113,7 @@ function SimpleDropdown({
             if (!disabled) setOpen((v) => !v);
           }}
           onKeyDown={onKeyDown}
-          className={`w-full rounded-xl px-4 py-3 text-left transition focus:outline-none ${
+          className={`min-h-[52px] w-full rounded-xl px-4 py-3 text-left transition focus:outline-none ${
             disabled
               ? "cursor-not-allowed border border-white/6 bg-white/[0.02]"
               : "border border-white/10 bg-white/[0.04] hover:border-white/16 focus:border-white/24 focus:bg-white/[0.06]"
@@ -2283,6 +2236,56 @@ function SimpleDropdown({
   );
 }
 
+function SegmentedToggle({
+  label,
+  value,
+  leftValue,
+  rightValue,
+  leftLabel,
+  rightLabel,
+  onChange,
+}: {
+  label: string;
+  value?: string;
+  leftValue: string;
+  rightValue: string;
+  leftLabel: string;
+  rightLabel: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div>
+      <div className="mb-2 text-[11px] uppercase tracking-wide text-white/40">
+        {label}
+      </div>
+      <div className="flex min-h-[52px] items-center rounded-xl border border-white/10 bg-white/[0.04] p-1">
+        <button
+          type="button"
+          onClick={() => onChange(leftValue)}
+          className={`flex-1 rounded-[10px] px-4 py-3 text-[13px] transition ${
+            value === leftValue
+              ? "bg-white text-black"
+              : "text-white/72 hover:text-white"
+          }`}
+        >
+          {leftLabel}
+        </button>
+        <button
+          type="button"
+          onClick={() => onChange(rightValue)}
+          className={`flex-1 rounded-[10px] px-4 py-3 text-[13px] transition ${
+            value === rightValue
+              ? "bg-white text-black"
+              : "text-white/72 hover:text-white"
+          }`}
+        >
+          {rightLabel}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function VideoCardCompact({
   title,
   clip,
@@ -2290,6 +2293,7 @@ function VideoCardCompact({
   t,
   onChange,
   onUpload,
+  compact = false,
 }: {
   title: string;
   clip?: any;
@@ -2297,18 +2301,21 @@ function VideoCardCompact({
   t: (typeof UI)["nl"] | (typeof UI)["en"];
   onChange: (patch: Record<string, string>) => void;
   onUpload: (file: File | null) => void;
+  compact?: boolean;
 }) {
   const source = clip?.source === "training" ? "training" : "match";
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   return (
-    <div className="rounded-[18px] border border-white/10 bg-white/[0.02] p-3">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <div className="text-[13px] font-medium text-white/86">{title}</div>
-        <div className="text-[10px] uppercase tracking-[0.14em] text-white/34">
-          {upload?.fileName || clip?.url ? "Active" : "Optional"}
+    <div className={compact ? "space-y-2.5" : "rounded-[18px] border border-white/10 bg-white/[0.02] p-3"}>
+      {!compact && (
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="text-[13px] font-medium text-white/86">{title}</div>
+          <div className="text-[10px] uppercase tracking-[0.14em] text-white/34">
+            {upload?.fileName || clip?.url ? "Active" : "Optional"}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="space-y-2.5">
         <InputCompact
@@ -2548,14 +2555,23 @@ function LangPill({
 function Hint({
   children,
   onClick,
+  subtleColor,
 }: {
   children: React.ReactNode;
   onClick: () => void;
+  subtleColor?: string;
 }) {
   return (
     <button
       onClick={onClick}
-      className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[12px] text-white/64 transition hover:border-white/18 hover:text-white"
+      className="rounded-full border px-3 py-1.5 text-[12px] transition hover:text-white"
+      style={{
+        borderColor: subtleColor ? withAlpha(subtleColor, "2E") : "rgba(255,255,255,0.1)",
+        background: subtleColor
+          ? `linear-gradient(180deg, ${withAlpha(subtleColor, "14")} 0%, rgba(255,255,255,0.03) 100%)`
+          : "rgba(255,255,255,0.03)",
+        color: "rgba(255,255,255,0.72)",
+      }}
     >
       {children}
     </button>
@@ -2566,47 +2582,6 @@ function MiniMetaPill({ children }: { children: React.ReactNode }) {
   return (
     <div className="rounded-full border border-white/10 bg-white/[0.02] px-3 py-1.5 text-[11px] tracking-[0.18em] text-white/54">
       {children}
-    </div>
-  );
-}
-
-function ProgressRowCompact({
-  label,
-  progress,
-  filled,
-  total,
-  primary,
-  secondary,
-  readyLabel,
-}: {
-  label: string;
-  progress: number;
-  filled: number;
-  total: number;
-  primary: string;
-  secondary: string;
-  readyLabel: string;
-}) {
-  const done = progress === 100;
-
-  return (
-    <div className="rounded-[16px] border border-white/8 bg-white/[0.02] px-3 py-2.5">
-      <div className="flex items-center justify-between gap-3">
-        <div className="text-[13px] text-white/82">{label}</div>
-        <div className="text-[11px] text-white/38">
-  {done ? readyLabel : `${progress}%`}
-</div>
-      </div>
-
-      <div className="mt-2.5 h-[5px] overflow-hidden rounded-full bg-white/8">
-        <div
-          className="h-full rounded-full transition-all"
-          style={{
-            width: `${progress}%`,
-            background: `linear-gradient(90deg, ${primary} 0%, ${secondary} 100%)`,
-          }}
-        />
-      </div>
     </div>
   );
 }
@@ -2687,10 +2662,9 @@ function CoverPreviewCard({
   systemLine: string;
 }) {
   const safePlayer = playerName?.trim() || "Player";
-const safeClub = clubName?.trim() || "Club";
-const safeSystem =
-  systemLine?.trim() || "Performance Development System";
-const safeFooterClub = clubName?.trim() || "Club";
+  const safeSystem =
+    systemLine?.trim() || "Performance Development System";
+  const safeFooterClub = clubName?.trim() || "Club";
 
   return (
     <div className="relative mx-auto aspect-[210/297] w-full max-w-[540px] overflow-hidden rounded-[26px] border border-white/12 bg-[#07090C] shadow-[0_30px_100px_rgba(0,0,0,0.34)]">
@@ -2795,9 +2769,9 @@ const safeFooterClub = clubName?.trim() || "Club";
       </div>
 
       <div className="absolute bottom-[5.4%] left-[12.5%] right-[5.5%] z-20 flex items-center justify-between gap-4">
-  <div className="min-w-0 max-w-[74%] truncate text-[clamp(7px,0.82vw,9.5px)] uppercase tracking-[0.22em] text-white/68">
-  {safeFooterClub}
-</div>
+        <div className="min-w-0 max-w-[74%] truncate text-[clamp(7px,0.82vw,9.5px)] uppercase tracking-[0.22em] text-white/68">
+          {safeFooterClub}
+        </div>
 
         <div
           className="ml-auto h-[2px] w-[18%] min-w-[42px] max-w-[74px] rounded-full"
