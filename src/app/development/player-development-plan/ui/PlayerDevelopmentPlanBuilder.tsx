@@ -1,5 +1,19 @@
 "use client";
 
+import {
+  trackPdpBuilderViewed,
+  trackPdpStarted,
+  trackPdpFieldStarted,
+  trackPdpModeChanged,
+  trackPdpLanguageChanged,
+  trackPdpSectionCompleted,
+  trackPdpCompleted,
+  trackPdpHintUsed,
+  trackPdpEvidenceAdded,
+  trackPdpDownloadRequested,
+  trackPdpDownloaded,
+  trackPdpDownloadFailed,
+} from "./lib/analytics";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   defaultDevelopmentPlan,
@@ -476,6 +490,14 @@ export default function PlayerDevelopmentPlanBuilder() {
 
   const [lang, setLang] = useState<Lang>("en");
   const [mode, setMode] = useState<Mode>("chat");
+  const prevModeRef = useRef(mode);
+
+useEffect(() => {
+  if (prevModeRef.current !== mode) {
+    trackPdpModeChanged({ mode, lang });
+    prevModeRef.current = mode;
+  }
+}, [mode, lang]);
   const [chatPlannerState, setChatPlannerState] =
     useState<ChatPlannerState | null>(null);
   const [pendingChatPrompt, setPendingChatPrompt] = useState("");
@@ -496,6 +518,36 @@ export default function PlayerDevelopmentPlanBuilder() {
 
   const t = UI[lang];
   const otherLang: Lang = lang === "nl" ? "en" : "nl";
+  const hasStartedRef = useRef(false);
+const trackedFieldsRef = useRef<Record<string, boolean>>({});
+const trackedSectionsRef = useRef<Record<string, boolean>>({});
+const hasCompletedRef = useRef(false);
+
+function ensureStarted(source: string) {
+  if (hasStartedRef.current) return;
+
+  hasStartedRef.current = true;
+
+  trackPdpStarted({
+    source,
+    mode,
+    lang,
+  });
+}
+
+function trackFieldOnce(field: string, value?: any) {
+  ensureStarted(field);
+
+  if (trackedFieldsRef.current[field]) return;
+  trackedFieldsRef.current[field] = true;
+
+  trackPdpFieldStarted({
+    field,
+    value,
+    mode,
+    lang,
+  });
+}
 
   useEffect(() => {
     setGeneratedPlan(null);
