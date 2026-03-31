@@ -68,6 +68,9 @@ export const countriesById: Record<CountryId, Country> = {
   spain: { id: "spain", name: "Spain" },
   sweden: { id: "sweden", name: "Sweden" },
   portugal: { id: "portugal", name: "Portugal" },
+  france: { id: "france", name: "France" },
+  denmark: { id: "denmark", name: "Denmark" },
+  usa: { id: "usa", name: "United States" },
 };
 
 export const competitionsById: Record<CompetitionId, Competition> = {
@@ -163,6 +166,27 @@ export const competitionsById: Record<CompetitionId, Competition> = {
     id: "liga-portugal-2",
     countryId: "portugal",
     name: "Liga Portugal 2",
+  },
+
+    "ligue-1": {
+    id: "ligue-1",
+    countryId: "france",
+    name: "Ligue 1",
+  },
+  "ligue-2": {
+    id: "ligue-2",
+    countryId: "france",
+    name: "Ligue 2",
+  },
+    "mls-eastern": {
+    id: "mls-eastern",
+    countryId: "usa",
+    name: "MLS Eastern Conference",
+  },
+  "mls-western": {
+    id: "mls-western",
+    countryId: "usa",
+    name: "MLS Western Conference",
   },
 };
 
@@ -338,6 +362,164 @@ export const clubsById: Record<ClubId, Club> = {
     id: "willem-ii",
     name: "Willem II",
     aliases: ["Willem II Tilburg"],
+  },
+
+    /* =========================
+     USA
+     ========================= */
+
+  /* MLS Eastern Conference */
+  nashville: {
+    id: "nashville",
+    name: "Nashville",
+    aliases: ["Nashville SC"],
+  },
+  "nyc-fc": {
+    id: "nyc-fc",
+    name: "NYC FC",
+    aliases: ["New York City FC", "NYCFC"],
+  },
+  "inter-miami": {
+    id: "inter-miami",
+    name: "Inter Miami",
+    aliases: ["Inter Miami CF"],
+  },
+  charlotte: {
+    id: "charlotte",
+    name: "Charlotte",
+    aliases: ["Charlotte FC"],
+  },
+  "chicago-fire": {
+    id: "chicago-fire",
+    name: "Chicago Fire",
+    aliases: ["Chicago Fire FC"],
+  },
+  "dc-united": {
+    id: "dc-united",
+    name: "DC United",
+    aliases: ["D.C. United", "DCU"],
+  },
+  toronto: {
+    id: "toronto",
+    name: "Toronto",
+    aliases: ["Toronto FC"],
+  },
+  "ny-red-bulls": {
+    id: "ny-red-bulls",
+    name: "NY Red Bulls",
+    aliases: ["New York Red Bulls", "Red Bulls"],
+  },
+  cincinnati: {
+    id: "cincinnati",
+    name: "FC Cincinnati",
+    aliases: ["Cincinnati"],
+  },
+  "atlanta-united": {
+    id: "atlanta-united",
+    name: "Atlanta United",
+    aliases: ["Atlanta United FC"],
+  },
+  "new-england": {
+    id: "new-england",
+    name: "New England",
+    aliases: ["New England Revolution", "Revs"],
+  },
+  montreal: {
+    id: "montreal",
+    name: "Montréal",
+    aliases: ["CF Montréal", "Montreal", "CF Montreal"],
+  },
+  "orlando-city": {
+    id: "orlando-city",
+    name: "Orlando City",
+    aliases: ["Orlando City SC"],
+  },
+  "columbus-crew": {
+    id: "columbus-crew",
+    name: "Columbus Crew",
+    aliases: ["Crew"],
+  },
+  philadelphia: {
+    id: "philadelphia",
+    name: "Philadelphia",
+    aliases: ["Philadelphia Union"],
+  },
+
+  /* MLS Western Conference */
+  lafc: {
+    id: "lafc",
+    name: "LAFC",
+    aliases: ["Los Angeles FC"],
+  },
+  whitecaps: {
+    id: "whitecaps",
+    name: "Whitecaps",
+    aliases: ["Vancouver Whitecaps", "Vancouver Whitecaps FC"],
+  },
+  "sj-earthquakes": {
+    id: "sj-earthquakes",
+    name: "SJ Earthquakes",
+    aliases: ["San Jose Earthquakes", "San Jose"],
+  },
+  "san-diego": {
+    id: "san-diego",
+    name: "San Diego FC",
+    aliases: ["San Diego"],
+  },
+  seattle: {
+    id: "seattle",
+    name: "Seattle",
+    aliases: ["Seattle Sounders", "Seattle Sounders FC"],
+  },
+  "real-salt-lake": {
+    id: "real-salt-lake",
+    name: "Real Salt Lake",
+    aliases: ["RSL"],
+  },
+  "colorado-rapids": {
+    id: "colorado-rapids",
+    name: "Colorado Rapids",
+    aliases: ["Rapids"],
+  },
+  dallas: {
+    id: "dallas",
+    name: "Dallas",
+    aliases: ["FC Dallas"],
+  },
+  "houston-dynamo": {
+    id: "houston-dynamo",
+    name: "Houston Dynamo",
+    aliases: ["Houston Dynamo FC"],
+  },
+  "la-galaxy": {
+    id: "la-galaxy",
+    name: "LA Galaxy",
+    aliases: ["Los Angeles Galaxy", "Galaxy"],
+  },
+  austin: {
+    id: "austin",
+    name: "Austin",
+    aliases: ["Austin FC"],
+  },
+  minnesota: {
+    id: "minnesota",
+    name: "Minnesota",
+    aliases: ["Minnesota United", "Minnesota United FC"],
+  },
+  "st-louis-city": {
+    id: "st-louis-city",
+    name: "St. Louis City",
+    aliases: ["St. Louis City SC", "Saint Louis City"],
+  },
+  portland: {
+    id: "portland",
+    name: "Portland",
+    aliases: ["Portland Timbers"],
+  },
+  "sporting-kc": {
+    id: "sporting-kc",
+    name: "Sporting KC",
+    aliases: ["Sporting Kansas City"],
   },
 
     /* =========================
@@ -1421,6 +1603,194 @@ export const clubsById: Record<ClubId, Club> = {
   },
 
     /* =========================
+     FRANCE
+     ========================= */
+
+  /* Ligue 1 */
+  psg: {
+    id: "psg",
+    name: "PSG",
+    aliases: ["Paris Saint-Germain", "Paris SG"],
+  },
+  lens: {
+    id: "lens",
+    name: "Lens",
+    aliases: ["RC Lens"],
+  },
+  marseille: {
+    id: "marseille",
+    name: "Marseille",
+    aliases: ["Olympique de Marseille", "OM"],
+  },
+  lyon: {
+    id: "lyon",
+    name: "Lyon",
+    aliases: ["Olympique Lyonnais", "OL"],
+  },
+  losc: {
+    id: "losc",
+    name: "LOSC",
+    aliases: ["LOSC Lille", "Lille", "Lille OSC"],
+  },
+  monaco: {
+    id: "monaco",
+    name: "Monaco",
+    aliases: ["AS Monaco"],
+  },
+  rennes: {
+    id: "rennes",
+    name: "Rennes",
+    aliases: ["Stade Rennais", "Stade Rennais FC"],
+  },
+  strasbourg: {
+    id: "strasbourg",
+    name: "Strasbourg",
+    aliases: ["RC Strasbourg", "RC Strasbourg Alsace"],
+  },
+  toulouse: {
+    id: "toulouse",
+    name: "Toulouse",
+    aliases: ["Toulouse FC"],
+  },
+  lorient: {
+    id: "lorient",
+    name: "Lorient",
+    aliases: ["FC Lorient"],
+  },
+  brest: {
+    id: "brest",
+    name: "Brest",
+    aliases: ["Stade Brestois", "Stade Brestois 29"],
+  },
+  angers: {
+    id: "angers",
+    name: "Angers",
+    aliases: ["Angers SCO"],
+  },
+  "paris-fc": {
+    id: "paris-fc",
+    name: "Paris FC",
+    aliases: ["PFC"],
+  },
+  "le-havre": {
+    id: "le-havre",
+    name: "Le Havre",
+    aliases: ["Le Havre AC", "HAC"],
+  },
+  nice: {
+    id: "nice",
+    name: "Nice",
+    aliases: ["OGC Nice"],
+  },
+  auxerre: {
+    id: "auxerre",
+    name: "Auxerre",
+    aliases: ["AJ Auxerre"],
+  },
+  nantes: {
+    id: "nantes",
+    name: "Nantes",
+    aliases: ["FC Nantes"],
+  },
+  metz: {
+    id: "metz",
+    name: "Metz",
+    aliases: ["FC Metz"],
+  },
+
+    /* Ligue 2 */
+  troyes: {
+    id: "troyes",
+    name: "Troyes",
+    aliases: ["ESTAC Troyes", "ESTAC"],
+  },
+  "saint-etienne": {
+    id: "saint-etienne",
+    name: "Saint-Étienne",
+    aliases: ["Saint-Etienne", "AS Saint-Étienne", "AS Saint-Etienne"],
+  },
+  "le-mans": {
+    id: "le-mans",
+    name: "Le Mans",
+    aliases: ["Le Mans FC"],
+  },
+  "red-star": {
+    id: "red-star",
+    name: "Red Star",
+    aliases: ["Red Star FC 93", "Red Star FC"],
+  },
+  reims: {
+    id: "reims",
+    name: "Reims",
+    aliases: ["Stade de Reims"],
+  },
+  rodez: {
+    id: "rodez",
+    name: "Rodez",
+    aliases: ["Rodez Aveyron", "Rodez Aveyron Football"],
+  },
+  montpellier: {
+    id: "montpellier",
+    name: "Montpellier",
+    aliases: ["Montpellier HSC", "MHSC"],
+  },
+  dunkerque: {
+    id: "dunkerque",
+    name: "Dunkerque",
+    aliases: ["USL Dunkerque"],
+  },
+  annecy: {
+    id: "annecy",
+    name: "Annecy",
+    aliases: ["FC Annecy"],
+  },
+  guingamp: {
+    id: "guingamp",
+    name: "Guingamp",
+    aliases: ["EA Guingamp"],
+  },
+  pau: {
+    id: "pau",
+    name: "Pau",
+    aliases: ["Pau FC"],
+  },
+  boulogne: {
+    id: "boulogne",
+    name: "Boulogne",
+    aliases: ["US Boulogne", "US Boulogne CO"],
+  },
+  grenoble: {
+    id: "grenoble",
+    name: "Grenoble",
+    aliases: ["Grenoble Foot 38", "GF38"],
+  },
+  clermont: {
+    id: "clermont",
+    name: "Clermont",
+    aliases: ["Clermont Foot", "Clermont Foot 63"],
+  },
+  nancy: {
+    id: "nancy",
+    name: "Nancy",
+    aliases: ["AS Nancy Lorraine"],
+  },
+  amiens: {
+    id: "amiens",
+    name: "Amiens",
+    aliases: ["SC Amiens", "Amiens SC"],
+  },
+  laval: {
+    id: "laval",
+    name: "Laval",
+    aliases: ["Stade Lavallois", "Stade Laval"],
+  },
+  bastia: {
+    id: "bastia",
+    name: "Bastia",
+    aliases: ["SC Bastia"],
+  },
+
+    /* =========================
      SPAIN
      ========================= */
 
@@ -1677,6 +2047,11 @@ export const clubsById: Record<ClubId, Club> = {
     id: "estoril",
     name: "Estoril",
     aliases: ["Estoril Praia"],
+    },
+  estrela: {
+    id: "estrela",
+    name: "Estrela",
+    aliases: ["CF Estrela da Amadora", "Estrela da Amadora"],
   },
   famalicao: {
     id: "famalicao",
@@ -1727,6 +2102,98 @@ export const clubsById: Record<ClubId, Club> = {
     id: "vitoria-guimaraes",
     name: "Vitória",
     aliases: ["Vitória Guimarães", "Guimarães", "Vitória SC"],
+  },
+
+    /* Liga Portugal 2 */
+  maritimo: {
+    id: "maritimo",
+    name: "Marítimo",
+    aliases: ["CS Marítimo", "Maritimo"],
+  },
+  "academico-viseu": {
+    id: "academico-viseu",
+    name: "Académico Viseu",
+    aliases: ["Academico Viseu", "Académico de Viseu FC"],
+  },
+  torreense: {
+    id: "torreense",
+    name: "Torreense",
+    aliases: ["SCU Torreense"],
+  },
+  "uniao-de-leiria": {
+    id: "uniao-de-leiria",
+    name: "União de Leiria",
+    aliases: ["Uniao de Leiria", "UD Leiria"],
+  },
+  vizela: {
+    id: "vizela",
+    name: "Vizela",
+    aliases: ["FC Vizela"],
+  },
+  "sporting-cp-ii": {
+    id: "sporting-cp-ii",
+    name: "Sporting CP II",
+    aliases: ["Sporting B", "Sporting CP B"],
+  },
+  "porto-ii": {
+    id: "porto-ii",
+    name: "Porto II",
+    aliases: ["FC Porto B", "Porto B"],
+  },
+  "lusitania-fc": {
+    id: "lusitania-fc",
+    name: "Lusitânia FC",
+    aliases: ["Lusitania FC", "Lusitânia"],
+  },
+  "benfica-ii": {
+    id: "benfica-ii",
+    name: "Benfica II",
+    aliases: ["SL Benfica B", "Benfica B"],
+  },
+  chaves: {
+    id: "chaves",
+    name: "Chaves",
+    aliases: ["GD Chaves"],
+  },
+  feirense: {
+    id: "feirense",
+    name: "Feirense",
+    aliases: ["CD Feirense"],
+  },
+  leixoes: {
+    id: "leixoes",
+    name: "Leixões",
+    aliases: ["Leixoes", "Leixões SC"],
+  },
+  "felgueiras-1932": {
+    id: "felgueiras-1932",
+    name: "Felgueiras 1932",
+    aliases: ["FC Felgueiras 1932", "Felgueiras"],
+  },
+  "pacos-de-ferreira": {
+    id: "pacos-de-ferreira",
+    name: "Paços de Ferreira",
+    aliases: ["Pacos de Ferreira", "FC Paços de Ferreira", "FC Pacos de Ferreira"],
+  },
+  penafiel: {
+    id: "penafiel",
+    name: "Penafiel",
+    aliases: ["FC Penafiel"],
+  },
+  farense: {
+    id: "farense",
+    name: "Farense",
+    aliases: ["SC Farense"],
+  },
+  portimonense: {
+    id: "portimonense",
+    name: "Portimonense",
+    aliases: ["Portimonense SC"],
+  },
+  "ud-oliveirense": {
+    id: "ud-oliveirense",
+    name: "UD Oliveirense",
+    aliases: ["União Desportiva Oliveirense", "Uniao Desportiva Oliveirense", "Oliveirense"],
   },
 
 
@@ -2084,6 +2551,100 @@ export const competitionClubIds: Record<CompetitionId, ClubId[]> = {
     "sporting-cp",
     "tondela",
     "vitoria-guimaraes",
+  ],
+    "liga-portugal-2": [
+    "maritimo",
+    "academico-viseu",
+    "torreense",
+    "uniao-de-leiria",
+    "vizela",
+    "sporting-cp-ii",
+    "porto-ii",
+    "lusitania-fc",
+    "benfica-ii",
+    "chaves",
+    "feirense",
+    "leixoes",
+    "felgueiras-1932",
+    "pacos-de-ferreira",
+    "penafiel",
+    "farense",
+    "portimonense",
+    "ud-oliveirense",
+  ],
+    "ligue-1": [
+    "psg",
+    "lens",
+    "marseille",
+    "lyon",
+    "losc",
+    "monaco",
+    "rennes",
+    "strasbourg",
+    "toulouse",
+    "lorient",
+    "brest",
+    "angers",
+    "paris-fc",
+    "le-havre",
+    "nice",
+    "auxerre",
+    "nantes",
+    "metz",
+  ],
+    "ligue-2": [
+    "troyes",
+    "saint-etienne",
+    "le-mans",
+    "red-star",
+    "reims",
+    "rodez",
+    "montpellier",
+    "dunkerque",
+    "annecy",
+    "guingamp",
+    "pau",
+    "boulogne",
+    "grenoble",
+    "clermont",
+    "nancy",
+    "amiens",
+    "laval",
+    "bastia",
+  ],
+    "mls-eastern": [
+    "nashville",
+    "nyc-fc",
+    "inter-miami",
+    "charlotte",
+    "chicago-fire",
+    "dc-united",
+    "toronto",
+    "ny-red-bulls",
+    "cincinnati",
+    "atlanta-united",
+    "new-england",
+    "montreal",
+    "orlando-city",
+    "columbus-crew",
+    "philadelphia",
+  ],
+  "mls-western": [
+    "lafc",
+    "whitecaps",
+    "sj-earthquakes",
+    "san-diego",
+    "seattle",
+    "real-salt-lake",
+    "colorado-rapids",
+    "dallas",
+    "houston-dynamo",
+    "la-galaxy",
+    "austin",
+    "minnesota",
+    "st-louis-city",
+    "portland",
+    "sporting-kc",
   ],
 };
 

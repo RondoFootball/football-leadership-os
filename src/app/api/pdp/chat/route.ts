@@ -5,6 +5,7 @@ import type {
   DevelopmentPlanV1,
   Lang,
 } from "@/app/development/player-development-plan/ui/lib/engineSchema";
+import { composeKnowledgeContext } from "../core/knowledgeComposer";
 import { buildPlannerState, getSlotMeta, type PlannerState } from "./chatPlanner";
 import { buildPdpSystemPrompt } from "./systemPrompt";
 
@@ -288,12 +289,18 @@ Decision rules:
 
 export async function POST(req: Request) {
   try {
+    const body = (await req.json()) as ApiInput;
+
+    const messages = Array.isArray(body.messages) ? body.messages : [];
+    const draftPlan = body.draftPlan || {};
+    const lang: Lang = body.lang === "en" ? "en" : "nl";
+
     if (!client) {
       return NextResponse.json(
         {
           type: "error",
           message: localMessage(
-            "nl",
+            lang,
             "OPENAI_API_KEY ontbreekt in je lokale environment.",
             "OPENAI_API_KEY is missing in your local environment."
           ),
@@ -303,22 +310,16 @@ export async function POST(req: Request) {
       );
     }
 
-    const body = (await req.json()) as ApiInput;
-
-    const messages = Array.isArray(body.messages) ? body.messages : [];
-    const draftPlan = body.draftPlan || {};
-    const lang: Lang = body.lang === "en" ? "en" : "nl";
-
     const plannerFromPlan = buildPlannerState(draftPlan);
     const incomingPlanner = sanitizePlannerState(body.plannerState);
 
     const basePlanner: PlannerState =
-  incomingPlanner && Object.keys(incomingPlanner.filledSlots || {}).length
-    ? {
-        ...plannerFromPlan,
-        ...incomingPlanner,
-      }
-    : plannerFromPlan;
+      incomingPlanner && Object.keys(incomingPlanner.filledSlots || {}).length
+        ? {
+            ...plannerFromPlan,
+            ...incomingPlanner,
+          }
+        : plannerFromPlan;
 
     if (!hasMeaningfulUserInput(messages)) {
       return NextResponse.json({
@@ -336,6 +337,13 @@ export async function POST(req: Request) {
       planner: basePlanner,
     });
 
+    const knowledgeContext = composeKnowledgeContext({
+      lang,
+      draftPlan,
+      planner: basePlanner,
+      messages,
+    });
+
     const conversation = messages
       .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
       .join("\n\n");
@@ -348,6 +356,7 @@ export async function POST(req: Request) {
 
     const response = await client.responses.create({
       model: "gpt-4.1",
+      temperature: 0.35,
       input: [
         {
           role: "system",
@@ -361,6 +370,21 @@ ${JSON.stringify(draftPlan, null, 2)}
 
 Current planner state:
 ${JSON.stringify(basePlanner, null, 2)}
+
+Relevant knowledge context:
+${knowledgeContext.knowledgeText}
+
+Knowledge routing metadata:
+${JSON.stringify(
+  {
+    selectedContext: knowledgeContext.selectedContext,
+    selectedFocus: knowledgeContext.selectedFocus,
+    selectedRoleKey: knowledgeContext.selectedRoleKey,
+    selectedRoleLabel: knowledgeContext.selectedRoleLabel,
+  },
+  null,
+  2
+)}
 
 Conversation so far:
 ${conversation}
@@ -380,6 +404,8 @@ Output rules:
 - Prefer one sharp next question over broad summaries
 - Prefer a small truthful planPatch over no planPatch
 - Only mark progress forward when the conversation truly supports it
+- Use the knowledge context as an internal football thinking frame, not as encyclopaedic output
+- Stay specific to observable football behaviour, role demands and plan usefulness
 - Do not invent plan content
 - Do not output markdown
           `.trim(),
@@ -462,32 +488,21 @@ Output rules:
       },
     });
   } catch (error: any) {
-  console.error("/api/pdp/chat error");
-  console.error("message:", error?.message);
-  console.error("status:", error?.status);
-  console.error("name:", error?.name);
-  console.error("code:", error?.code);
-  console.error("type:", error?.type);
-  console.error("param:", error?.param);
+    console.error("/api/pdp/chat error", error);
 
-  if (error?.response) {
-    console.error("response status:", error.response.status);
-    console.error("response data:", error.response.data);
+    return NextResponse.json(
+      {
+        type: "error",
+        message:
+          error?.message ||
+          localMessage(
+            "nl",
+            "Er ging iets mis tijdens het verwerken van het gesprek.",
+            "Something went wrong while processing the conversation."
+          ),
+        done: false,
+      },
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json(
-    {
-      type: "error",
-      message:
-        error?.message ||
-        localMessage(
-          "nl",
-          "Er ging iets mis tijdens het verwerken van het gesprek.",
-          "Something went wrong while processing the conversation."
-        ),
-      done: false,
-    },
-    { status: 500 }
-  );
-}
 }

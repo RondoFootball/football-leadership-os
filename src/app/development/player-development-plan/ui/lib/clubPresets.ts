@@ -397,6 +397,231 @@ export const clubVisualPresetsById: Record<string, ClubVisualPreset> = {
   },
 
     /* =========================
+     FRANCE
+     ========================= */
+
+  /* Ligue 1 */
+  psg: {
+    clubId: "psg",
+    primaryColor: "#004170",
+    secondaryColor: "#DA291C",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  lens: {
+    clubId: "lens",
+    primaryColor: "#F7D117",
+    secondaryColor: "#D71920",
+    colorMix: { primary: 58, secondary: 42 },
+  },
+  marseille: {
+    clubId: "marseille",
+    primaryColor: "#00AEEF",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 70, secondary: 30 },
+  },
+  lyon: {
+    clubId: "lyon",
+    primaryColor: "#1D428A",
+    secondaryColor: "#D71920",
+    tertiaryColor: "#FFFFFF",
+    colorMix: { primary: 52, secondary: 28, tertiary: 20 },
+  },
+  losc: {
+    clubId: "losc",
+    primaryColor: "#D71920",
+    secondaryColor: "#1E3A8A",
+    colorMix: { primary: 60, secondary: 40 },
+  },
+  monaco: {
+    clubId: "monaco",
+    primaryColor: "#D71920",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 64, secondary: 36 },
+  },
+  rennes: {
+    clubId: "rennes",
+    primaryColor: "#D71920",
+    secondaryColor: "#000000",
+    colorMix: { primary: 64, secondary: 36 },
+  },
+  strasbourg: {
+    clubId: "strasbourg",
+    primaryColor: "#0057B8",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  toulouse: {
+    clubId: "toulouse",
+    primaryColor: "#5B2C83",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  lorient: {
+    clubId: "lorient",
+    primaryColor: "#F58220",
+    secondaryColor: "#000000",
+    colorMix: { primary: 66, secondary: 34 },
+  },
+  brest: {
+    clubId: "brest",
+    primaryColor: "#D71920",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  angers: {
+    clubId: "angers",
+    primaryColor: "#000000",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  "paris-fc": {
+    clubId: "paris-fc",
+    primaryColor: "#1E5AA8",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  "le-havre": {
+    clubId: "le-havre",
+    primaryColor: "#1E5AA8",
+    secondaryColor: "#0F172A",
+    colorMix: { primary: 62, secondary: 38 },
+  },
+  nice: {
+    clubId: "nice",
+    primaryColor: "#D71920",
+    secondaryColor: "#000000",
+    colorMix: { primary: 64, secondary: 36 },
+  },
+  auxerre: {
+    clubId: "auxerre",
+    primaryColor: "#0057B8",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  nantes: {
+    clubId: "nantes",
+    primaryColor: "#FDE100",
+    secondaryColor: "#00853F",
+    colorMix: { primary: 64, secondary: 36 },
+  },
+  metz: {
+    clubId: "metz",
+    primaryColor: "#7A1E1E",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+
+    /* Ligue 2 */
+  troyes: {
+    clubId: "troyes",
+    primaryColor: "#0057B8",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  "saint-etienne": {
+    clubId: "saint-etienne",
+    primaryColor: "#00853F",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  "le-mans": {
+    clubId: "le-mans",
+    primaryColor: "#D71920",
+    secondaryColor: "#F7D117",
+    colorMix: { primary: 62, secondary: 38 },
+  },
+  "red-star": {
+    clubId: "red-star",
+    primaryColor: "#00853F",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  reims: {
+    clubId: "reims",
+    primaryColor: "#D71920",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  rodez: {
+    clubId: "rodez",
+    primaryColor: "#D71920",
+    secondaryColor: "#F5C400",
+    colorMix: { primary: 64, secondary: 36 },
+  },
+  montpellier: {
+    clubId: "montpellier",
+    primaryColor: "#1E5AA8",
+    secondaryColor: "#F58220",
+    colorMix: { primary: 60, secondary: 40 },
+  },
+  dunkerque: {
+    clubId: "dunkerque",
+    primaryColor: "#0057B8",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  annecy: {
+    clubId: "annecy",
+    primaryColor: "#D71920",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 70, secondary: 30 },
+  },
+  guingamp: {
+    clubId: "guingamp",
+    primaryColor: "#D71920",
+    secondaryColor: "#000000",
+    colorMix: { primary: 64, secondary: 36 },
+  },
+  pau: {
+    clubId: "pau",
+    primaryColor: "#F5C400",
+    secondaryColor: "#1E3A8A",
+    colorMix: { primary: 62, secondary: 38 },
+  },
+  boulogne: {
+    clubId: "boulogne",
+    primaryColor: "#D71920",
+    secondaryColor: "#000000",
+    colorMix: { primary: 66, secondary: 34 },
+  },
+  grenoble: {
+    clubId: "grenoble",
+    primaryColor: "#0057B8",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  clermont: {
+    clubId: "clermont",
+    primaryColor: "#D71920",
+    secondaryColor: "#1E3A8A",
+    colorMix: { primary: 60, secondary: 40 },
+  },
+  nancy: {
+    clubId: "nancy",
+    primaryColor: "#D71920",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  amiens: {
+    clubId: "amiens",
+    primaryColor: "#000000",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  laval: {
+    clubId: "laval",
+    primaryColor: "#F58220",
+    secondaryColor: "#000000",
+    colorMix: { primary: 64, secondary: 36 },
+  },
+  bastia: {
+    clubId: "bastia",
+    primaryColor: "#0057B8",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+
+    /* =========================
      ENGLAND
      ========================= */
 
@@ -813,6 +1038,204 @@ export const clubVisualPresetsById: Record<string, ClubVisualPreset> = {
     secondaryColor: "#FFFFFF",
     colorMix: { primary: 72, secondary: 28 },
   },
+
+  /* =========================
+     USA
+     ========================= */
+
+  /* MLS Eastern Conference */
+  nashville: {
+    clubId: "nashville",
+    primaryColor: "#F2C94C",
+    secondaryColor: "#1E3A8A",
+    colorMix: { primary: 64, secondary: 36 },
+  },
+  "nyc-fc": {
+    clubId: "nyc-fc",
+    primaryColor: "#87CEEB",
+    secondaryColor: "#1E3A8A",
+    colorMix: { primary: 68, secondary: 32 },
+  },
+  "inter-miami": {
+    clubId: "inter-miami",
+    primaryColor: "#F7B5CD",
+    secondaryColor: "#000000",
+    colorMix: { primary: 64, secondary: 36 },
+  },
+  charlotte: {
+    clubId: "charlotte",
+    primaryColor: "#1E3A8A",
+    secondaryColor: "#87CEEB",
+    colorMix: { primary: 66, secondary: 34 },
+  },
+  "chicago-fire": {
+    clubId: "chicago-fire",
+    primaryColor: "#D71920",
+    secondaryColor: "#1E5AA8",
+    colorMix: { primary: 60, secondary: 40 },
+  },
+  "dc-united": {
+    clubId: "dc-united",
+    primaryColor: "#000000",
+    secondaryColor: "#D71920",
+    colorMix: { primary: 66, secondary: 34 },
+  },
+  toronto: {
+    clubId: "toronto",
+    primaryColor: "#D71920",
+    secondaryColor: "#4A4A4A",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  "ny-red-bulls": {
+    clubId: "ny-red-bulls",
+    primaryColor: "#FFFFFF",
+    secondaryColor: "#D71920",
+    tertiaryColor: "#1E3A8A",
+    colorMix: { primary: 56, secondary: 28, tertiary: 16 },
+  },
+  cincinnati: {
+    clubId: "cincinnati",
+    primaryColor: "#1E3A8A",
+    secondaryColor: "#F58220",
+    colorMix: { primary: 66, secondary: 34 },
+  },
+  "atlanta-united": {
+    clubId: "atlanta-united",
+    primaryColor: "#D71920",
+    secondaryColor: "#000000",
+    tertiaryColor: "#F2C94C",
+    colorMix: { primary: 52, secondary: 34, tertiary: 14 },
+  },
+  "new-england": {
+    clubId: "new-england",
+    primaryColor: "#1E3A8A",
+    secondaryColor: "#D71920",
+    colorMix: { primary: 64, secondary: 36 },
+  },
+  montreal: {
+    clubId: "montreal",
+    primaryColor: "#1E3A8A",
+    secondaryColor: "#000000",
+    tertiaryColor: "#87CEEB",
+    colorMix: { primary: 52, secondary: 30, tertiary: 18 },
+  },
+  "orlando-city": {
+    clubId: "orlando-city",
+    primaryColor: "#5B2C83",
+    secondaryColor: "#F2C94C",
+    colorMix: { primary: 68, secondary: 32 },
+  },
+  "columbus-crew": {
+    clubId: "columbus-crew",
+    primaryColor: "#FDE100",
+    secondaryColor: "#000000",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  philadelphia: {
+    clubId: "philadelphia",
+    primaryColor: "#1F2A44",
+    secondaryColor: "#F2C94C",
+    colorMix: { primary: 68, secondary: 32 },
+  },
+
+  /* MLS Western Conference */
+  lafc: {
+    clubId: "lafc",
+    primaryColor: "#000000",
+    secondaryColor: "#C9A14A",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  whitecaps: {
+    clubId: "whitecaps",
+    primaryColor: "#1E3A8A",
+    secondaryColor: "#87CEEB",
+    tertiaryColor: "#FFFFFF",
+    colorMix: { primary: 52, secondary: 26, tertiary: 22 },
+  },
+  "sj-earthquakes": {
+    clubId: "sj-earthquakes",
+    primaryColor: "#1E3A8A",
+    secondaryColor: "#000000",
+    tertiaryColor: "#FFFFFF",
+    colorMix: { primary: 54, secondary: 30, tertiary: 16 },
+  },
+  "san-diego": {
+    clubId: "san-diego",
+    primaryColor: "#1E3A8A",
+    secondaryColor: "#F2C94C",
+    colorMix: { primary: 66, secondary: 34 },
+  },
+  seattle: {
+    clubId: "seattle",
+    primaryColor: "#00853F",
+    secondaryColor: "#1E5AA8",
+    tertiaryColor: "#87CEEB",
+    colorMix: { primary: 52, secondary: 28, tertiary: 20 },
+  },
+  "real-salt-lake": {
+    clubId: "real-salt-lake",
+    primaryColor: "#7A1E1E",
+    secondaryColor: "#1E3A8A",
+    tertiaryColor: "#F2C94C",
+    colorMix: { primary: 52, secondary: 30, tertiary: 18 },
+  },
+  "colorado-rapids": {
+    clubId: "colorado-rapids",
+    primaryColor: "#7A1E1E",
+    secondaryColor: "#87CEEB",
+    colorMix: { primary: 64, secondary: 36 },
+  },
+  dallas: {
+    clubId: "dallas",
+    primaryColor: "#D71920",
+    secondaryColor: "#1E3A8A",
+    colorMix: { primary: 62, secondary: 38 },
+  },
+  "houston-dynamo": {
+    clubId: "houston-dynamo",
+    primaryColor: "#F58220",
+    secondaryColor: "#000000",
+    colorMix: { primary: 68, secondary: 32 },
+  },
+  "la-galaxy": {
+    clubId: "la-galaxy",
+    primaryColor: "#FFFFFF",
+    secondaryColor: "#1E3A8A",
+    tertiaryColor: "#F2C94C",
+    colorMix: { primary: 56, secondary: 28, tertiary: 16 },
+  },
+  austin: {
+    clubId: "austin",
+    primaryColor: "#00853F",
+    secondaryColor: "#000000",
+    colorMix: { primary: 66, secondary: 34 },
+  },
+  minnesota: {
+    clubId: "minnesota",
+    primaryColor: "#1F2A44",
+    secondaryColor: "#87CEEB",
+    colorMix: { primary: 68, secondary: 32 },
+  },
+  "st-louis-city": {
+    clubId: "st-louis-city",
+    primaryColor: "#D71920",
+    secondaryColor: "#1F2A44",
+    tertiaryColor: "#F2C94C",
+    colorMix: { primary: 52, secondary: 32, tertiary: 16 },
+  },
+  portland: {
+    clubId: "portland",
+    primaryColor: "#0B3D2E",
+    secondaryColor: "#F2C94C",
+    colorMix: { primary: 66, secondary: 34 },
+  },
+  "sporting-kc": {
+    clubId: "sporting-kc",
+    primaryColor: "#87CEEB",
+    secondaryColor: "#1F2A44",
+    colorMix: { primary: 68, secondary: 32 },
+  },
+
     /* =========================
      GERMANY
      ========================= */
@@ -1283,6 +1706,232 @@ export const clubVisualPresetsById: Record<string, ClubVisualPreset> = {
     primaryColor: "#0B3D2E",
     secondaryColor: "#F2C94C",
     colorMix: { primary: 64, secondary: 36 },
+  },
+
+    /* =========================
+     PORTUGAL
+     ========================= */
+
+  /* Primeira Liga */
+  alverca: {
+    clubId: "alverca",
+    primaryColor: "#D71920",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  arouca: {
+    clubId: "arouca",
+    primaryColor: "#F5C400",
+    secondaryColor: "#1E3A8A",
+    colorMix: { primary: 64, secondary: 36 },
+  },
+  avs: {
+    clubId: "avs",
+    primaryColor: "#D71920",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 70, secondary: 30 },
+  },
+  benfica: {
+    clubId: "benfica",
+    primaryColor: "#E00025",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 74, secondary: 26 },
+  },
+  braga: {
+    clubId: "braga",
+    primaryColor: "#D71920",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  "casa-pia": {
+    clubId: "casa-pia",
+    primaryColor: "#000000",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  estoril: {
+    clubId: "estoril",
+    primaryColor: "#FDE100",
+    secondaryColor: "#0057B8",
+    colorMix: { primary: 68, secondary: 32 },
+  },
+  estrela: {
+    clubId: "estrela",
+    primaryColor: "#D71920",
+    secondaryColor: "#FFFFFF",
+    tertiaryColor: "#000000",
+    colorMix: { primary: 58, secondary: 28, tertiary: 14 },
+  },
+  famalicao: {
+    clubId: "famalicao",
+    primaryColor: "#FFFFFF",
+    secondaryColor: "#0057B8",
+    colorMix: { primary: 60, secondary: 40 },
+  },
+  "gil-vicente": {
+    clubId: "gil-vicente",
+    primaryColor: "#D71920",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 70, secondary: 30 },
+  },
+  moreirense: {
+    clubId: "moreirense",
+    primaryColor: "#00853F",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  nacional: {
+    clubId: "nacional",
+    primaryColor: "#000000",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 70, secondary: 30 },
+  },
+  porto: {
+    clubId: "porto",
+    primaryColor: "#0057B8",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  "rio-ave": {
+    clubId: "rio-ave",
+    primaryColor: "#00853F",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  "santa-clara": {
+    clubId: "santa-clara",
+    primaryColor: "#D71920",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  "sporting-cp": {
+    clubId: "sporting-cp",
+    primaryColor: "#00853F",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 70, secondary: 30 },
+  },
+  tondela: {
+    clubId: "tondela",
+    primaryColor: "#FFD200",
+    secondaryColor: "#00853F",
+    colorMix: { primary: 62, secondary: 38 },
+  },
+  "vitoria-guimaraes": {
+    clubId: "vitoria-guimaraes",
+    primaryColor: "#FFFFFF",
+    secondaryColor: "#000000",
+    colorMix: { primary: 62, secondary: 38 },
+  },
+
+    /* Liga Portugal 2 */
+  maritimo: {
+    clubId: "maritimo",
+    primaryColor: "#00853F",
+    secondaryColor: "#D71920",
+    colorMix: { primary: 62, secondary: 38 },
+  },
+  "academico-viseu": {
+    clubId: "academico-viseu",
+    primaryColor: "#000000",
+    secondaryColor: "#FFFFFF",
+    tertiaryColor: "#D71920",
+    colorMix: { primary: 54, secondary: 28, tertiary: 18 },
+  },
+  torreense: {
+    clubId: "torreense",
+    primaryColor: "#0057B8",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  "uniao-de-leiria": {
+    clubId: "uniao-de-leiria",
+    primaryColor: "#D71920",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  vizela: {
+    clubId: "vizela",
+    primaryColor: "#0057B8",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  "sporting-cp-ii": {
+    clubId: "sporting-cp-ii",
+    primaryColor: "#00853F",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 70, secondary: 30 },
+  },
+  "porto-ii": {
+    clubId: "porto-ii",
+    primaryColor: "#0057B8",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  "lusitania-fc": {
+    clubId: "lusitania-fc",
+    primaryColor: "#00853F",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  "benfica-ii": {
+    clubId: "benfica-ii",
+    primaryColor: "#E00025",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 74, secondary: 26 },
+  },
+  chaves: {
+    clubId: "chaves",
+    primaryColor: "#1E3A8A",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 70, secondary: 30 },
+  },
+  feirense: {
+    clubId: "feirense",
+    primaryColor: "#0057B8",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  leixoes: {
+    clubId: "leixoes",
+    primaryColor: "#D71920",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 70, secondary: 30 },
+  },
+  "felgueiras-1932": {
+    clubId: "felgueiras-1932",
+    primaryColor: "#F5C400",
+    secondaryColor: "#1E3A8A",
+    colorMix: { primary: 62, secondary: 38 },
+  },
+  "pacos-de-ferreira": {
+    clubId: "pacos-de-ferreira",
+    primaryColor: "#FDE100",
+    secondaryColor: "#00853F",
+    colorMix: { primary: 64, secondary: 36 },
+  },
+  penafiel: {
+    clubId: "penafiel",
+    primaryColor: "#D71920",
+    secondaryColor: "#000000",
+    colorMix: { primary: 64, secondary: 36 },
+  },
+  farense: {
+    clubId: "farense",
+    primaryColor: "#000000",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  portimonense: {
+    clubId: "portimonense",
+    primaryColor: "#000000",
+    secondaryColor: "#FFFFFF",
+    colorMix: { primary: 72, secondary: 28 },
+  },
+  "ud-oliveirense": {
+    clubId: "ud-oliveirense",
+    primaryColor: "#D71920",
+    secondaryColor: "#000000",
+    colorMix: { primary: 66, secondary: 34 },
   },
 
     /* =========================

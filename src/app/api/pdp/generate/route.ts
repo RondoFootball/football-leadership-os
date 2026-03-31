@@ -5,6 +5,7 @@ import type {
   DevelopmentPlanV1,
   Lang,
 } from "@/app/development/player-development-plan/ui/lib/engineSchema";
+import { composeKnowledgeContext } from "../core/knowledgeComposer";
 import { buildPlannerState } from "../chat/chatPlanner";
 
 const apiKey = process.env.OPENAI_API_KEY;
@@ -24,6 +25,26 @@ type ApiInput = {
   messages: ChatMsg[];
   draftPlan?: Partial<DevelopmentPlanV1>;
   lang?: Lang;
+  plannerState?: {
+    filledSlots?: Record<string, boolean>;
+    usableSlots?: Record<string, boolean>;
+    strongSlots?: Record<string, boolean>;
+    slotStatuses?: Record<
+      string,
+      {
+        quality?: string;
+        progress?: number;
+        slide?: string;
+      }
+    >;
+    missingFirstDraft?: string[];
+    missingStrongDraft?: string[];
+    intent?: string;
+    nextPrioritySlot?: string;
+    nextPrioritySlide?: string;
+    firstDraftProgress?: number;
+    strongDraftProgress?: number;
+  } | null;
 };
 
 type ParsedGenerateResponse = {
@@ -129,6 +150,30 @@ function normalizeGenerateResponse(
   };
 }
 
+function sanitizePlannerState(
+  plannerState: ApiInput["plannerState"]
+): Record<string, unknown> | null {
+  if (!plannerState) return null;
+
+  return {
+    filledSlots: plannerState.filledSlots || {},
+    usableSlots: plannerState.usableSlots || {},
+    strongSlots: plannerState.strongSlots || {},
+    slotStatuses: plannerState.slotStatuses || {},
+    missingFirstDraft: Array.isArray(plannerState.missingFirstDraft)
+      ? plannerState.missingFirstDraft
+      : [],
+    missingStrongDraft: Array.isArray(plannerState.missingStrongDraft)
+      ? plannerState.missingStrongDraft
+      : [],
+    intent: plannerState.intent || "ask",
+    nextPrioritySlot: plannerState.nextPrioritySlot,
+    nextPrioritySlide: plannerState.nextPrioritySlide,
+    firstDraftProgress: plannerState.firstDraftProgress || 0,
+    strongDraftProgress: plannerState.strongDraftProgress || 0,
+  };
+}
+
 function buildGeneratePrompt(lang: Lang) {
   return `
 You generate a high-quality football Player Development Plan patch.
@@ -143,6 +188,8 @@ PRIMARY TASK
 Build the strongest truthful first-draft patch possible from:
 - the current structured draft
 - the conversation
+- the planner state
+- the relevant football knowledge context
 
 Your output must:
 - improve wording
@@ -170,6 +217,7 @@ WHAT YOU SHOULD DO
 - turn implicit meaning into explicit plan wording when clearly supported
 - choose the best slide-fit formulation
 - make the result sound like strong football staff language
+- use the knowledge context as an internal reasoning frame, not as visible theory dumping
 
 WHAT YOU SHOULD NOT DO
 - copy raw user sentences literally
@@ -178,6 +226,7 @@ WHAT YOU SHOULD NOT DO
 - produce motivational filler
 - duplicate the same idea across multiple slides
 - force full completeness
+- dump principles or theory into the plan
 
 QUALITY STANDARD
 The patch should feel:
@@ -371,11 +420,16 @@ Return exactly this shape:
 
 export async function POST(req: Request) {
   try {
+    const body = (await req.json()) as ApiInput;
+    const messages = Array.isArray(body.messages) ? body.messages : [];
+    const draftPlan = body.draftPlan || {};
+    const lang: Lang = body.lang === "en" ? "en" : "nl";
+
     if (!client) {
       return NextResponse.json(
         {
           message: localMessage(
-            "nl",
+            lang,
             "OPENAI_API_KEY ontbreekt in je lokale environment.",
             "OPENAI_API_KEY is missing in your local environment."
           ),
@@ -383,11 +437,6 @@ export async function POST(req: Request) {
         { status: 500 }
       );
     }
-
-    const body = (await req.json()) as ApiInput;
-    const messages = Array.isArray(body.messages) ? body.messages : [];
-    const draftPlan = body.draftPlan || {};
-    const lang: Lang = body.lang === "en" ? "en" : "nl";
 
     if (!hasMeaningfulUserInput(messages)) {
       const planner = buildPlannerState(draftPlan);
@@ -406,6 +455,25 @@ export async function POST(req: Request) {
     }
 
     const plannerBefore = buildPlannerState(draftPlan);
+    const incomingPlanner = sanitizePlannerState(body.plannerState);
+
+    const basePlanner =
+      incomingPlanner &&
+      Object.keys(
+        (incomingPlanner.filledSlots as Record<string, boolean>) || {}
+      ).length
+        ? {
+            ...plannerBefore,
+            ...incomingPlanner,
+          }
+        : plannerBefore;
+
+    const knowledgeContext = composeKnowledgeContext({
+      lang,
+      draftPlan,
+      planner: basePlanner,
+      messages,
+    });
 
     const conversation = messages
       .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
@@ -426,7 +494,22 @@ Current structured draft:
 ${JSON.stringify(draftPlan, null, 2)}
 
 Current planner state:
-${JSON.stringify(plannerBefore, null, 2)}
+${JSON.stringify(basePlanner, null, 2)}
+
+Relevant knowledge context:
+${knowledgeContext.knowledgeText}
+
+Knowledge routing metadata:
+${JSON.stringify(
+  {
+    selectedContext: knowledgeContext.selectedContext,
+    selectedFocus: knowledgeContext.selectedFocus,
+    selectedRoleKey: knowledgeContext.selectedRoleKey,
+    selectedRoleLabel: knowledgeContext.selectedRoleLabel,
+  },
+  null,
+  2
+)}
 
 Conversation so far:
 ${conversation}
@@ -441,6 +524,7 @@ Rules:
 - do not force completeness
 - keep all output compact and slide-ready
 - if a section is weak, keep it partial rather than fabricated
+- use the knowledge context only as internal football intelligence
 
 Return only valid JSON.
           `.trim(),
@@ -449,6 +533,7 @@ Return only valid JSON.
     });
 
     const text = response.output_text?.trim();
+
     if (!text) {
       throw new Error(
         localMessage(
