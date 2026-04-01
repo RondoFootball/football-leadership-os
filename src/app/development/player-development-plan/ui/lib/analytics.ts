@@ -23,6 +23,15 @@ type DownloadMeta = BaseMeta & {
   usedGeneratedPlan: boolean;
 };
 
+type ClubContextMeta = BaseMeta & {
+  country?: string;
+  league?: string;
+  club?: string;
+  teamType?: string;
+  team?: string;
+  clubMode?: "preset" | "custom";
+};
+
 function cleanString(value: unknown, fallback = "unknown") {
   const s = typeof value === "string" ? value.trim() : "";
   return s || fallback;
@@ -41,6 +50,18 @@ function cleanNumber(value: unknown, fallback = 0) {
 
 function cleanBoolean(value: unknown) {
   return !!value;
+}
+
+function bucketTextLength(value: unknown) {
+  const s = typeof value === "string" ? value.trim() : "";
+  const len = s.length;
+
+  if (len === 0) return "empty";
+  if (len <= 10) return "1_10";
+  if (len <= 25) return "11_25";
+  if (len <= 50) return "26_50";
+  if (len <= 100) return "51_100";
+  return "100_plus";
 }
 
 function sanitizePayload<T extends Record<string, Primitive>>(payload: T) {
@@ -74,13 +95,24 @@ function safeTrack(eventName: string, payload?: Record<string, Primitive>) {
   }
 }
 
+function getDraftStage(totalProgress: number) {
+  if (totalProgress < 40) return "early";
+  if (totalProgress < 80) return "mid";
+  return "late";
+}
+
 /**
  * Core builder visibility
  */
-export function trackPdpBuilderViewed(meta: BaseMeta) {
+export function trackPdpBuilderViewed(
+  meta: BaseMeta & {
+    entryPoint?: string;
+  }
+) {
   safeTrack("PDP Builder Viewed", {
     lang: meta.lang,
     mode: meta.mode,
+    entryPoint: cleanOptionalString(meta.entryPoint),
   });
 }
 
@@ -95,6 +127,26 @@ export function trackPdpLanguageChanged(meta: BaseMeta) {
   safeTrack("PDP Language Changed", {
     lang: meta.lang,
     mode: meta.mode,
+  });
+}
+
+export function trackPdpSectionViewed(
+  meta: BaseMeta & {
+    section:
+      | "basics"
+      | "branding"
+      | "workspace"
+      | "evidence"
+      | "export"
+      | "video_panel";
+    state?: "open" | "close" | "view";
+  }
+) {
+  safeTrack("PDP Section Viewed", {
+    lang: meta.lang,
+    mode: meta.mode,
+    section: meta.section,
+    state: cleanOptionalString(meta.state),
   });
 }
 
@@ -139,18 +191,47 @@ export function trackPdpFieldStarted(
 }
 
 /**
- * Stronger product/market signals
+ * Do not send full player names.
+ * This tracks whether a name was entered and the rough length bucket.
  */
-export function trackPdpClubContextSelected(
+export function trackPdpPlayerIdentityProvided(
   meta: BaseMeta & {
-    country?: string;
-    league?: string;
-    club?: string;
-    teamType?: string;
-    team?: string;
-    clubMode?: "preset" | "custom";
+    hasPlayerName: boolean;
+    playerNameLengthBucket?: string;
+    hasPlayerRole?: boolean;
+    hasPhoto?: boolean;
   }
 ) {
+  safeTrack("PDP Player Identity Provided", {
+    lang: meta.lang,
+    mode: meta.mode,
+    hasPlayerName: cleanBoolean(meta.hasPlayerName),
+    playerNameLengthBucket: cleanOptionalString(meta.playerNameLengthBucket),
+    hasPlayerRole: cleanBoolean(meta.hasPlayerRole),
+    hasPhoto: cleanBoolean(meta.hasPhoto),
+  });
+}
+
+export function trackPdpDevelopmentPointStarted(
+  meta: BaseMeta & {
+    textLengthBucket?: string;
+  }
+) {
+  safeTrack("PDP Development Point Started", {
+    lang: meta.lang,
+    mode: meta.mode,
+    textLengthBucket: cleanOptionalString(meta.textLengthBucket),
+  });
+}
+
+export function getTextLengthBucket(value: unknown) {
+  return bucketTextLength(value);
+}
+
+/**
+ * Stronger product/market signals
+ */
+export function trackPdpClubContextSelected(meta: ClubContextMeta) {
   safeTrack("PDP Club Context Selected", {
     lang: meta.lang,
     mode: meta.mode,
@@ -183,11 +264,36 @@ export function trackPdpBrandingEdited(
 /**
  * Workspace behavior
  */
-export function trackPdpHintUsed(meta: BaseMeta & { hintLabel?: string }) {
+export function trackPdpHintUsed(
+  meta: BaseMeta & {
+    hintLabel?: string;
+  }
+) {
   safeTrack("PDP Hint Used", {
     lang: meta.lang,
     mode: meta.mode,
     hintLabel: cleanOptionalString(meta.hintLabel),
+  });
+}
+
+/**
+ * For now: do not send raw free-text user questions.
+ * Use a category/bucket if you classify them in the builder.
+ */
+export function trackPdpQuestionTypeDetected(
+  meta: BaseMeta & {
+    questionType:
+      | "observation"
+      | "moment"
+      | "effect"
+      | "development_point"
+      | "other";
+  }
+) {
+  safeTrack("PDP Question Type Detected", {
+    lang: meta.lang,
+    mode: meta.mode,
+    questionType: meta.questionType,
   });
 }
 
@@ -284,6 +390,22 @@ export function trackPdpCompleted(meta: BaseMeta & { totalProgress: number }) {
 }
 
 /**
+ * Time-on-builder style signal.
+ * Fire this from the builder after timers (30s / 60s / 120s for example).
+ */
+export function trackPdpTimeOnBuilder(
+  meta: BaseMeta & {
+    seconds: number;
+  }
+) {
+  safeTrack("PDP Time On Builder", {
+    lang: meta.lang,
+    mode: meta.mode,
+    seconds: cleanNumber(meta.seconds),
+  });
+}
+
+/**
  * Draft / export behavior
  * This is the most important commercial signal.
  */
@@ -300,12 +422,7 @@ export function trackPdpDownloadRequested(meta: DownloadMeta) {
     team: cleanOptionalString(meta.team),
     hasPhoto: cleanBoolean(meta.hasPhoto),
     usedGeneratedPlan: cleanBoolean(meta.usedGeneratedPlan),
-    draftStage:
-      meta.totalProgress < 40
-        ? "early"
-        : meta.totalProgress < 80
-        ? "mid"
-        : "late",
+    draftStage: getDraftStage(meta.totalProgress),
   });
 }
 
@@ -322,12 +439,7 @@ export function trackPdpDownloaded(meta: DownloadMeta) {
     team: cleanOptionalString(meta.team),
     hasPhoto: cleanBoolean(meta.hasPhoto),
     usedGeneratedPlan: cleanBoolean(meta.usedGeneratedPlan),
-    draftStage:
-      meta.totalProgress < 40
-        ? "early"
-        : meta.totalProgress < 80
-        ? "mid"
-        : "late",
+    draftStage: getDraftStage(meta.totalProgress),
   });
 }
 
