@@ -4,12 +4,17 @@ import {
   trackPdpBuilderViewed,
   trackPdpStarted,
   trackPdpFieldStarted,
+  trackPdpClubContextSelected,
+  trackPdpBrandingEdited,
+  trackPdpHintUsed,
+  trackPdpPlanGenerated,
+  trackPdpEvidenceAdded,
+  trackPdpEvidencePanelToggled,
+  trackPdpSectionCompleted,
+  trackPdpMilestoneReached,
+  trackPdpCompleted,
   trackPdpModeChanged,
   trackPdpLanguageChanged,
-  trackPdpSectionCompleted,
-  trackPdpCompleted,
-  trackPdpHintUsed,
-  trackPdpEvidenceAdded,
   trackPdpDownloadRequested,
   trackPdpDownloaded,
   trackPdpDownloadFailed,
@@ -352,6 +357,7 @@ const COUNTRY_LABELS: Record<string, { nl: string; en: string }> = {
   Italy: { nl: "Italië", en: "Italy" },
   Portugal: { nl: "Portugal", en: "Portugal" },
   Sweden: { nl: "Zweden", en: "Sweden" },
+  "United States": { nl: "Verenigde Staten", en: "United States" },
   Other: { nl: "Overig", en: "Other" },
 };
 
@@ -490,14 +496,6 @@ export default function PlayerDevelopmentPlanBuilder() {
 
   const [lang, setLang] = useState<Lang>("en");
   const [mode, setMode] = useState<Mode>("chat");
-  const prevModeRef = useRef(mode);
-
-useEffect(() => {
-  if (prevModeRef.current !== mode) {
-    trackPdpModeChanged({ mode, lang });
-    prevModeRef.current = mode;
-  }
-}, [mode, lang]);
   const [chatPlannerState, setChatPlannerState] =
     useState<ChatPlannerState | null>(null);
   const [pendingChatPrompt, setPendingChatPrompt] = useState("");
@@ -518,36 +516,70 @@ useEffect(() => {
 
   const t = UI[lang];
   const otherLang: Lang = lang === "nl" ? "en" : "nl";
-  const hasStartedRef = useRef(false);
-const trackedFieldsRef = useRef<Record<string, boolean>>({});
-const trackedSectionsRef = useRef<Record<string, boolean>>({});
-const hasCompletedRef = useRef(false);
 
-function ensureStarted(source: string) {
-  if (hasStartedRef.current) return;
+  const hasTrackedViewRef = useRef(false);
+  const hasTrackedStartRef = useRef(false);
+  const hasTrackedCompleteRef = useRef(false);
+  const trackedFieldsRef = useRef<Record<string, boolean>>({});
+  const trackedSectionsRef = useRef<Record<string, boolean>>({});
+  const trackedMilestonesRef = useRef<Record<string, boolean>>({});
+  const prevModeRef = useRef<Mode>(mode);
+  const prevLangRef = useRef<Lang>(lang);
 
-  hasStartedRef.current = true;
+  function ensureStarted(source: string) {
+    if (hasTrackedStartRef.current) return;
 
-  trackPdpStarted({
-    source,
-    mode,
-    lang,
-  });
-}
+    hasTrackedStartRef.current = true;
+    trackPdpStarted({
+      source,
+      mode,
+      lang,
+    });
+  }
 
-function trackFieldOnce(field: string, value?: any) {
-  ensureStarted(field);
+  function trackFieldOnce(field: string, value?: string | number | boolean) {
+    ensureStarted(field);
 
-  if (trackedFieldsRef.current[field]) return;
-  trackedFieldsRef.current[field] = true;
+    if (trackedFieldsRef.current[field]) return;
+    trackedFieldsRef.current[field] = true;
 
-  trackPdpFieldStarted({
-    field,
-    value,
-    mode,
-    lang,
-  });
-}
+    trackPdpFieldStarted({
+      field,
+      value,
+      mode,
+      lang,
+    });
+  }
+
+  useEffect(() => {
+    if (hasTrackedViewRef.current) return;
+
+    hasTrackedViewRef.current = true;
+    trackPdpBuilderViewed({
+      mode,
+      lang,
+    });
+  }, [mode, lang]);
+
+  useEffect(() => {
+    if (prevModeRef.current === mode) return;
+
+    prevModeRef.current = mode;
+    trackPdpModeChanged({
+      mode,
+      lang,
+    });
+  }, [mode, lang]);
+
+  useEffect(() => {
+    if (prevLangRef.current === lang) return;
+
+    prevLangRef.current = lang;
+    trackPdpLanguageChanged({
+      mode,
+      lang,
+    });
+  }, [lang, mode]);
 
   useEffect(() => {
     setGeneratedPlan(null);
@@ -970,6 +1002,75 @@ function trackFieldOnce(field: string, value?: any) {
 
   const completedSections = sections.filter((s) => s.progress === 100).length;
 
+  useEffect(() => {
+    const sectionMap = [
+      { key: "basics", value: basicsProgress.progress },
+      { key: "cover", value: coverReady ? 100 : 0 },
+      { key: "agreement", value: agreementProgress.progress },
+      { key: "context", value: contextProgress.progress },
+      { key: "reality", value: realityProgress.progress },
+      { key: "approach", value: approachProgress.progress },
+      { key: "success", value: successProgress.progress },
+      { key: "evidence", value: evidenceProgress.progress },
+    ] as const;
+
+    sectionMap.forEach(({ key, value }) => {
+      if (value === 100 && !trackedSectionsRef.current[key]) {
+        trackedSectionsRef.current[key] = true;
+
+        ensureStarted(`section_${key}`);
+
+        trackPdpSectionCompleted({
+          section: key,
+          totalProgress,
+          mode,
+          lang,
+        });
+      }
+    });
+
+    const milestones = [25, 50, 75, 100] as const;
+
+    milestones.forEach((milestone) => {
+      const milestoneKey = String(milestone);
+      if (
+        totalProgress >= milestone &&
+        !trackedMilestonesRef.current[milestoneKey]
+      ) {
+        trackedMilestonesRef.current[milestoneKey] = true;
+
+        trackPdpMilestoneReached({
+          milestone,
+          totalProgress,
+          mode,
+          lang,
+        });
+      }
+    });
+
+    if (totalProgress === 100 && !hasTrackedCompleteRef.current) {
+      hasTrackedCompleteRef.current = true;
+
+      trackPdpCompleted({
+        totalProgress,
+        mode,
+        lang,
+      });
+    }
+  }, [
+    basicsProgress.progress,
+    coverReady,
+    agreementProgress.progress,
+    contextProgress.progress,
+    realityProgress.progress,
+    approachProgress.progress,
+    successProgress.progress,
+    evidenceProgress.progress,
+    totalProgress,
+    mode,
+    lang,
+  ]);
+
   const clipCount = [0, 1, 2].filter(
     (idx) =>
       !!(plan as any)?.slide3Baseline?.videoClips?.[idx]?.url ||
@@ -991,12 +1092,22 @@ function trackFieldOnce(field: string, value?: any) {
   }, [primary, secondary, tertiary]);
 
   function onPlanGenerated(next: DevelopmentPlanV1) {
+    ensureStarted("chat_generation");
+
+    trackPdpPlanGenerated({
+      via: "chat",
+      mode,
+      lang,
+    });
+
     const merged = mergeGeneratedPlanWithLockedBasics(plan, next);
     setPlan(merged);
     setGeneratedPlan(merged);
   }
 
   function setTeamTypeValue(value: TeamType | "") {
+    trackFieldOnce("team_type", value);
+
     setPlan((prev) => {
       const next = structuredClone(prev);
       setGeneratedPlan(null);
@@ -1025,6 +1136,19 @@ function trackFieldOnce(field: string, value?: any) {
   }
 
   function applyClubPreset(clubName: string) {
+    trackFieldOnce("club_preset", clubName);
+
+    trackPdpClubContextSelected({
+      country: selectedCountry || undefined,
+      league: selectedLeague || undefined,
+      club: clubName,
+      teamType: teamType || undefined,
+      team: plan.meta.team || undefined,
+      clubMode: "preset",
+      mode,
+      lang,
+    });
+
     const preset = getClubPresetByName(clubName);
     const presetAny = preset as any;
 
@@ -1083,12 +1207,34 @@ function trackFieldOnce(field: string, value?: any) {
       merged.status = hasUrl || hasUpload ? "active" : "pending";
       next.slide3Baseline.videoClips[index] = merged;
 
+      if (patch.url && String(patch.url).trim()) {
+        ensureStarted("video_url");
+
+        trackPdpEvidenceAdded({
+          type: "video",
+          clipIndex: index + 1,
+          method: "url",
+          mode,
+          lang,
+        });
+      }
+
       return next;
     });
   }
 
   function handleVideoUpload(index: number, file: File | null) {
     if (!file) return;
+
+    ensureStarted("video_upload");
+
+    trackPdpEvidenceAdded({
+      type: "video",
+      clipIndex: index + 1,
+      method: "upload",
+      mode,
+      lang,
+    });
 
     const objectUrl = URL.createObjectURL(file);
 
@@ -1146,6 +1292,22 @@ function trackFieldOnce(field: string, value?: any) {
     try {
       const exportPlan = generatedPlan || plan;
 
+      ensureStarted("download");
+
+      trackPdpDownloadRequested({
+        version,
+        exportLang,
+        totalProgress,
+        club: exportPlan.brand?.clubName || "unknown",
+        country: selectedCountry || undefined,
+        league: selectedLeague || undefined,
+        team: exportPlan.meta?.team || undefined,
+        hasPhoto: !!exportPlan.player?.headshotUrl,
+        usedGeneratedPlan: !!generatedPlan,
+        mode,
+        lang,
+      });
+
       const res = await fetch(`/api/pdp/pdf`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1166,12 +1328,32 @@ function trackFieldOnce(field: string, value?: any) {
 
       if (!res.ok) {
         const errorText = await res.text();
+
+        trackPdpDownloadFailed({
+          version,
+          exportLang,
+          status: res.status,
+          totalProgress,
+          mode,
+          lang,
+        });
+
         alert(errorText);
         return;
       }
 
       if (!contentType.toLowerCase().includes("pdf")) {
         const errorText = await res.text();
+
+        trackPdpDownloadFailed({
+          version,
+          exportLang,
+          status: "invalid_content_type",
+          totalProgress,
+          mode,
+          lang,
+        });
+
         alert(errorText);
         return;
       }
@@ -1187,13 +1369,45 @@ function trackFieldOnce(field: string, value?: any) {
       a.remove();
 
       setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+      trackPdpDownloaded({
+        version,
+        exportLang,
+        totalProgress,
+        club: exportPlan.brand?.clubName || "unknown",
+        country: selectedCountry || undefined,
+        league: selectedLeague || undefined,
+        team: exportPlan.meta?.team || undefined,
+        hasPhoto: !!exportPlan.player?.headshotUrl,
+        usedGeneratedPlan: !!generatedPlan,
+        mode,
+        lang,
+      });
     } catch (error) {
       console.error("Download failed:", error);
+
+      trackPdpDownloadFailed({
+        version,
+        exportLang,
+        status: "client_exception",
+        totalProgress,
+        mode,
+        lang,
+      });
+
       alert("Er ging iets mis bij het downloaden van de PDF.");
     }
   }
 
   function insertPrompt(text: string) {
+    ensureStarted("hint");
+
+    trackPdpHintUsed({
+      hintLabel: text.slice(0, 80),
+      mode,
+      lang,
+    });
+
     setPendingChatPrompt(`${text} `);
   }
 
@@ -1360,23 +1574,25 @@ function trackFieldOnce(field: string, value?: any) {
                         <Input
                           label={t.playerName}
                           value={plan.player.name}
-                          onChange={(v) =>
+                          onChange={(v) => {
+                            trackFieldOnce("player_name");
                             setPlan((prev) => ({
                               ...prev,
                               player: { ...prev.player, name: v },
-                            }))
-                          }
+                            }));
+                          }}
                         />
 
                         <Input
                           label={t.playerPosition}
                           value={plan.player.role}
-                          onChange={(v) =>
+                          onChange={(v) => {
+                            trackFieldOnce("player_role");
                             setPlan((prev) => ({
                               ...prev,
                               player: { ...prev.player, role: v },
-                            }))
-                          }
+                            }));
+                          }}
                         />
 
                         <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -1411,12 +1627,13 @@ function trackFieldOnce(field: string, value?: any) {
                             <Input
                               label={t.playerPhoto}
                               value={plan.player.headshotUrl}
-                              onChange={(v) =>
+                              onChange={(v) => {
+                                trackFieldOnce("player_photo");
                                 setPlan((prev) => ({
                                   ...prev,
                                   player: { ...prev.player, headshotUrl: v },
-                                }))
-                              }
+                                }));
+                              }}
                             />
                             <div className="mt-2 text-[11px] leading-relaxed text-white/35">
                               {t.photoHelp}
@@ -1444,6 +1661,19 @@ function trackFieldOnce(field: string, value?: any) {
                         iconUrl: getCountryLogoUrlByName(country),
                       }))}
                       onChange={(value) => {
+                        trackFieldOnce("country", value);
+
+                        trackPdpClubContextSelected({
+                          country: value,
+                          league: undefined,
+                          club: undefined,
+                          teamType: teamType || undefined,
+                          team: plan.meta.team || undefined,
+                          clubMode: "preset",
+                          mode,
+                          lang,
+                        });
+
                         setSelectedCountry(value);
                         setSelectedLeague("");
                         setClubMode("preset");
@@ -1475,6 +1705,19 @@ function trackFieldOnce(field: string, value?: any) {
                           iconUrl: getLeagueLogoUrlByName(league),
                         }))}
                         onChange={(value) => {
+                          trackFieldOnce("league", value);
+
+                          trackPdpClubContextSelected({
+                            country: selectedCountry || undefined,
+                            league: value,
+                            club: undefined,
+                            teamType: teamType || undefined,
+                            team: plan.meta.team || undefined,
+                            clubMode: "preset",
+                            mode,
+                            lang,
+                          });
+
                           setSelectedLeague(value);
                           setClubMode("preset");
                           setGeneratedPlan(null);
@@ -1570,13 +1813,26 @@ function trackFieldOnce(field: string, value?: any) {
                             <Input
                               label={t.customClub}
                               value={plan.meta.club || ""}
-                              onChange={(v) =>
+                              onChange={(v) => {
+                                trackFieldOnce("club_custom");
+
+                                trackPdpClubContextSelected({
+                                  country: selectedCountry || undefined,
+                                  league: selectedLeague || undefined,
+                                  club: v || undefined,
+                                  teamType: teamType || undefined,
+                                  team: plan.meta.team || undefined,
+                                  clubMode: "custom",
+                                  mode,
+                                  lang,
+                                });
+
                                 setPlan((prev) => ({
                                   ...prev,
                                   meta: { ...prev.meta, club: v },
                                   brand: { ...prev.brand, clubName: v },
-                                }))
-                              }
+                                }));
+                              }}
                             />
                             <div className="mt-2 text-[11px] leading-relaxed text-white/35">
                               {t.customClubHelp}
@@ -1611,7 +1867,20 @@ function trackFieldOnce(field: string, value?: any) {
                           value: age,
                           label: age,
                         }))}
-                        onChange={(value) =>
+                        onChange={(value) => {
+                          trackFieldOnce("academy_age", value);
+
+                          trackPdpClubContextSelected({
+                            country: selectedCountry || undefined,
+                            league: selectedLeague || undefined,
+                            club: plan.brand.clubName || plan.meta.club || undefined,
+                            teamType: teamType || undefined,
+                            team: value,
+                            clubMode,
+                            mode,
+                            lang,
+                          });
+
                           setPlan((prev) => ({
                             ...prev,
                             player: {
@@ -1623,8 +1892,8 @@ function trackFieldOnce(field: string, value?: any) {
                               ...prev.meta,
                               team: value,
                             },
-                          }))
-                        }
+                          }));
+                        }}
                       />
                     ) : (
                       <div className="hidden sm:block" />
@@ -1635,15 +1904,16 @@ function trackFieldOnce(field: string, value?: any) {
                         label={t.periodWeeks}
                         value={plan.meta.blockLengthWeeks || 8}
                         lang={lang}
-                        onChange={(value) =>
+                        onChange={(value) => {
+                          trackFieldOnce("block_length_weeks", value);
                           setPlan((prev) => ({
                             ...prev,
                             meta: {
                               ...prev.meta,
                               blockLengthWeeks: value,
                             },
-                          }))
-                        }
+                          }));
+                        }}
                       />
                     </div>
                   </div>
@@ -1702,60 +1972,95 @@ function trackFieldOnce(field: string, value?: any) {
                   <Input
                     label={t.primaryColor}
                     value={plan.brand.primaryColor}
-                    onChange={(v) =>
+                    onChange={(v) => {
+                      trackFieldOnce("primary_color");
+                      trackPdpBrandingEdited({
+                        changedField: "primaryColor",
+                        mode,
+                        lang,
+                      });
+
                       setPlan((prev) => ({
                         ...prev,
                         brand: { ...prev.brand, primaryColor: v },
-                      }))
-                    }
+                      }));
+                    }}
                   />
 
                   <Input
                     label={t.secondaryColor}
                     value={plan.brand.secondaryColor}
-                    onChange={(v) =>
+                    onChange={(v) => {
+                      trackFieldOnce("secondary_color");
+                      trackPdpBrandingEdited({
+                        changedField: "secondaryColor",
+                        mode,
+                        lang,
+                      });
+
                       setPlan((prev) => ({
                         ...prev,
                         brand: { ...prev.brand, secondaryColor: v },
-                      }))
-                    }
+                      }));
+                    }}
                   />
 
                   <Input
                     label={t.tertiaryColor}
                     value={(plan.brand as any).tertiaryColor || ""}
-                    onChange={(v) =>
+                    onChange={(v) => {
+                      trackFieldOnce("tertiary_color");
+                      trackPdpBrandingEdited({
+                        changedField: "tertiaryColor",
+                        mode,
+                        lang,
+                      });
+
                       setPlan((prev) => ({
                         ...prev,
                         brand: { ...(prev.brand as any), tertiaryColor: v },
-                      }))
-                    }
+                      }));
+                    }}
                   />
 
                   <Input
                     label={t.colorBalance}
                     value={String((plan.brand as any).colorBalance || 70)}
-                    onChange={(v) =>
+                    onChange={(v) => {
+                      trackFieldOnce("color_balance");
+                      trackPdpBrandingEdited({
+                        changedField: "colorBalance",
+                        mode,
+                        lang,
+                      });
+
                       setPlan((prev) => ({
                         ...prev,
                         brand: {
                           ...(prev.brand as any),
                           colorBalance: Number(v),
                         },
-                      }))
-                    }
+                      }));
+                    }}
                   />
 
                   <div className="sm:col-span-2">
                     <Input
                       label={t.logoUrl}
                       value={plan.brand.logoUrl}
-                      onChange={(v) =>
+                      onChange={(v) => {
+                        trackFieldOnce("logo_url");
+                        trackPdpBrandingEdited({
+                          changedField: "logoUrl",
+                          mode,
+                          lang,
+                        });
+
                         setPlan((prev) => ({
                           ...prev,
                           brand: { ...prev.brand, logoUrl: v },
-                        }))
-                      }
+                        }));
+                      }}
                     />
                   </div>
                 </div>
@@ -1843,12 +2148,13 @@ function trackFieldOnce(field: string, value?: any) {
                       <Input
                         label={t.developmentPoint}
                         value={plan.slide2?.focusBehaviour}
-                        onChange={(v) =>
+                        onChange={(v) => {
+                          trackFieldOnce("manual_development_point");
                           setPlan((prev) => ({
                             ...prev,
                             slide2: { ...prev.slide2, focusBehaviour: v },
-                          }))
-                        }
+                          }));
+                        }}
                       />
                     </div>
                   </div>
@@ -1904,7 +2210,20 @@ function trackFieldOnce(field: string, value?: any) {
                   <div className="rounded-[18px] border border-white/8 bg-[#0b0f14]">
                     <button
                       type="button"
-                      onClick={() => setVideoPanelOpen((v) => !v)}
+                      onClick={() =>
+                        setVideoPanelOpen((v) => {
+                          const next = !v;
+
+                          trackPdpEvidencePanelToggled({
+                            panel: "video",
+                            state: next ? "open" : "close",
+                            mode,
+                            lang,
+                          });
+
+                          return next;
+                        })
+                      }
                       className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left"
                     >
                       <div className="min-w-0">
@@ -2359,7 +2678,13 @@ function VideoCardCompact({
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   return (
-    <div className={compact ? "space-y-2.5" : "rounded-[18px] border border-white/10 bg-white/[0.02] p-3"}>
+    <div
+      className={
+        compact
+          ? "space-y-2.5"
+          : "rounded-[18px] border border-white/10 bg-white/[0.02] p-3"
+      }
+    >
       {!compact && (
         <div className="mb-3 flex items-center justify-between gap-3">
           <div className="text-[13px] font-medium text-white/86">{title}</div>
