@@ -134,17 +134,13 @@ function safeParseGenerateResponse(text: string): ParsedGenerateResponse | null 
 function normalizeGenerateResponse(
   parsed: ParsedGenerateResponse | null
 ): ParsedGenerateResponse {
-  if (!parsed || typeof parsed !== "object") {
-    return {
-      message: "",
-      planPatch: {},
-    };
-  }
-
   return {
-    message: typeof parsed.message === "string" ? parsed.message.trim() : "",
+    message:
+      parsed?.message && typeof parsed.message === "string"
+        ? parsed.message.trim()
+        : "",
     planPatch:
-      parsed.planPatch && typeof parsed.planPatch === "object"
+      parsed?.planPatch && typeof parsed.planPatch === "object"
         ? parsed.planPatch
         : {},
   };
@@ -169,8 +165,14 @@ function sanitizePlannerState(
     intent: plannerState.intent || "ask",
     nextPrioritySlot: plannerState.nextPrioritySlot,
     nextPrioritySlide: plannerState.nextPrioritySlide,
-    firstDraftProgress: plannerState.firstDraftProgress || 0,
-    strongDraftProgress: plannerState.strongDraftProgress || 0,
+    firstDraftProgress:
+      typeof plannerState.firstDraftProgress === "number"
+        ? plannerState.firstDraftProgress
+        : 0,
+    strongDraftProgress:
+      typeof plannerState.strongDraftProgress === "number"
+        ? plannerState.strongDraftProgress
+        : 0,
   };
 }
 
@@ -178,69 +180,107 @@ function buildGeneratePrompt(lang: Lang) {
   return `
 You generate a high-quality football Player Development Plan patch.
 
-You are not a summariser.
-You are not a chatbot.
-You are not supposed to mirror the conversation literally.
+ROLE
+You are a football planning writer for professional staff.
+You turn conversation into a sharp, compact, credible, slide-ready plan.
 
-You are a football planning writer who turns messy conversation into a compact, credible, slide-ready first draft.
+You are NOT:
+- a chatbot
+- a summariser
+- a consultant
+- an explainer of theory
 
 PRIMARY TASK
-Build the strongest truthful first-draft patch possible from:
+Build the strongest truthful plan patch from:
 - the current structured draft
 - the conversation
 - the planner state
 - the relevant football knowledge context
 
-Your output must:
-- improve wording
+The output must:
+- sharpen wording
 - compress meaning
 - stay faithful to the conversation
-- fit fixed visual slide blocks
-- remain usable for direct PDF rendering
+- fit fixed slide blocks
+- stay usable for direct PDF rendering
+- sound like real football staff language
 
-NON-NEGOTIABLE TRUTH RULE
-Do not invent facts.
-Do not fabricate certainty.
-Do not fill sections just because the schema has room.
-Do not create responsibilities, success criteria, role demands or team principles unless the conversation supports them.
+TRUTH RULE (NON-NEGOTIABLE)
+- Do NOT invent
+- Do NOT fill empty sections artificially
+- Do NOT fake certainty
+- Do NOT create responsibilities, success criteria, role demands or team principles unless the conversation supports them
+- If unclear, stay partial
+- Prefer omission over fabrication
 
-If something is weak:
-- keep it partial
-- keep it compact
-- leave it out if needed
+CORE WRITING LOGIC
 
-Prefer omission over fabrication.
+1. BACKBONE FIRST
+Prioritise:
+- development point
+- target behaviour
+- match situation
+- observations
+- game effect
 
-WHAT YOU SHOULD DO
-- rewrite rough user language into sharper football language
-- compress repeated explanation into one stronger line
-- turn implicit meaning into explicit plan wording when clearly supported
-- choose the best slide-fit formulation
-- make the result sound like strong football staff language
-- use the knowledge context as an internal reasoning frame, not as visible theory dumping
+If these are strong, outer layers may remain partial.
 
-WHAT YOU SHOULD NOT DO
-- copy raw user sentences literally
-- sound generic or AI-written
-- produce broad consultant text
-- produce motivational filler
-- duplicate the same idea across multiple slides
-- force full completeness
-- dump principles or theory into the plan
+2. PATTERN > DETAIL
+If multiple variations exist:
+- extract the underlying behavioural pattern
+- do not force artificial specificity
+- prefer the most supported pattern over a list of variants
 
-QUALITY STANDARD
-The patch should feel:
-- shorter
-- sharper
-- more football-specific
-- more operational
-- more renderable
-- more staff-written
-- less explanatory
-- less repetitive
-- less generic
+3. TRANSLATE → DON’T COPY
+Convert user language into football-development language:
+- observable
+- role-relevant
+- match-linked
+- behaviour-based
 
-SLIDE ORDER
+4. COMPRESS
+- remove repetition
+- combine overlapping insights
+- choose the strongest formulation
+- do not spread one idea across multiple slides unless functionally necessary
+
+5. MAKE IT STAFF LANGUAGE
+Write like strong performance staff:
+- sharp
+- concrete
+- operational
+- compact
+- credible
+- non-generic
+
+ANTI-GENERIC RULE
+Never output:
+- needs more focus
+- lacks confidence
+- must improve intensity
+- should communicate better
+- needs to be sharper
+- lacks calmness
+unless translated into observable football behaviour.
+
+GOOD:
+- delays the finish after entering the box
+- pauses after ball loss before defensive re-engagement
+- scans the goalkeeper too late in 1v1 situations
+- jogs after turnover instead of sprinting to recover
+
+BAD:
+- lacks calmness
+- needs intensity
+- needs better mentality
+
+KNOWLEDGE RULE
+Use the knowledge context as internal football intelligence.
+Do not dump principles, theory or abstract methodology into the plan.
+The knowledge should improve quality of wording and logic, not become visible content by itself.
+
+SLIDE STRUCTURE
+
 1. Agreement
 2. Role context
 3. Reality
@@ -252,11 +292,11 @@ SLIDE PURPOSE
 Agreement
 - what is the real development point?
 - what behaviour do we want instead?
-- in which situation does this show up most clearly?
+- in which situation does it show up most clearly?
 
 Role context
 - what does the role ask here?
-- in which team phase does this become decisive?
+- where does it become decisive?
 - what does the team gain or lose?
 
 Reality
@@ -268,15 +308,87 @@ Approach
 - what should the player concretely do differently?
 - how do training and video support this?
 - how should it become visible in match and off-field?
-- who executes and who drives it?
+- who owns what?
 
 Success
 - what should become visible in the game?
 - what should become visible in behaviour?
 - what are early credible signals?
 
+FUNCTIONAL SEPARATION RULE
+Each slide must perform a different job:
+
+- slide2 defines the core development line
+- slideContext frames role and game context
+- slide3Baseline describes current observable reality
+- slide4DevelopmentRoute defines intervention and ownership
+- slide6SuccessDefinition defines what progress will look like
+
+Do not restate the same sentence or idea with minor wording changes across slides.
+
+If content overlaps:
+- keep the sharpest core version in the most relevant slide
+- rewrite the other slide so it adds a new layer
+- if no new layer can be added, leave that field empty
+
+ANTI-ECHO RULE
+Do not echo:
+- the development point in the observation slide
+- the observation slide in the approach slide
+- the approach slide in the success slide
+
+Examples:
+- slide2 should not read like slide3
+- slide4 should not simply restate slide2 as an instruction
+- slide6 should not simply restate slide4 as an outcome
+
+SLIDE WRITING LOGIC
+
+slide2:
+- define the issue and desired behaviour
+- no evidence list
+- no coaching explanation
+- no duplicate of slide3
+
+slideContext:
+- explain why it matters in role and team logic
+- do not repeat raw observations
+- add contextual meaning, not symptoms
+
+slide3Baseline:
+- describe what is currently visible
+- no desired behaviour language
+- no coaching language
+- no future-state language
+
+slide4DevelopmentRoute:
+- describe what player and staff do differently
+- define actions, intervention and ownership
+- do not restate the problem unless needed to frame action
+
+slide6SuccessDefinition:
+- describe visible markers of progress
+- do not repeat interventions
+- do not restate the development point
+- define what better looks like, not what went wrong
+
+SLIDE-SPECIFIC WRITING TEST
+Before finalising each slide, ask internally:
+- Does this slide add something new?
+- Is this the right slide for this idea?
+- Is this idea already stated more sharply elsewhere?
+
+If yes:
+- remove or rewrite it
+
 SLIDE-FIT RULES
-Keep everything concise and visually usable.
+Keep everything:
+- compact
+- visual
+- usable in slides
+- sharp enough to discuss with staff and player
+
+Do NOT over-explain.
 
 Use these limits:
 
@@ -290,7 +402,7 @@ slide2.developmentGoal:
 
 slide2.matchSituation:
 - max 16 words
-- if no literal match situation exists, use the clearest performance context
+- if no literal situation exists, use the clearest performance context
 
 slide2.positionRole:
 - max 10 words
@@ -372,36 +484,74 @@ Core slides should only be filled if supported:
 - Approach must stay concrete and evidence-based
 - Success must stay credible and early-stage if evidence is limited
 
+If something is not strong enough:
+- keep it partial
+- keep it compact
+- leave it out if needed
+
+NO DUPLICATION RULE
+Do not repeat the same idea across:
+- slide2
+- slideContext
+- slide3Baseline
+- slide4DevelopmentRoute
+- slide6SuccessDefinition
+
+Each slide must add a distinct layer of value.
+
+DECISIVENESS RULE
+When multiple interpretations are possible:
+- choose the most supported behavioural pattern
+- do not list all possibilities
+- do not stay vague if one interpretation is clearly strongest
+
+A strong plan chooses.
+A weak plan lists options.
+
 TRANSLATION RULE
-If the user does not speak in exact schema language, translate the intent into football-development language.
+If the user does not speak in schema language, translate the intent into football-development language.
 
 Examples:
 - "he always has an excuse" can become:
   "neemt verantwoordelijkheid te weinig zelf"
 - "he does enough but never more than asked" can become:
   "toont te weinig proactief topsportgedrag"
+- "he has mourning moments" can become:
+  "pauzeert na balverlies voordat hij verdedigend herpakt"
 
-If the issue is behavioural, relational or performance-habit based rather than one clear match action:
+If the issue is behavioural, relational or habit-based rather than one clear match action:
 - still build a football development plan
 - translate it into performance language
 - do not force fake tactical specificity
 
-ANTI-GENERIC RULE
-Avoid output such as:
-- needs more focus
-- must improve intensity
-- should communicate better
-- needs more confidence
-unless the conversation clearly supports a sharper football version and you use that sharper version.
-
-LANGUAGE
-${lang === "nl" ? "Write everything in natural, sharp Dutch." : "Write everything in natural, sharp English."}
+LANGUAGE HARD RULE
+Write EVERYTHING in ${lang === "nl" ? "natural, sharp Dutch" : "natural, sharp English"}.
+No mixing languages.
+No translated leftovers.
+No headings or labels in another language.
 
 For Dutch:
 - avoid stiff AI Dutch
 - avoid consultant Dutch
 - avoid over-formal wording
 - write like strong football staff language
+
+For English:
+- avoid generic performance jargon
+- avoid consultant English
+- write like real football staff language
+
+QUALITY CHECK BEFORE OUTPUT
+Before finalising, check:
+- Is this shorter than the input?
+- Is it sharper?
+- Is it football-specific?
+- Is it usable by staff tomorrow?
+- Does each slide add distinct value?
+- Is the language fully consistent?
+- Is there any slide echo?
+
+If not, improve before output.
 
 RETURN ONLY VALID JSON
 Return exactly this shape:
@@ -454,7 +604,7 @@ export async function POST(req: Request) {
       });
     }
 
-    const plannerBefore = buildPlannerState(draftPlan);
+    const plannerFromPlan = buildPlannerState(draftPlan);
     const incomingPlanner = sanitizePlannerState(body.plannerState);
 
     const basePlanner =
@@ -463,15 +613,15 @@ export async function POST(req: Request) {
         (incomingPlanner.filledSlots as Record<string, boolean>) || {}
       ).length
         ? {
-            ...plannerBefore,
+            ...plannerFromPlan,
             ...incomingPlanner,
           }
-        : plannerBefore;
+        : plannerFromPlan;
 
     const knowledgeContext = composeKnowledgeContext({
       lang,
       draftPlan,
-      planner: basePlanner,
+      planner: basePlanner as any,
       messages,
     });
 
@@ -481,7 +631,7 @@ export async function POST(req: Request) {
 
     const response = await client.responses.create({
       model: "gpt-4.1",
-      temperature: 0.15,
+      temperature: 0.1,
       input: [
         {
           role: "system",
@@ -517,16 +667,17 @@ ${conversation}
 Build the strongest truthful first-draft patch from this conversation.
 
 Rules:
-- improve the wording significantly
-- keep the meaning faithful
-- do not merely repeat the user's phrasing
+- improve wording significantly
+- keep meaning faithful
+- do not merely repeat user phrasing
 - do not fill unsupported sections
 - do not force completeness
 - keep all output compact and slide-ready
 - if a section is weak, keep it partial rather than fabricated
-- use the knowledge context only as internal football intelligence
-
-Return only valid JSON.
+- use knowledge only as internal football intelligence
+- prevent duplication across slides
+- do not output markdown
+- return only valid JSON
           `.trim(),
         },
       ],
@@ -544,14 +695,16 @@ Return only valid JSON.
       );
     }
 
-    const parsed = normalizeGenerateResponse(safeParseGenerateResponse(text));
+    const parsed = normalizeGenerateResponse(
+      safeParseGenerateResponse(text)
+    );
 
     const mergedPlan = deepMergePlan(
       draftPlan,
       parsed.planPatch || {}
     ) as DevelopmentPlanV1;
 
-    const planner = buildPlannerState(mergedPlan);
+    const updatedPlanner = buildPlannerState(mergedPlan);
 
     return NextResponse.json({
       message:
@@ -563,7 +716,7 @@ Return only valid JSON.
         ),
       plan: mergedPlan,
       derived: {
-        planner,
+        planner: updatedPlanner,
       },
     });
   } catch (error: any) {
