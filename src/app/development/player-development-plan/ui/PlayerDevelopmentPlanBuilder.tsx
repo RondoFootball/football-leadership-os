@@ -1361,14 +1361,30 @@ export default function PlayerDevelopmentPlanBuilder() {
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
 
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `pdp-${version}-${exportLang}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      const safeClub = (exportPlan.brand?.clubName || exportPlan.meta?.club || "club")
+  .trim()
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, "-")
+  .replace(/^-+|-+$/g, "");
 
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+const safePlayer = (exportPlan.player?.name || "player")
+  .trim()
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, "-")
+  .replace(/^-+|-+$/g, "");
+
+const planLabel =
+  exportLang === "nl" ? "ontwikkelplan" : "development-plan";
+
+const a = document.createElement("a");
+a.href = url;
+a.download = `${safeClub}-${safePlayer}-${planLabel}-${exportLang}.pdf`;
+
+document.body.appendChild(a);
+a.click();
+a.remove();
+
+setTimeout(() => URL.revokeObjectURL(url), 1000);
 
       trackPdpDownloaded({
         version,

@@ -1,3 +1,4 @@
+import posthog from "posthog-js";
 import { track } from "@vercel/analytics";
 
 export type AnalyticsLang = "nl" | "en";
@@ -89,9 +90,16 @@ function sanitizePayload<T extends Record<string, Primitive>>(payload: T) {
 
 function safeTrack(eventName: string, payload?: Record<string, Primitive>) {
   try {
-    track(eventName, payload ? sanitizePayload(payload) : undefined);
+    const clean = payload ? sanitizePayload(payload) : undefined;
+
+    // Vercel
+    track(eventName, clean);
+
+    // PostHog
+    posthog.capture(eventName, clean);
+
   } catch {
-    // analytics should never break product flow
+    // never break UX
   }
 }
 
