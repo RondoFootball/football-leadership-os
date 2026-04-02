@@ -5,6 +5,5 @@ if (typeof window !== 'undefined') {
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     defaults: '2026-01-30',
     capture_pageview: true,
-    capture_pageleave: true,
   })
 }
