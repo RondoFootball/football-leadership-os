@@ -337,11 +337,6 @@ Do not echo:
 - the observation slide in the approach slide
 - the approach slide in the success slide
 
-Examples:
-- slide2 should not read like slide3
-- slide4 should not simply restate slide2 as an instruction
-- slide6 should not simply restate slide4 as an outcome
-
 SLIDE WRITING LOGIC
 
 slide2:
@@ -594,8 +589,8 @@ export async function POST(req: Request) {
       return NextResponse.json({
         message: localMessage(
           lang,
-          "Er is nog te weinig gesprekinput om een eerste versie van het plan op te bouwen.",
-          "There is not enough conversation input yet to build a first draft of the plan."
+          "Er is nog te weinig gesprekinput om het plan op te bouwen.",
+          "There is not enough conversation input yet to build the plan."
         ),
         plan: draftPlan,
         derived: {
@@ -664,7 +659,7 @@ ${JSON.stringify(
 Conversation so far:
 ${conversation}
 
-Build the strongest truthful first-draft patch from this conversation.
+Build the strongest truthful plan patch from this conversation.
 
 Rules:
 - improve wording significantly
@@ -711,8 +706,8 @@ Rules:
         parsed.message ||
         localMessage(
           lang,
-          "Ik heb op basis van het gesprek een eerste planversie opgebouwd en aangescherpt.",
-          "I built and sharpened a first draft plan based on the conversation."
+          "Ik heb het plan op basis van het gesprek opgebouwd en aangescherpt.",
+          "I built and sharpened the plan based on the conversation."
         ),
       plan: mergedPlan,
       derived: {
@@ -728,8 +723,8 @@ Rules:
           error?.message ||
           localMessage(
             "nl",
-            "Er ging iets mis tijdens het opbouwen van de eerste versie.",
-            "Something went wrong while building the first draft."
+            "Er ging iets mis tijdens het opbouwen van het plan.",
+            "Something went wrong while building the plan."
           ),
       },
       { status: 500 }

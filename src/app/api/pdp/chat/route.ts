@@ -41,33 +41,24 @@ type ApiInput = {
       {
         quality?: "empty" | "draft" | "usable" | "strong";
         progress?: number;
-        slide?:
-          | "agreement"
-          | "role_context"
-          | "reality"
-          | "approach"
-          | "success";
+        slide?: string;
       }
     >;
     missingFirstDraft?: string[];
     missingStrongDraft?: string[];
     intent?: "ask" | "summarise" | "draft_ready" | "strong_draft_ready";
     nextPrioritySlot?: string;
-    nextPrioritySlide?:
-      | "agreement"
-      | "role_context"
-      | "reality"
-      | "approach"
-      | "success";
+    nextPrioritySlide?: string;
     firstDraftProgress?: number;
     strongDraftProgress?: number;
   } | null;
 };
 
 type ParsedModelResponse = {
-  type?: "question" | "draft_ready" | "plan";
+  type?: "question";
   message?: string;
   planPatch?: Partial<DevelopmentPlanV1>;
+  suggestedResponses?: string[];
 };
 
 function deepMergePlan(
@@ -135,9 +126,6 @@ function sanitizePlannerState(
     nextPrioritySlot: plannerState.nextPrioritySlot as
       | PlannerState["nextPrioritySlot"]
       | undefined,
-    nextPrioritySlide: plannerState.nextPrioritySlide as
-      | PlannerState["nextPrioritySlide"]
-      | undefined,
     firstDraftProgress:
       typeof plannerState.firstDraftProgress === "number"
         ? plannerState.firstDraftProgress
@@ -147,21 +135,6 @@ function sanitizePlannerState(
         ? plannerState.strongDraftProgress
         : undefined,
   };
-}
-
-function buildFallbackQuestion(lang: Lang, planner: PlannerState) {
-  const slot = planner.nextPrioritySlot;
-  const meta = getSlotMeta(slot);
-
-  if (meta) {
-    return lang === "nl" ? meta.questionPromptNl : meta.questionPromptEn;
-  }
-
-  return localMessage(
-    lang,
-    "Ik hoor de richting, maar wil het nog scherper maken. Wat zie je concreet gebeuren op het veld?",
-    "I hear the direction, but I want to sharpen it further. What do you concretely see happening on the pitch?"
-  );
 }
 
 function stripCodeFences(value: string) {
@@ -200,6 +173,16 @@ function safeParseModelResponse(text: string): ParsedModelResponse | null {
   }
 }
 
+function sanitizeSuggestedResponses(input: unknown) {
+  if (!Array.isArray(input)) return [] as string[];
+
+  return input
+    .map((v) => (typeof v === "string" ? v.trim() : ""))
+    .filter(Boolean)
+    .filter((v, i, arr) => arr.indexOf(v) === i)
+    .slice(0, 4);
+}
+
 function normalizeParsedResponse(
   parsed: ParsedModelResponse | null
 ): ParsedModelResponse {
@@ -208,113 +191,86 @@ function normalizeParsedResponse(
       type: "question",
       message: "",
       planPatch: {},
+      suggestedResponses: [],
     };
   }
 
   return {
-    type:
-      parsed.type === "plan" ||
-      parsed.type === "draft_ready" ||
-      parsed.type === "question"
-        ? parsed.type
-        : "question",
+    type: "question",
     message: typeof parsed.message === "string" ? parsed.message.trim() : "",
     planPatch:
       parsed.planPatch && typeof parsed.planPatch === "object"
         ? parsed.planPatch
         : {},
+    suggestedResponses: sanitizeSuggestedResponses(parsed.suggestedResponses),
   };
+}
+
+function getSectionLabel(lang: Lang, slide?: string) {
+  switch (slide) {
+    case "agreement":
+      return "Agreement";
+    case "role_context":
+      return lang === "nl" ? "Context" : "Context";
+    case "reality":
+      return "Reality";
+    case "approach":
+      return "Approach";
+    case "success":
+      return "Success";
+    default:
+      return "";
+  }
+}
+
+function getSafeNextSlide(
+  draftPlan: Partial<DevelopmentPlanV1>,
+  planner: PlannerState
+) {
+  const explicit = (draftPlan as any)?.meta?.nextPrioritySlide;
+  const fromPlanner = (planner as any)?.nextPrioritySlide;
+  const value = explicit || fromPlanner;
+
+  if (
+    value === "agreement" ||
+    value === "role_context" ||
+    value === "reality" ||
+    value === "approach" ||
+    value === "success"
+  ) {
+    return value;
+  }
+
+  return undefined;
+}
+
+function buildFallbackQuestion(
+  lang: Lang,
+  planner: PlannerState,
+  draftPlan: Partial<DevelopmentPlanV1>
+) {
+  const slot = planner.nextPrioritySlot;
+  const meta = getSlotMeta(slot);
+  const sectionLabel = getSectionLabel(
+    lang,
+    getSafeNextSlide(draftPlan, planner)
+  );
+
+  if (meta) {
+    const q = lang === "nl" ? meta.questionPromptNl : meta.questionPromptEn;
+    return sectionLabel ? `${sectionLabel} — ${q}` : q;
+  }
+
+  return localMessage(
+    lang,
+    "Agreement — wat zie je concreet gebeuren op het veld?",
+    "Agreement — what do you concretely see happening on the pitch?"
+  );
 }
 
 function getLastUserMessage(messages: ChatMsg[]) {
   const reversed = [...messages].reverse();
   return reversed.find((m) => m.role === "user")?.content?.trim() || "";
-}
-
-function userSignalsMoveOn(messages: ChatMsg[]) {
-  const last = getLastUserMessage(messages).toLowerCase();
-
-  const signals = [
-    "move on",
-    "let's move on",
-    "lets move on",
-    "move forward",
-    "let's move forward",
-    "lets move forward",
-    "go to the next",
-    "next question",
-    "good enough",
-    "this is good enough",
-    "that's good enough",
-    "thats good enough",
-    "let's continue",
-    "lets continue",
-    "continue",
-    "we can move on",
-    "let us move on",
-    "no let's focus on what we have",
-    "lets focus on what we have",
-    "let's focus on what we have",
-    "this is fine",
-    "this is correct",
-    "this is good",
-  ];
-
-  return signals.some((signal) => last.includes(signal));
-}
-
-function userSignalsRepetitionFrustration(messages: ChatMsg[]) {
-  const last = getLastUserMessage(messages).toLowerCase();
-
-  const signals = [
-    "i already said",
-    "i've already said",
-    "ive already said",
-    "already said",
-    "already explained",
-    "already mentioned",
-    "again",
-    "same thing",
-    "this is the same",
-    "stupid question",
-    "not important",
-    "that's not important",
-    "thats not important",
-    "i don't have that information",
-    "i dont have that information",
-    "this has already been said",
-    "like mentioned before",
-    "i've already explained this",
-    "ive already explained this",
-  ];
-
-  return signals.some((signal) => last.includes(signal));
-}
-
-function countRecentAssistantQuestions(messages: ChatMsg[]) {
-  return messages
-    .slice(-8)
-    .filter((m) => m.role === "assistant")
-    .filter((m) => m.content.trim().endsWith("?")).length;
-}
-
-function countRecentAssistantAnchors(messages: ChatMsg[]) {
-  return messages
-    .slice(-10)
-    .filter((m) => m.role === "assistant")
-    .filter((m) => {
-      const text = m.content.toLowerCase();
-      return (
-        text.includes("to finalise") ||
-        text.includes("to finalize") ||
-        text.includes("to anchor") ||
-        text.includes("to make the development point") ||
-        text.includes("to make the match situation") ||
-        text.includes("if so, i will write") ||
-        text.includes("is the sharpest wording") ||
-        text.includes("is the main visible behaviour")
-      );
-    }).length;
 }
 
 function buildRoutingInstruction(
@@ -324,81 +280,27 @@ function buildRoutingInstruction(
   messages: ChatMsg[]
 ) {
   const nextSlotMeta = getSlotMeta(planner.nextPrioritySlot);
-
-  const moveOn = userSignalsMoveOn(messages);
-  const repetitionFrustration = userSignalsRepetitionFrustration(messages);
-  const recentAssistantQuestions = countRecentAssistantQuestions(messages);
-  const recentAssistantAnchors = countRecentAssistantAnchors(messages);
+  const nextSectionLabel = getSectionLabel(
+    lang,
+    getSafeNextSlide(draftPlan, planner)
+  );
 
   const slotLine = nextSlotMeta
     ? localMessage(
         lang,
-        `Volgende prioriteit: ${nextSlotMeta.key} (${nextSlotMeta.label}) op slide ${nextSlotMeta.slide}.`,
-        `Next priority: ${nextSlotMeta.key} (${nextSlotMeta.label}) on slide ${nextSlotMeta.slide}.`
+        `Huidige prioriteit: ${nextSlotMeta.key} (${nextSlotMeta.label}) binnen ${nextSectionLabel || "de volgende sectie"}.`,
+        `Current priority: ${nextSlotMeta.key} (${nextSlotMeta.label}) within ${nextSectionLabel || "the next section"}.`
       )
     : localMessage(
         lang,
-        "Er is geen duidelijke volgende prioriteitsslot gevonden.",
-        "No clear next priority slot was found."
+        "Er is geen duidelijke volgende prioriteit gevonden.",
+        "No clear next priority was found."
       );
-
-  const intensityLine =
-    planner.intent === "strong_draft_ready"
-      ? localMessage(
-          lang,
-          "De planbasis is sterk genoeg. Schrijf liever gericht mee dan opnieuw breed uitvragen.",
-          "The plan base is strong enough. Prefer writing forward over broadly asking again."
-        )
-      : planner.intent === "draft_ready"
-      ? localMessage(
-          lang,
-          "Er is genoeg basis voor een eerste draft. Vraag alleen nog door als dat echt iets toevoegt.",
-          "There is enough backbone for a first draft. Only ask further if it clearly adds something."
-        )
-      : localMessage(
-          lang,
-          "De kern is nog niet scherp genoeg. Stel precies één vraag die de grootste inhoudelijke winst oplevert.",
-          "The backbone is not yet sharp enough. Ask exactly one question that creates the biggest content gain."
-        );
-
-  const currentStateLine = localMessage(
-    lang,
-    `First draft progress: ${planner.firstDraftProgress}%. Strong draft progress: ${planner.strongDraftProgress}%.`,
-    `First draft progress: ${planner.firstDraftProgress}%. Strong draft progress: ${planner.strongDraftProgress}%.`
-  );
-
-  const controlLine = moveOn
-    ? localMessage(
-        lang,
-        "De gebruiker geeft expliciet aan dat dit punt goed genoeg is of dat je moet doorgaan. Sluit dit onderwerp af, schrijf de scherpste bruikbare formulering en ga door naar het volgende relevante slot.",
-        "The user explicitly indicates that this point is good enough or that you should move on. Close this topic, write the sharpest usable formulation, and move to the next relevant slot."
-      )
-    : repetitionFrustration
-    ? localMessage(
-        lang,
-        "De gebruiker signaleert herhaling of irritatie. Stel geen variatie van dezelfde vraag meer. Schrijf, vat scherp samen of ga door.",
-        "The user signals repetition or frustration. Do not ask another variation of the same question. Write, summarise sharply or move on."
-      )
-    : localMessage(
-        lang,
-        "Houd tempo en voorkom onnodige herhaling.",
-        "Maintain tempo and avoid unnecessary repetition."
-      );
-
-  const repetitionLine =
-    recentAssistantQuestions >= 3 || recentAssistantAnchors >= 2
-      ? localMessage(
-          lang,
-          "Er zijn recent al meerdere vragen of ankerpogingen gedaan. Vraag nu alleen nog door als het echt blokkeert; anders schrijven, samenvatten of doorschakelen.",
-          "Several questions or anchoring attempts were made recently. Only ask again if it truly blocks progress; otherwise write, summarise or move forward."
-        )
-      : "";
 
   const planSignal = JSON.stringify(
     {
       slide2: draftPlan.slide2,
       slideContext: draftPlan.slideContext,
-      slide3: draftPlan.slide3,
       slide3Baseline: draftPlan.slide3Baseline,
       slide4DevelopmentRoute: draftPlan.slide4DevelopmentRoute,
       slide6SuccessDefinition: draftPlan.slide6SuccessDefinition,
@@ -407,29 +309,38 @@ function buildRoutingInstruction(
     2
   );
 
+  const recentUserMessages = messages
+    .filter((m) => m.role === "user")
+    .slice(-3)
+    .map((m) => m.content)
+    .join(" | ");
+
+  const lastUserMessage = getLastUserMessage(messages);
+
   return `
 ${slotLine}
-${intensityLine}
-${currentStateLine}
-${controlLine}
-${repetitionLine}
+
+Recent user direction:
+${recentUserMessages || "-"}
+
+Last user message:
+${lastUserMessage || "-"}
 
 Current plan signal:
 ${planSignal}
 
 Decision rules:
-- Ask at most one question
-- Prefer sharpening over repeating
-- Prefer writing a sharper draft line into planPatch before asking again
-- Never ask for information that is already usable in the plan
-- If the user signals "move on", "good enough" or repetition, stop refining the same point
-- If the same topic has already been confirmed, write or switch slot instead of confirming again
-- If one slot is weak but already present, sharpen it instead of switching topic too early
-- If the backbone is usable, prefer "draft_ready" over further questioning
-- Use the shortest route to a usable plan line
-- When the user indicates multiple variants but the pattern is clear, abstract the pattern instead of forcing detail
-- Only return type "draft_ready" when the backbone is genuinely usable
-- Only return type "plan" if you believe the generate route could build from this without obvious gaps
+- Do not use draft language in user-facing output
+- If a section is already usable, lock it and move forward
+- If the user says move on, actually move on
+- If the user says this was already answered, do not ask it again
+- Prefer writing a usable line into planPatch before asking again
+- Use short section-led phrasing when helpful
+- Use suggestedResponses when the UI would benefit from compact click options
+- Keep questions short
+- Keep options very short
+- Build the full plan progressively, not just the core
+- Prefer ownership, intervention, evidence and success once the core is usable
   `.trim();
 }
 
@@ -470,11 +381,12 @@ export async function POST(req: Request) {
     if (!hasMeaningfulUserInput(messages)) {
       return NextResponse.json({
         type: "question",
-        message: buildFallbackQuestion(lang, basePlanner),
+        message: buildFallbackQuestion(lang, basePlanner, draftPlan),
         done: false,
         derived: {
           planner: basePlanner,
         },
+        suggestedResponses: [],
       });
     }
 
@@ -541,20 +453,19 @@ ${routingInstruction}
 
 Output rules:
 - Return only valid JSON
-- Use this shape:
+- Use exactly this shape:
   {
-    "type": "question" | "draft_ready" | "plan",
+    "type": "question",
     "message": "string",
-    "planPatch": {}
+    "planPatch": {},
+    "suggestedResponses": []
   }
-- Ask at most one high-value next question
-- Prefer one sharp next question over broad summaries
-- Prefer a small truthful planPatch over no planPatch
-- Only mark progress forward when the conversation truly supports it
-- Use the knowledge context as an internal football thinking frame, not as encyclopaedic output
+- Do not use draft language
+- Build forward through the plan
+- Ask at most one short high-value question
+- Prefer planPatch over repetition
+- Use the knowledge context only as internal football intelligence
 - Stay specific to observable football behaviour, role demands and plan usefulness
-- If the user signals that the point is clear or wants to move on, stop refining that same point
-- If the user signals repetition or frustration, do not ask another variant of the same question
 - Do not invent plan content
 - Do not output markdown
           `.trim(),
@@ -567,11 +478,12 @@ Output rules:
     if (!text) {
       return NextResponse.json({
         type: "question",
-        message: buildFallbackQuestion(lang, basePlanner),
+        message: buildFallbackQuestion(lang, basePlanner, draftPlan),
         done: false,
         derived: {
           planner: basePlanner,
         },
+        suggestedResponses: [],
       });
     }
 
@@ -584,57 +496,15 @@ Output rules:
 
     const recomputedPlanner = buildPlannerState(patchedPlan);
 
-    if (parsed.type === "plan") {
-      return NextResponse.json({
-        type: "question",
-        message:
-          parsed.message ||
-          localMessage(
-            lang,
-            "De kern staat voldoende scherp om nu een eerste versie van het plan te maken.",
-            "The core is sharp enough to generate a first draft now."
-          ),
-        done: false,
-        derived: {
-          planner: {
-            ...recomputedPlanner,
-            intent: "draft_ready",
-          },
-        },
-      });
-    }
-
-    if (parsed.type === "draft_ready") {
-      return NextResponse.json({
-        type: "question",
-        message:
-          parsed.message ||
-          localMessage(
-            lang,
-            "De kern staat voldoende scherp voor een eerste versie. Je kunt nu een eerste plan maken of nog één laag verder aanscherpen.",
-            "The core is sharp enough for a first version. You can now build a first draft or sharpen it one layer further."
-          ),
-        done: false,
-        derived: {
-          planner: {
-            ...recomputedPlanner,
-            intent:
-              recomputedPlanner.intent === "strong_draft_ready"
-                ? "strong_draft_ready"
-                : "draft_ready",
-          },
-        },
-      });
-    }
-
     return NextResponse.json({
       type: "question",
       message:
-        parsed.message || buildFallbackQuestion(lang, recomputedPlanner),
+        parsed.message || buildFallbackQuestion(lang, recomputedPlanner, patchedPlan),
       done: false,
       derived: {
         planner: recomputedPlanner,
       },
+      suggestedResponses: parsed.suggestedResponses || [],
     });
   } catch (error: any) {
     console.error("/api/pdp/chat error", error);

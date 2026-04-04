@@ -1,5 +1,3 @@
-// src/app/development/player-development-plan/ui/lib/pdp/render.ts
-
 import type {
   DevelopmentPlanV1,
   Slide2Agreement,
@@ -91,6 +89,143 @@ function formatDateByLang(d: Date, lang: Lang) {
   }).format(d);
 }
 
+function stripTrailingSlash(v: string) {
+  return v.replace(/\/+$/, "");
+}
+
+function resolveAssetUrl(input: string, baseUrl: string) {
+  const s = safeStr(input, "");
+  if (!s) return "";
+
+  if (/^data:/i.test(s)) return s;
+  if (/^https?:\/\//i.test(s)) return s;
+  if (/^\/\//.test(s)) return `https:${s}`;
+
+  const cleanBase = stripTrailingSlash(baseUrl || "");
+  if (!cleanBase) return s;
+
+  if (s.startsWith("/")) return `${cleanBase}${s}`;
+  return `${cleanBase}/${s}`;
+}
+
+/**
+ * -----------------------------
+ * De-duplication helpers
+ * -----------------------------
+ */
+
+function normalizeCompareText(input: string) {
+  return safeStr(input, "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’']/g, "")
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\b(the|a|an|to|of|and|or|in|on|at|for|with|without|after|before|under|over|into|from|via|through|his|her|their)\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function tokenizeCompareText(input: string) {
+  return normalizeCompareText(input)
+    .split(" ")
+    .map((x) => x.trim())
+    .filter((x) => x.length >= 3);
+}
+
+function similarityRatio(a: string, b: string) {
+  const ta = tokenizeCompareText(a);
+  const tb = tokenizeCompareText(b);
+
+  if (!ta.length || !tb.length) return 0;
+
+  const setA = new Set(ta);
+  const setB = new Set(tb);
+
+  let overlap = 0;
+  for (const token of setA) {
+    if (setB.has(token)) overlap += 1;
+  }
+
+  return overlap / Math.max(setA.size, setB.size);
+}
+
+function isNearDuplicate(a: string, b: string) {
+  const na = normalizeCompareText(a);
+  const nb = normalizeCompareText(b);
+
+  if (!na || !nb) return false;
+  if (na === nb) return true;
+  if (na.includes(nb) || nb.includes(na)) {
+    if (Math.min(na.length, nb.length) >= 18) return true;
+  }
+
+  return similarityRatio(a, b) >= 0.72;
+}
+
+function uniqueMeaningfulList(
+  items: string[],
+  opts?: {
+    max?: number;
+    minKeep?: number;
+    against?: string[];
+  }
+) {
+  const max = opts?.max ?? items.length;
+  const minKeep = opts?.minKeep ?? 0;
+  const against = (opts?.against || []).filter(Boolean);
+
+  const cleaned = items.map((x) => safeStr(x)).filter(Boolean);
+
+  const kept: string[] = [];
+
+  for (const item of cleaned) {
+    const duplicateInOwn = kept.some((k) => isNearDuplicate(item, k));
+    if (duplicateInOwn) continue;
+
+    const duplicateAgainst = against.some((ref) => isNearDuplicate(item, ref));
+    if (duplicateAgainst) continue;
+
+    kept.push(item);
+    if (kept.length >= max) break;
+  }
+
+  if (kept.length >= minKeep) return kept.slice(0, max);
+
+  const fallback: string[] = [];
+  for (const item of cleaned) {
+    if (fallback.some((k) => isNearDuplicate(item, k))) continue;
+    fallback.push(item);
+    if (fallback.length >= Math.max(minKeep, max)) break;
+  }
+
+  return fallback.slice(0, max);
+}
+
+function collectReferenceStrings(values: unknown[]): string[] {
+  const out: string[] = [];
+
+  for (const value of values) {
+    if (typeof value === "string") {
+      const s = safeStr(value);
+      if (s) out.push(s);
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      for (const v of value) {
+        if (typeof v === "string") {
+          const s = safeStr(v);
+          if (s) out.push(s);
+        }
+      }
+    }
+  }
+
+  return out;
+}
+
 function normalizeVideoSlots(
   clips: Slide3VideoClip[] | undefined,
   lang: Lang,
@@ -168,25 +303,6 @@ function deriveBaselineFromPreferred(
   };
 }
 
-function stripTrailingSlash(v: string) {
-  return v.replace(/\/+$/, "");
-}
-
-function resolveAssetUrl(input: string, baseUrl: string) {
-  const s = safeStr(input, "");
-  if (!s) return "";
-
-  if (/^data:/i.test(s)) return s;
-  if (/^https?:\/\//i.test(s)) return s;
-  if (/^\/\//.test(s)) return `https:${s}`;
-
-  const cleanBase = stripTrailingSlash(baseUrl || "");
-  if (!cleanBase) return s;
-
-  if (s.startsWith("/")) return `${cleanBase}${s}`;
-  return `${cleanBase}/${s}`;
-}
-
 export function renderPdpHtmlPro(
   plan: DevelopmentPlanV1,
   opts?: { version?: PlanVersion; lang?: Lang; baseUrl?: string }
@@ -243,34 +359,95 @@ export function renderPdpHtmlPro(
   const endDateLabel = formatDateByLang(endDate, lang);
 
   /**
-   * Slide 2
+   * Slide 2 - Agreement / Core line
    */
   const focusBehaviour = safeStr(s2.focusBehaviour, "");
   const targetBehaviour = safeStr(s2.developmentGoal, "");
   const matchSituation =
-    typeof s2.matchSituation === "string" ? s2.matchSituation : "";
+    typeof s2.matchSituation === "string" ? safeStr(s2.matchSituation, "") : "";
+
+  const slide2Refs = collectReferenceStrings([
+    focusBehaviour,
+    targetBehaviour,
+    matchSituation,
+    safeStr(s2.positionRole, ""),
+    safeStr(s2.roleDescription, ""),
+    safeStr(s2.teamContext, ""),
+  ]);
 
   /**
    * Slide 3 - Context
    */
   const slideContext = plan.slideContext || {};
-  const contextGameMoments = asArray(slideContext.gameMoments).slice(0, 3);
-  const contextZones = asArray(slideContext.zones).slice(0, 3);
-  const contextPrinciples = asArray(slideContext.principles).slice(0, 3);
+
+  const contextGameMomentsRaw = asArray(slideContext.gameMoments).slice(0, 3);
+  const contextZonesRaw = asArray(slideContext.zones).slice(0, 3);
+  const contextPrinciplesRaw = asArray(slideContext.principles).slice(0, 3);
+
+  const contextGameMoments = uniqueMeaningfulList(contextGameMomentsRaw, {
+    max: 3,
+    against: [matchSituation],
+  });
+
+  const contextZones = uniqueMeaningfulList(contextZonesRaw, {
+    max: 3,
+  });
+
+  const contextPrinciples = uniqueMeaningfulList(contextPrinciplesRaw, {
+    max: 3,
+    against: [...slide2Refs, ...contextGameMoments],
+  });
+
+  const contextRefs = collectReferenceStrings([
+    contextGameMoments,
+    contextZones,
+    contextPrinciples,
+  ]);
 
   /**
-   * Slide 4 - Realiteit
+   * Slide 4 - Reality / Baseline
    */
   const preferred = deriveBaselineFromPreferred(
     plan.slide3Baseline,
     lang,
     baseUrl
   );
-  const baseline =
+  const baselineRaw =
     preferred || deriveBaselineFromLegacy(plan.slide3, lang, baseUrl);
 
+  const baselineMomentItems = uniqueMeaningfulList(baselineRaw.momentItems, {
+    max: 3,
+    against: [matchSituation, ...contextGameMoments],
+  });
+
+  const baselineWhatWeSeeItems = uniqueMeaningfulList(
+    baselineRaw.whatWeSeeItems,
+    {
+      max: 3,
+      against: [focusBehaviour, targetBehaviour],
+    }
+  );
+
+  const baselineEffectItems = uniqueMeaningfulList(baselineRaw.effectItems, {
+    max: 3,
+    against: [focusBehaviour, ...baselineWhatWeSeeItems],
+  });
+
+  const baseline = {
+    ...baselineRaw,
+    momentItems: baselineMomentItems,
+    whatWeSeeItems: baselineWhatWeSeeItems,
+    effectItems: baselineEffectItems,
+  };
+
+  const baselineRefs = collectReferenceStrings([
+    baselineMomentItems,
+    baselineWhatWeSeeItems,
+    baselineEffectItems,
+  ]);
+
   /**
-   * Slide 5 - Aanpak
+   * Slide 5 - Approach
    */
   const s4: Slide4DevelopmentRoute = plan.slide4DevelopmentRoute || {};
   const route = s4.developmentRoute || {};
@@ -279,10 +456,10 @@ export function renderPdpHtmlPro(
   const s4Title = safeStr(s4.title, "");
   const s4Subtitle = safeStr(s4.subtitle, "");
 
-  const trainingText = safeStr(route.training, "");
-  const matchText = safeStr(route.match, "");
-  const videoText = safeStr(route.video, "");
-  const offFieldText = safeStr(route.off_field, "");
+  let trainingText = safeStr(route.training, "");
+  let matchText = safeStr(route.match, "");
+  let videoText = safeStr(route.video, "");
+  let offFieldText = safeStr(route.off_field, "");
 
   const playerOwnText = safeStr(s4.playerOwnText, "");
 
@@ -291,25 +468,89 @@ export function renderPdpHtmlPro(
   const analystText = safeStr(responsibilities.analyst, "");
   const staffText = safeStr(responsibilities.staff, "");
 
+  const routeTextsRaw = [trainingText, matchText, videoText, offFieldText].filter(
+    Boolean
+  );
+
+  const dedupedRouteTexts = uniqueMeaningfulList(routeTextsRaw, {
+    max: 4,
+    against: [...slide2Refs, ...baselineRefs],
+  });
+
+  // Preserve slot order as much as possible, but avoid echo
+  const routePool = [...dedupedRouteTexts];
+  const orderedOriginals = [trainingText, matchText, videoText, offFieldText];
+
+  function takeBestRouteValue(original: string) {
+    const idx = routePool.findIndex(
+      (x) =>
+        isNearDuplicate(x, original) ||
+        normalizeCompareText(x) === normalizeCompareText(original)
+    );
+
+    if (idx >= 0) {
+      const [value] = routePool.splice(idx, 1);
+      return value;
+    }
+
+    return "";
+  }
+
+  trainingText = takeBestRouteValue(orderedOriginals[0]);
+  matchText = takeBestRouteValue(orderedOriginals[1]);
+  videoText = takeBestRouteValue(orderedOriginals[2]);
+  offFieldText = takeBestRouteValue(orderedOriginals[3]);
+
+  const routeRefs = collectReferenceStrings([
+    trainingText,
+    matchText,
+    videoText,
+    offFieldText,
+    playerOwnText,
+    playerText,
+    coachText,
+    analystText,
+    staffText,
+  ]);
+
   /**
-   * Slide 6 - Succesdefinitie
+   * Slide 6 - Success definition
    */
   const s6: Slide6SuccessDefinition = plan.slide6SuccessDefinition || {};
-  const successInGame = asArray(s6.inGame).slice(0, 3);
-  const successBehaviour = asArray(s6.behaviour).slice(0, 3);
-  const successSignals = asArray(s6.signals).slice(0, 3);
 
+  const successInGameRaw = asArray(s6.inGame).slice(0, 3);
+  const successBehaviourRaw = asArray(s6.behaviour).slice(0, 3);
+  const successSignalsRaw = asArray(s6.signals).slice(0, 3);
+
+  const successInGame = uniqueMeaningfulList(successInGameRaw, {
+    max: 3,
+    against: [...slide2Refs, ...baselineEffectItems],
+  });
+
+  const successBehaviour = uniqueMeaningfulList(successBehaviourRaw, {
+    max: 3,
+    against: [...slide2Refs, ...baselineWhatWeSeeItems, ...routeRefs],
+  });
+
+  const successSignals = uniqueMeaningfulList(successSignalsRaw, {
+    max: 3,
+    against: [...slide2Refs, ...routeRefs, ...successBehaviour, ...successInGame],
+  });
+
+  /**
+   * Pages
+   */
   const pages = [
     pageCoverLocked({
-  lang,
-  clubName,
-  logoUrl,
-  accentHex,
-  playerName,
-  headshotUrl,
-  headline,
-  systemLine: "PERFORMANCE DEVELOPMENT SYSTEM",
-}),
+      lang,
+      clubName,
+      logoUrl,
+      accentHex,
+      playerName,
+      headshotUrl,
+      headline,
+      systemLine: "PERFORMANCE DEVELOPMENT SYSTEM",
+    }),
 
     pageAgreementContract({
       lang,

@@ -92,12 +92,8 @@ function safeTrack(eventName: string, payload?: Record<string, Primitive>) {
   try {
     const clean = payload ? sanitizePayload(payload) : undefined;
 
-    // Vercel
     track(eventName, clean);
-
-    // PostHog
     posthog.capture(eventName, clean);
-
   } catch {
     // never break UX
   }
@@ -191,10 +187,10 @@ export function trackPdpFieldStarted(
       typeof meta.value === "string"
         ? cleanString(meta.value)
         : typeof meta.value === "number"
-        ? cleanNumber(meta.value)
-        : typeof meta.value === "boolean"
-        ? cleanBoolean(meta.value)
-        : undefined,
+          ? cleanNumber(meta.value)
+          : typeof meta.value === "boolean"
+            ? cleanBoolean(meta.value)
+            : undefined,
   });
 }
 
@@ -360,7 +356,8 @@ export function trackPdpSectionCompleted(
       | "reality"
       | "approach"
       | "success"
-      | "evidence";
+      | "evidence"
+      | "conversation";
     totalProgress?: number;
   }
 ) {

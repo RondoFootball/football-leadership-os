@@ -425,17 +425,8 @@ function textProgress(value: unknown, thresholds = { light: 8, medium: 24 }) {
   return 1;
 }
 
-function arrayProgress(value: unknown, maxItems = 3) {
-  if (!Array.isArray(value) || value.length === 0) return 0;
-  return Math.min(value.length / maxItems, 1);
-}
-
 function clampProgress(value: number) {
   return Math.max(0, Math.min(100, Math.round(value)));
-}
-
-function plannerFilled(planner: ChatPlannerState | null, key: string) {
-  return !!planner?.filledSlots?.[key];
 }
 
 function mergeGeneratedPlanWithLockedBasics(
@@ -678,8 +669,8 @@ export default function PlayerDevelopmentPlanBuilder() {
           ? 1
           : 0
         : teamType === "first_team"
-        ? 1
-        : 0;
+          ? 1
+          : 0;
 
     add(8, teamDetailProgress);
 
@@ -708,263 +699,22 @@ export default function PlayerDevelopmentPlanBuilder() {
     academyAge,
   ]);
 
-  const agreementProgress = useMemo(() => {
-    let score = 0;
-    let total = 0;
+  const conversationProgress = useMemo(() => {
+    if (!chatPlannerState) return 0;
 
-    const add = (weight: number, progress: number) => {
-      total += weight;
-      score += weight * progress;
-    };
+    if (
+      typeof chatPlannerState.strongDraftProgress === "number" &&
+      chatPlannerState.strongDraftProgress > 0
+    ) {
+      return chatPlannerState.strongDraftProgress;
+    }
 
-    add(
-      40,
-      Math.max(
-        textProgress(plan.slide2?.focusBehaviour),
-        plannerFilled(chatPlannerState, "developmentPoint") ? 0.66 : 0
-      )
-    );
+    if (typeof chatPlannerState.firstDraftProgress === "number") {
+      return chatPlannerState.firstDraftProgress;
+    }
 
-    add(
-      35,
-      Math.max(
-        textProgress(plan.slide2?.developmentGoal),
-        plannerFilled(chatPlannerState, "targetBehaviour") ? 0.66 : 0
-      )
-    );
-
-    add(
-      25,
-      Math.max(
-        textProgress(plan.slide2?.matchSituation),
-        plannerFilled(chatPlannerState, "matchSituation") ? 0.66 : 0
-      )
-    );
-
-    return {
-      total,
-      filled: Math.round(score),
-      progress: total === 0 ? 0 : clampProgress((score / total) * 100),
-    };
-  }, [
-    plan.slide2?.focusBehaviour,
-    plan.slide2?.developmentGoal,
-    plan.slide2?.matchSituation,
-    chatPlannerState,
-  ]);
-
-  const contextProgress = useMemo(() => {
-    let score = 0;
-    let total = 0;
-
-    const add = (weight: number, progress: number) => {
-      total += weight;
-      score += weight * progress;
-    };
-
-    add(
-      34,
-      Math.max(
-        arrayProgress(plan.slideContext?.gameMoments),
-        plannerFilled(chatPlannerState, "gameMoments") ? 0.66 : 0
-      )
-    );
-
-    add(
-      33,
-      Math.max(
-        arrayProgress(plan.slideContext?.zones),
-        plannerFilled(chatPlannerState, "zones") ? 0.66 : 0
-      )
-    );
-
-    add(
-      33,
-      Math.max(
-        arrayProgress(plan.slideContext?.principles),
-        plannerFilled(chatPlannerState, "principles") ? 0.66 : 0
-      )
-    );
-
-    return {
-      total,
-      filled: Math.round(score),
-      progress: total === 0 ? 0 : clampProgress((score / total) * 100),
-    };
-  }, [
-    plan.slideContext?.gameMoments,
-    plan.slideContext?.zones,
-    plan.slideContext?.principles,
-    chatPlannerState,
-  ]);
-
-  const realityProgress = useMemo(() => {
-    let score = 0;
-    let total = 0;
-
-    const add = (weight: number, progress: number) => {
-      total += weight;
-      score += weight * progress;
-    };
-
-    add(
-      28,
-      Math.max(
-        textProgress(plan.slide3Baseline?.intro),
-        arrayProgress(plan.slide3Baseline?.observations),
-        plannerFilled(chatPlannerState, "observations") ? 0.66 : 0
-      )
-    );
-
-    add(
-      24,
-      Math.max(
-        arrayProgress(plan.slide3?.what_we_see?.items),
-        plannerFilled(chatPlannerState, "observations") ? 0.66 : 0
-      )
-    );
-
-    add(
-      24,
-      Math.max(
-        arrayProgress(plan.slide3?.moment?.items),
-        arrayProgress(plan.slide3Baseline?.moments),
-        plannerFilled(chatPlannerState, "whenObserved") ? 0.66 : 0
-      )
-    );
-
-    add(
-      24,
-      Math.max(
-        arrayProgress(plan.slide3?.effect_on_match?.items),
-        arrayProgress(plan.slide3Baseline?.matchEffects),
-        plannerFilled(chatPlannerState, "effectOnGame") ? 0.66 : 0
-      )
-    );
-
-    return {
-      total,
-      filled: Math.round(score),
-      progress: total === 0 ? 0 : clampProgress((score / total) * 100),
-    };
-  }, [
-    plan.slide3Baseline?.intro,
-    plan.slide3Baseline?.observations,
-    plan.slide3?.what_we_see?.items,
-    plan.slide3?.moment?.items,
-    plan.slide3Baseline?.moments,
-    plan.slide3?.effect_on_match?.items,
-    plan.slide3Baseline?.matchEffects,
-    chatPlannerState,
-  ]);
-
-  const approachProgress = useMemo(() => {
-    let score = 0;
-    let total = 0;
-
-    const add = (weight: number, progress: number) => {
-      total += weight;
-      score += weight * progress;
-    };
-
-    add(
-      20,
-      Math.max(
-        textProgress(plan.slide4DevelopmentRoute?.developmentRoute?.training),
-        plannerFilled(chatPlannerState, "playerActions") ? 0.66 : 0
-      )
-    );
-
-    add(
-      20,
-      Math.max(
-        textProgress(plan.slide4DevelopmentRoute?.developmentRoute?.match),
-        plannerFilled(chatPlannerState, "playerActions") ? 0.66 : 0
-      )
-    );
-
-    add(
-      20,
-      Math.max(
-        textProgress(plan.slide4DevelopmentRoute?.developmentRoute?.video),
-        plannerFilled(chatPlannerState, "staffResponsibilities") ? 0.66 : 0
-      )
-    );
-
-    add(
-      20,
-      Math.max(
-        textProgress(plan.slide4DevelopmentRoute?.developmentRoute?.off_field),
-        plannerFilled(chatPlannerState, "staffResponsibilities") ? 0.66 : 0
-      )
-    );
-
-    add(
-      20,
-      Math.max(
-        textProgress(plan.slide4DevelopmentRoute?.playerOwnText),
-        plannerFilled(chatPlannerState, "playerActions") ? 0.66 : 0
-      )
-    );
-
-    return {
-      total,
-      filled: Math.round(score),
-      progress: total === 0 ? 0 : clampProgress((score / total) * 100),
-    };
-  }, [
-    plan.slide4DevelopmentRoute?.developmentRoute?.training,
-    plan.slide4DevelopmentRoute?.developmentRoute?.match,
-    plan.slide4DevelopmentRoute?.developmentRoute?.video,
-    plan.slide4DevelopmentRoute?.developmentRoute?.off_field,
-    plan.slide4DevelopmentRoute?.playerOwnText,
-    chatPlannerState,
-  ]);
-
-  const successProgress = useMemo(() => {
-    let score = 0;
-    let total = 0;
-
-    const add = (weight: number, progress: number) => {
-      total += weight;
-      score += weight * progress;
-    };
-
-    add(
-      34,
-      Math.max(
-        arrayProgress(plan.slide6SuccessDefinition?.inGame),
-        plannerFilled(chatPlannerState, "successSignals") ? 0.66 : 0
-      )
-    );
-
-    add(
-      33,
-      Math.max(
-        arrayProgress(plan.slide6SuccessDefinition?.behaviour),
-        plannerFilled(chatPlannerState, "successSignals") ? 0.66 : 0
-      )
-    );
-
-    add(
-      33,
-      Math.max(
-        arrayProgress(plan.slide6SuccessDefinition?.signals),
-        plannerFilled(chatPlannerState, "successSignals") ? 0.66 : 0
-      )
-    );
-
-    return {
-      total,
-      filled: Math.round(score),
-      progress: total === 0 ? 0 : clampProgress((score / total) * 100),
-    };
-  }, [
-    plan.slide6SuccessDefinition?.inGame,
-    plan.slide6SuccessDefinition?.behaviour,
-    plan.slide6SuccessDefinition?.signals,
-    chatPlannerState,
-  ]);
+    return 0;
+  }, [chatPlannerState]);
 
   const evidenceProgress = useMemo(() => {
     const clips: number[] = [0, 1, 2].map((idx) => {
@@ -984,15 +734,11 @@ export default function PlayerDevelopmentPlanBuilder() {
   }, [plan, localVideoUploads]);
 
   const sections = [
-    { key: "basics", progress: basicsProgress.progress, weight: 18 },
-    { key: "cover", progress: coverReady ? 100 : 0, weight: 7 },
-    { key: "agreement", progress: agreementProgress.progress, weight: 14 },
-    { key: "context", progress: contextProgress.progress, weight: 14 },
-    { key: "reality", progress: realityProgress.progress, weight: 17 },
-    { key: "approach", progress: approachProgress.progress, weight: 14 },
-    { key: "success", progress: successProgress.progress, weight: 10 },
-    { key: "evidence", progress: evidenceProgress.progress, weight: 6 },
-  ];
+    { key: "basics", progress: basicsProgress.progress, weight: 28 },
+    { key: "cover", progress: coverReady ? 100 : 0, weight: 8 },
+    { key: "conversation", progress: conversationProgress, weight: 48 },
+    { key: "evidence", progress: evidenceProgress.progress, weight: 16 },
+  ] as const;
 
   const totalProgress = Math.round(
     sections.reduce((sum, section) => {
@@ -1000,17 +746,11 @@ export default function PlayerDevelopmentPlanBuilder() {
     }, 0)
   );
 
-  const completedSections = sections.filter((s) => s.progress === 100).length;
-
   useEffect(() => {
     const sectionMap = [
       { key: "basics", value: basicsProgress.progress },
       { key: "cover", value: coverReady ? 100 : 0 },
-      { key: "agreement", value: agreementProgress.progress },
-      { key: "context", value: contextProgress.progress },
-      { key: "reality", value: realityProgress.progress },
-      { key: "approach", value: approachProgress.progress },
-      { key: "success", value: successProgress.progress },
+      { key: "conversation", value: conversationProgress },
       { key: "evidence", value: evidenceProgress.progress },
     ] as const;
 
@@ -1033,6 +773,7 @@ export default function PlayerDevelopmentPlanBuilder() {
 
     milestones.forEach((milestone) => {
       const milestoneKey = String(milestone);
+
       if (
         totalProgress >= milestone &&
         !trackedMilestonesRef.current[milestoneKey]
@@ -1060,11 +801,7 @@ export default function PlayerDevelopmentPlanBuilder() {
   }, [
     basicsProgress.progress,
     coverReady,
-    agreementProgress.progress,
-    contextProgress.progress,
-    realityProgress.progress,
-    approachProgress.progress,
-    successProgress.progress,
+    conversationProgress,
     evidenceProgress.progress,
     totalProgress,
     mode,
@@ -1361,30 +1098,34 @@ export default function PlayerDevelopmentPlanBuilder() {
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
 
-      const safeClub = (exportPlan.brand?.clubName || exportPlan.meta?.club || "club")
-  .trim()
-  .toLowerCase()
-  .replace(/[^a-z0-9]+/g, "-")
-  .replace(/^-+|-+$/g, "");
+      const safeClub = (
+        exportPlan.brand?.clubName ||
+        exportPlan.meta?.club ||
+        "club"
+      )
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
 
-const safePlayer = (exportPlan.player?.name || "player")
-  .trim()
-  .toLowerCase()
-  .replace(/[^a-z0-9]+/g, "-")
-  .replace(/^-+|-+$/g, "");
+      const safePlayer = (exportPlan.player?.name || "player")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
 
-const planLabel =
-  exportLang === "nl" ? "ontwikkelplan" : "development-plan";
+      const planLabel =
+        exportLang === "nl" ? "ontwikkelplan" : "development-plan";
 
-const a = document.createElement("a");
-a.href = url;
-a.download = `${safeClub}-${safePlayer}-${planLabel}-${exportLang}.pdf`;
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${safeClub}-${safePlayer}-${planLabel}-${exportLang}.pdf`;
 
-document.body.appendChild(a);
-a.click();
-a.remove();
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
 
-setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
 
       trackPdpDownloaded({
         version,
@@ -1411,7 +1152,11 @@ setTimeout(() => URL.revokeObjectURL(url), 1000);
         lang,
       });
 
-      alert("Er ging iets mis bij het downloaden van de PDF.");
+      alert(
+        lang === "nl"
+          ? "Er ging iets mis bij het downloaden van de PDF."
+          : "Something went wrong while downloading the PDF."
+      );
     }
   }
 
@@ -1428,8 +1173,8 @@ setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   const contextualHints = useMemo(() => {
-    const hints: Array<{ label: string; prompt: string }> = [];
     const planner = chatPlannerState;
+    const nextSlide = planner?.nextPrioritySlide;
 
     if (!planner) {
       return [
@@ -1443,47 +1188,145 @@ setTimeout(() => URL.revokeObjectURL(url), 1000);
       ];
     }
 
-    if (!plannerFilled(planner, "observations")) {
-      hints.push({
-        label: t.hintObservation,
-        prompt:
-          lang === "nl"
-            ? "Beschrijf 1 concreet moment: wat doet de speler en wat gebeurt er daarna?"
-            : "Describe 1 concrete moment: what does the player do and what happens next?",
-      });
+    if (nextSlide === "agreement") {
+      return [
+        {
+          label: t.hintObservation,
+          prompt:
+            lang === "nl"
+              ? "Wat is het concrete gedrag dat nu het meest in de weg zit?"
+              : "What is the concrete behaviour that currently gets in the way most?",
+        },
+        {
+          label: t.hintMoment,
+          prompt:
+            lang === "nl"
+              ? "In welk specifiek wedstrijdmoment zie je dit het duidelijkst?"
+              : "In which specific match moment do you see this most clearly?",
+        },
+        {
+          label: t.hintGoal,
+          prompt:
+            lang === "nl"
+              ? "Welk gedrag wil je in deze situatie juist wél terugzien?"
+              : "What behaviour do you want to see in this situation instead?",
+        },
+      ];
     }
 
-    if (!plannerFilled(planner, "whenObserved")) {
-      hints.push({
-        label: t.hintMoment,
-        prompt:
-          lang === "nl"
-            ? "Wanneer in de wedstrijd gebeurt dit? (fase, positie, context)"
-            : "When in the match does this happen? (phase, position, context)",
-      });
+    if (nextSlide === "role_context") {
+      return [
+        {
+          label: t.hintObservation,
+          prompt:
+            lang === "nl"
+              ? "Wat vraagt zijn rol of positie hier van hem in dit team?"
+              : "What does his role or position require from him here in this team?",
+        },
+        {
+          label: t.hintMoment,
+          prompt:
+            lang === "nl"
+              ? "In welke teamfase wordt dit echt beslissend?"
+              : "In which team phase does this become truly decisive?",
+        },
+        {
+          label: t.hintGoal,
+          prompt:
+            lang === "nl"
+              ? "Wat wint of verliest het team als dit gedrag wel of niet lukt?"
+              : "What does the team gain or lose when this behaviour does or does not happen?",
+        },
+      ];
     }
 
-    if (!plannerFilled(planner, "effectOnGame")) {
-      hints.push({
-        label: t.hintGoal,
-        prompt:
-          lang === "nl"
-            ? "Wat is het effect op het spel of team als dit gebeurt?"
-            : "What is the effect on the game or team when this happens?",
-      });
+    if (nextSlide === "reality") {
+      return [
+        {
+          label: t.hintObservation,
+          prompt:
+            lang === "nl"
+              ? "Wat zie je concreet terug in zijn gedrag of keuzes?"
+              : "What do you concretely see in his behaviour or decisions?",
+        },
+        {
+          label: t.hintMoment,
+          prompt:
+            lang === "nl"
+              ? "Wanneer zie je dit vooral terug: onder welke trigger of omstandigheid?"
+              : "When do you mainly see this: under which trigger or condition?",
+        },
+        {
+          label: t.hintGoal,
+          prompt:
+            lang === "nl"
+              ? "Wat is het directe effect op het spel of team als dit gebeurt?"
+              : "What is the direct effect on the game or team when this happens?",
+        },
+      ];
     }
 
-    if (hints.length === 0) {
-      hints.push({
+    if (nextSlide === "approach") {
+      return [
+        {
+          label: t.hintObservation,
+          prompt:
+            lang === "nl"
+              ? "Wat moet de speler zelf concreet anders gaan doen?"
+              : "What must the player concretely start doing differently?",
+        },
+        {
+          label: t.hintMoment,
+          prompt:
+            lang === "nl"
+              ? "Hoe werk je hieraan in training of met beelden?"
+              : "How do you work on this in training or through video?",
+        },
+        {
+          label: t.hintGoal,
+          prompt:
+            lang === "nl"
+              ? "Wie draagt hier concreet wat in: speler, trainer, analist of staff?"
+              : "Who concretely owns what here: player, coach, analyst or staff?",
+        },
+      ];
+    }
+
+    if (nextSlide === "success") {
+      return [
+        {
+          label: t.hintObservation,
+          prompt:
+            lang === "nl"
+              ? "Waaraan zie je in het spel dat dit begint te landen?"
+              : "What do you see in the game that shows this is starting to land?",
+        },
+        {
+          label: t.hintMoment,
+          prompt:
+            lang === "nl"
+              ? "Welk gedrag van de speler laat zien dat dit echt begint te landen?"
+              : "What player behaviour shows that this is truly starting to land?",
+        },
+        {
+          label: t.hintGoal,
+          prompt:
+            lang === "nl"
+              ? "Wat zijn vroege signalen dat dit plan begint te werken?"
+              : "What are early signals that this plan is starting to work?",
+        },
+      ];
+    }
+
+    return [
+      {
         label: t.hintRefine,
         prompt:
           lang === "nl"
             ? "Maak het scherper: wat doet de speler exact anders dan nodig en wat is direct het gevolg?"
             : "Make it sharper: what exactly does the player do differently than needed, and what is the direct consequence?",
-      });
-    }
-
-    return hints.slice(0, 3);
+      },
+    ];
   }, [chatPlannerState, t, lang]);
 
   return (
@@ -2181,36 +2024,32 @@ setTimeout(() => URL.revokeObjectURL(url), 1000);
             <div className="flex min-h-[760px] flex-col gap-4">
               <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
                 <div className="text-[12px] uppercase tracking-[0.18em] text-white/38">
-                  {t.progressTitle}
+                  {t.controlLayer}
                 </div>
                 <div className="mt-2 text-[13px] leading-relaxed text-white/52">
-                  {t.progressBody}
+                  {lang === "nl"
+                    ? "Setup, evidence en export blijven hier. De chat stuurt de inhoudelijke planopbouw."
+                    : "Setup, evidence and export stay here. The chat drives the content build-up of the plan."}
                 </div>
 
-                <div className="mt-5 flex items-end justify-between gap-4">
-                  <div>
-                    <div className="text-[34px] font-semibold leading-none tracking-[-0.04em] text-white/94">
-                      {totalProgress}%
-                    </div>
-                    <div className="mt-2 text-[12px] text-white/40">
-                      {completedSections}/{sections.length} {t.completed.toLowerCase()}
-                    </div>
-                  </div>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <MiniMetaPill>
+                    {t.clubContext}: {plan.meta.club || "—"}
+                  </MiniMetaPill>
 
-                  <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] text-white/68">
-                    {t.completion}
-                  </div>
-                </div>
+                  <MiniMetaPill>
+                    {t.brandingMetaTeam}: {plan.meta.team || "—"}
+                  </MiniMetaPill>
 
-                <div className="mt-4 h-[10px] overflow-hidden rounded-full bg-white/8">
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{
-                      width: `${totalProgress}%`,
-                      background: `linear-gradient(90deg, ${primary} 0%, ${secondary} 72%, ${tertiary} 100%)`,
-                      boxShadow: `0 0 16px ${withAlpha(primary, "40")}`,
-                    }}
-                  />
+                  <MiniMetaPill>
+                    {t.playerIdentity}: {plan.player.name || "—"}
+                  </MiniMetaPill>
+
+                  <MiniMetaPill>Evidence: {clipCount}/3</MiniMetaPill>
+
+                  <MiniMetaPill>
+                    {t.completion}: {totalProgress}%
+                  </MiniMetaPill>
                 </div>
               </div>
 
@@ -2823,8 +2662,8 @@ function WeekLengthPicker({
                 ? "week"
                 : "weken"
               : option === 1
-              ? "week"
-              : "weeks";
+                ? "week"
+                : "weeks";
 
           return (
             <button

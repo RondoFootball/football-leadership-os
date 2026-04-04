@@ -1,5 +1,3 @@
-// src/app/api/pdp/chat/chatPlanner.ts
-
 import type { DevelopmentPlanV1 } from "@/app/development/player-development-plan/ui/lib/engineSchema";
 import {
   CHAT_SLOTS,
@@ -8,6 +6,10 @@ import {
   getRequiredFirstDraftSlots,
   getRequiredStrongDraftSlots,
 } from "./chatSlots";
+
+type Slide4Route = NonNullable<DevelopmentPlanV1["slide4DevelopmentRoute"]>;
+type Slide4Responsibilities = Slide4Route["responsibilities"];
+type Slide4DevelopmentRouteFields = Slide4Route["developmentRoute"];
 
 export type PlannerIntent =
   | "ask"
@@ -49,9 +51,9 @@ function qualityToProgress(quality: SlotQuality) {
     case "empty":
       return 0;
     case "draft":
-      return 35;
+      return 45;
     case "usable":
-      return 70;
+      return 78;
     case "strong":
       return 100;
     default:
@@ -66,10 +68,12 @@ function maxQuality(...qualities: SlotQuality[]): SlotQuality {
   return "empty";
 }
 
-function qualityFromText(v: unknown): SlotQuality {
-  if (typeof v !== "string") return "empty";
+function normalizeText(v: unknown) {
+  return typeof v === "string" ? v.trim() : "";
+}
 
-  const t = v.trim();
+function qualityFromText(v: unknown): SlotQuality {
+  const t = normalizeText(v);
   if (!t) return "empty";
 
   const lowered = t.toLowerCase();
@@ -80,16 +84,13 @@ function qualityFromText(v: unknown): SlotQuality {
   const words = t.split(/\s+/).filter(Boolean).length;
   const length = t.length;
 
-  if (length < 8 || words < 2) return "draft";
-  if (length < 28 || words < 5) return "usable";
+  if (length < 6 || words < 1) return "empty";
+  if (length < 18 || words < 3) return "draft";
+  if (length < 42 || words < 7) return "usable";
   return "strong";
 }
 
-function qualityFromList(
-  v: unknown,
-  minItemLength = 6,
-  strongCount = 3
-): SlotQuality {
+function qualityFromList(v: unknown, minItemLength = 6): SlotQuality {
   if (!Array.isArray(v)) return "empty";
 
   const items = v
@@ -97,9 +98,55 @@ function qualityFromList(
     .filter((x) => x.length >= minItemLength);
 
   if (items.length === 0) return "empty";
-  if (items.length === 1) return "draft";
-  if (items.length < strongCount) return "usable";
+
+  if (items.length === 1) {
+    return qualityFromText(items[0]) === "strong" ? "usable" : "draft";
+  }
+
+  if (items.length === 2) return "usable";
   return "strong";
+}
+
+function qualityFromOwnership(
+  responsibilities: Slide4Responsibilities | undefined
+): SlotQuality {
+  if (!responsibilities) return "empty";
+
+  const entries = [
+    responsibilities.player,
+    responsibilities.coach,
+    responsibilities.analyst,
+    responsibilities.staff,
+  ]
+    .map((x) => normalizeText(x))
+    .filter(Boolean);
+
+  if (entries.length === 0) return "empty";
+  if (entries.length === 1) return qualityFromText(entries[0]);
+  if (entries.length === 2) return "usable";
+  return "strong";
+}
+
+function qualityFromTrainingVideo(
+  route: Slide4DevelopmentRouteFields | undefined
+): SlotQuality {
+  if (!route) return "empty";
+
+  return maxQuality(
+    qualityFromText(route.training),
+    qualityFromText(route.video)
+  );
+}
+
+function qualityFromMatchOffField(
+  route: Slide4DevelopmentRouteFields | undefined
+): SlotQuality {
+  if (!route) return "empty";
+
+  return maxQuality(
+    qualityFromText(route.match),
+    qualityFromText(route.off_field)
+  );
 }
 
 function toBool(quality: SlotQuality) {
@@ -121,7 +168,7 @@ export function getSlotStatusesFromPlan(
 ): Record<ChatSlotKey, SlotStatus> {
   const slotMap: Record<ChatSlotKey, SlotStatus> = {
     /**
-     * SLIDE 2 — AFSPRAAK
+     * SLIDE 2 — AGREEMENT
      */
     developmentPoint: {
       key: "developmentPoint",
@@ -145,7 +192,7 @@ export function getSlotStatusesFromPlan(
     },
 
     /**
-     * SLIDE 3 — ROLCONTEXT
+     * SLIDE 3 — ROLE CONTEXT
      */
     roleRequirements: {
       key: "roleRequirements",
@@ -175,7 +222,7 @@ export function getSlotStatusesFromPlan(
     },
 
     /**
-     * SLIDE 4 — REALITEIT
+     * SLIDE 4 — REALITY
      */
     observations: {
       key: "observations",
@@ -208,7 +255,7 @@ export function getSlotStatusesFromPlan(
     },
 
     /**
-     * SLIDE 5 — AANPAK
+     * SLIDE 5 — APPROACH
      */
     playerExecution: {
       key: "playerExecution",
@@ -219,9 +266,8 @@ export function getSlotStatusesFromPlan(
 
     trainingVideoPlan: {
       key: "trainingVideoPlan",
-      quality: maxQuality(
-        qualityFromText(plan.slide4DevelopmentRoute?.developmentRoute?.training),
-        qualityFromText(plan.slide4DevelopmentRoute?.developmentRoute?.video)
+      quality: qualityFromTrainingVideo(
+        plan.slide4DevelopmentRoute?.developmentRoute
       ),
       progress: 0,
       slide: "approach",
@@ -229,9 +275,8 @@ export function getSlotStatusesFromPlan(
 
     matchOffFieldPlan: {
       key: "matchOffFieldPlan",
-      quality: maxQuality(
-        qualityFromText(plan.slide4DevelopmentRoute?.developmentRoute?.match),
-        qualityFromText(plan.slide4DevelopmentRoute?.developmentRoute?.off_field)
+      quality: qualityFromMatchOffField(
+        plan.slide4DevelopmentRoute?.developmentRoute
       ),
       progress: 0,
       slide: "approach",
@@ -239,18 +284,15 @@ export function getSlotStatusesFromPlan(
 
     ownership: {
       key: "ownership",
-      quality: maxQuality(
-        qualityFromText(plan.slide4DevelopmentRoute?.responsibilities?.player),
-        qualityFromText(plan.slide4DevelopmentRoute?.responsibilities?.coach),
-        qualityFromText(plan.slide4DevelopmentRoute?.responsibilities?.analyst),
-        qualityFromText(plan.slide4DevelopmentRoute?.responsibilities?.staff)
+      quality: qualityFromOwnership(
+        plan.slide4DevelopmentRoute?.responsibilities
       ),
       progress: 0,
       slide: "approach",
     },
 
     /**
-     * SLIDE 6 — SUCCES
+     * SLIDE 6 — SUCCESS
      */
     successInGame: {
       key: "successInGame",
@@ -318,7 +360,9 @@ const PRIORITY_ORDER: ChatSlotKey[] = [
 ];
 
 function pickNextPrioritySlot(
-  statuses: Record<ChatSlotKey, SlotStatus>
+  statuses: Record<ChatSlotKey, SlotStatus>,
+  usableSlots: Record<ChatSlotKey, boolean>,
+  strongSlots: Record<ChatSlotKey, boolean>
 ): ChatSlotKey | undefined {
   const firstDraftKeys = getRequiredFirstDraftSlots().map((slot) => slot.key);
   const strongDraftKeys = getRequiredStrongDraftSlots().map((slot) => slot.key);
@@ -343,6 +387,11 @@ function pickNextPrioritySlot(
   );
   if (strongDraftWeak) return strongDraftWeak;
 
+  const strongDraftUsableButNotStrong = PRIORITY_ORDER.find(
+    (key) => strongDraftKeys.includes(key) && usableSlots[key] && !strongSlots[key]
+  );
+  if (strongDraftUsableButNotStrong) return strongDraftUsableButNotStrong;
+
   const usableButWeak = PRIORITY_ORDER.find(
     (key) => statuses[key].quality === "usable"
   );
@@ -356,8 +405,10 @@ function computeProgress(
   keys: ChatSlotKey[]
 ) {
   if (keys.length === 0) return 0;
+
   const total = keys.length * 100;
   const score = keys.reduce((sum, key) => sum + statuses[key].progress, 0);
+
   return clampProgress((score / total) * 100);
 }
 
@@ -383,9 +434,14 @@ export function buildPlannerState(
   const strongDraftKeys = getRequiredStrongDraftSlots().map((slot) => slot.key);
 
   const missingFirstDraft = firstDraftKeys.filter((key) => !usableSlots[key]);
-  const missingStrongDraft = strongDraftKeys.filter((key) => !usableSlots[key]);
+  const missingStrongDraft = strongDraftKeys.filter((key) => !strongSlots[key]);
 
-  const nextPrioritySlot = pickNextPrioritySlot(slotStatuses);
+  const nextPrioritySlot = pickNextPrioritySlot(
+    slotStatuses,
+    usableSlots,
+    strongSlots
+  );
+
   const nextPrioritySlide = nextPrioritySlot
     ? slotStatuses[nextPrioritySlot].slide
     : undefined;
@@ -406,7 +462,8 @@ export function buildPlannerState(
   const hasApproachAnchor =
     usableSlots.playerExecution ||
     usableSlots.trainingVideoPlan ||
-    usableSlots.matchOffFieldPlan;
+    usableSlots.matchOffFieldPlan ||
+    usableSlots.ownership;
 
   const hasSuccessAnchor =
     usableSlots.successInGame ||
