@@ -6,11 +6,8 @@ import type {
   Lang,
 } from "@/app/development/player-development-plan/ui/lib/engineSchema";
 import { composeKnowledgeContext } from "../core/knowledgeComposer";
-import {
-  buildPlannerState,
-  getSlotMeta,
-  type PlannerState,
-} from "./chatPlanner";
+import { buildPlannerState, getSlotMeta, type PlannerState } from "./chatPlanner";
+
 import { buildPdpSystemPrompt } from "./systemPrompt";
 
 const apiKey = process.env.OPENAI_API_KEY;
@@ -41,24 +38,39 @@ type ApiInput = {
       {
         quality?: "empty" | "draft" | "usable" | "strong";
         progress?: number;
-        slide?: string;
+        slide?:
+          | "agreement"
+          | "role_context"
+          | "reality"
+          | "approach"
+          | "success";
       }
     >;
-    missingFirstDraft?: string[];
-    missingStrongDraft?: string[];
-    intent?: "ask" | "summarise" | "draft_ready" | "strong_draft_ready";
+    missingBackbone?: string[];
+    missingStrongPlan?: string[];
+    intent?: "ask" | "backbone_ready" | "strong_plan_ready";
     nextPrioritySlot?: string;
-    nextPrioritySlide?: string;
-    firstDraftProgress?: number;
-    strongDraftProgress?: number;
+    nextPrioritySlide?:
+      | "agreement"
+      | "role_context"
+      | "reality"
+      | "approach"
+      | "success";
+    backboneProgress?: number;
+    strongPlanProgress?: number;
+    liveProgress?: number;
+    currentSlide?:
+      | "agreement"
+      | "role_context"
+      | "reality"
+      | "approach"
+      | "success";
   } | null;
 };
 
 type ParsedModelResponse = {
-  type?: "question";
   message?: string;
   planPatch?: Partial<DevelopmentPlanV1>;
-  suggestedResponses?: string[];
 };
 
 function deepMergePlan(
@@ -104,39 +116,6 @@ function hasMeaningfulUserInput(messages: ChatMsg[]) {
   return totalChars >= 12;
 }
 
-function sanitizePlannerState(
-  plannerState: ApiInput["plannerState"]
-): Partial<PlannerState> | null {
-  if (!plannerState) return null;
-
-  return {
-    filledSlots: (plannerState.filledSlots || {}) as PlannerState["filledSlots"],
-    missingFirstDraft: Array.isArray(plannerState.missingFirstDraft)
-      ? (plannerState.missingFirstDraft as PlannerState["missingFirstDraft"])
-      : [],
-    missingStrongDraft: Array.isArray(plannerState.missingStrongDraft)
-      ? (plannerState.missingStrongDraft as PlannerState["missingStrongDraft"])
-      : [],
-    intent:
-      plannerState.intent === "draft_ready" ||
-      plannerState.intent === "strong_draft_ready" ||
-      plannerState.intent === "summarise"
-        ? plannerState.intent
-        : "ask",
-    nextPrioritySlot: plannerState.nextPrioritySlot as
-      | PlannerState["nextPrioritySlot"]
-      | undefined,
-    firstDraftProgress:
-      typeof plannerState.firstDraftProgress === "number"
-        ? plannerState.firstDraftProgress
-        : undefined,
-    strongDraftProgress:
-      typeof plannerState.strongDraftProgress === "number"
-        ? plannerState.strongDraftProgress
-        : undefined,
-  };
-}
-
 function stripCodeFences(value: string) {
   const trimmed = value.trim();
 
@@ -173,134 +152,184 @@ function safeParseModelResponse(text: string): ParsedModelResponse | null {
   }
 }
 
-function sanitizeSuggestedResponses(input: unknown) {
-  if (!Array.isArray(input)) return [] as string[];
-
-  return input
-    .map((v) => (typeof v === "string" ? v.trim() : ""))
-    .filter(Boolean)
-    .filter((v, i, arr) => arr.indexOf(v) === i)
-    .slice(0, 4);
-}
-
 function normalizeParsedResponse(
   parsed: ParsedModelResponse | null
 ): ParsedModelResponse {
   if (!parsed || typeof parsed !== "object") {
     return {
-      type: "question",
       message: "",
       planPatch: {},
-      suggestedResponses: [],
     };
   }
 
   return {
-    type: "question",
     message: typeof parsed.message === "string" ? parsed.message.trim() : "",
     planPatch:
       parsed.planPatch && typeof parsed.planPatch === "object"
         ? parsed.planPatch
         : {},
-    suggestedResponses: sanitizeSuggestedResponses(parsed.suggestedResponses),
   };
 }
 
-function getSectionLabel(lang: Lang, slide?: string) {
-  switch (slide) {
-    case "agreement":
-      return "Agreement";
-    case "role_context":
-      return lang === "nl" ? "Context" : "Context";
-    case "reality":
-      return "Reality";
-    case "approach":
-      return "Approach";
-    case "success":
-      return "Success";
-    default:
-      return "";
-  }
+function sanitizePlannerState(
+  plannerState: ApiInput["plannerState"]
+): Partial<PlannerState> | null {
+  if (!plannerState) return null;
+
+  return {
+    filledSlots: (plannerState.filledSlots || {}) as PlannerState["filledSlots"],
+    usableSlots: (plannerState.usableSlots || {}) as PlannerState["usableSlots"],
+    strongSlots: (plannerState.strongSlots || {}) as PlannerState["strongSlots"],
+    slotStatuses: (plannerState.slotStatuses ||
+      {}) as PlannerState["slotStatuses"],
+    missingBackbone: Array.isArray(plannerState.missingBackbone)
+      ? (plannerState.missingBackbone as PlannerState["missingBackbone"])
+      : [],
+    missingStrongPlan: Array.isArray(plannerState.missingStrongPlan)
+      ? (plannerState.missingStrongPlan as PlannerState["missingStrongPlan"])
+      : [],
+    intent:
+      plannerState.intent === "backbone_ready" ||
+      plannerState.intent === "strong_plan_ready"
+        ? plannerState.intent
+        : "ask",
+    nextPrioritySlot: plannerState.nextPrioritySlot as
+      | PlannerState["nextPrioritySlot"]
+      | undefined,
+    nextPrioritySlide: plannerState.nextPrioritySlide as
+      | PlannerState["nextPrioritySlide"]
+      | undefined,
+    backboneProgress:
+      typeof plannerState.backboneProgress === "number"
+        ? plannerState.backboneProgress
+        : undefined,
+    strongPlanProgress:
+      typeof plannerState.strongPlanProgress === "number"
+        ? plannerState.strongPlanProgress
+        : undefined,
+    liveProgress:
+      typeof plannerState.liveProgress === "number"
+        ? plannerState.liveProgress
+        : undefined,
+    currentSlide: plannerState.currentSlide as
+      | PlannerState["currentSlide"]
+      | undefined,
+  };
 }
 
-function getSafeNextSlide(
-  draftPlan: Partial<DevelopmentPlanV1>,
-  planner: PlannerState
-) {
-  const explicit = (draftPlan as any)?.meta?.nextPrioritySlide;
-  const fromPlanner = (planner as any)?.nextPrioritySlide;
-  const value = explicit || fromPlanner;
-
-  if (
-    value === "agreement" ||
-    value === "role_context" ||
-    value === "reality" ||
-    value === "approach" ||
-    value === "success"
-  ) {
-    return value;
-  }
-
-  return undefined;
-}
-
-function buildFallbackQuestion(
+function getSlideLabel(
   lang: Lang,
-  planner: PlannerState,
-  draftPlan: Partial<DevelopmentPlanV1>
+  slide?:
+    | "agreement"
+    | "role_context"
+    | "reality"
+    | "approach"
+    | "success"
 ) {
+  if (!slide) return lang === "nl" ? "Plan" : "Plan";
+
+  const labels = {
+    agreement: { nl: "Afspraak", en: "Agreement" },
+    role_context: { nl: "Rolcontext", en: "Role context" },
+    reality: { nl: "Realiteit", en: "Reality" },
+    approach: { nl: "Aanpak", en: "Approach" },
+    success: { nl: "Succes", en: "Success" },
+  } as const;
+
+  return labels[slide][lang];
+}
+
+function buildFallbackQuestion(lang: Lang, planner: PlannerState) {
   const slot = planner.nextPrioritySlot;
   const meta = getSlotMeta(slot);
-  const sectionLabel = getSectionLabel(
-    lang,
-    getSafeNextSlide(draftPlan, planner)
-  );
+  const slideLabel = getSlideLabel(lang, planner.currentSlide);
 
   if (meta) {
-    const q = lang === "nl" ? meta.questionPromptNl : meta.questionPromptEn;
-    return sectionLabel ? `${sectionLabel} — ${q}` : q;
+    return `${slideLabel} — ${
+      lang === "nl" ? meta.questionPromptNl : meta.questionPromptEn
+    }`;
   }
 
   return localMessage(
     lang,
-    "Agreement — wat zie je concreet gebeuren op het veld?",
-    "Agreement — what do you concretely see happening on the pitch?"
+    "Afspraak — Ik hoor de richting, maar wil het nog scherper maken. Wat zie je concreet gebeuren op het veld?",
+    "Agreement — I hear the direction, but I want to sharpen it further. What do you concretely see happening on the pitch?"
   );
-}
-
-function getLastUserMessage(messages: ChatMsg[]) {
-  const reversed = [...messages].reverse();
-  return reversed.find((m) => m.role === "user")?.content?.trim() || "";
 }
 
 function buildRoutingInstruction(
   lang: Lang,
   planner: PlannerState,
-  draftPlan: Partial<DevelopmentPlanV1>,
-  messages: ChatMsg[]
+  draftPlan: Partial<DevelopmentPlanV1>
 ) {
   const nextSlotMeta = getSlotMeta(planner.nextPrioritySlot);
-  const nextSectionLabel = getSectionLabel(
+
+  const currentSlideLine = localMessage(
     lang,
-    getSafeNextSlide(draftPlan, planner)
+    `Huidig zichtbaar planonderdeel: ${getSlideLabel(lang, planner.currentSlide)}.`,
+    `Current visible plan section: ${getSlideLabel(lang, planner.currentSlide)}.`
+  );
+
+  const nextSlideLine = localMessage(
+    lang,
+    `Volgend beoogd planonderdeel: ${getSlideLabel(
+      lang,
+      planner.nextPrioritySlide
+    )}.`,
+    `Next intended plan section: ${getSlideLabel(
+      lang,
+      planner.nextPrioritySlide
+    )}.`
   );
 
   const slotLine = nextSlotMeta
     ? localMessage(
         lang,
-        `Huidige prioriteit: ${nextSlotMeta.key} (${nextSlotMeta.label}) binnen ${nextSectionLabel || "de volgende sectie"}.`,
-        `Current priority: ${nextSlotMeta.key} (${nextSlotMeta.label}) within ${nextSectionLabel || "the next section"}.`
+        `Volgende prioriteit: ${nextSlotMeta.key} (${nextSlotMeta.label}) op ${getSlideLabel(
+          lang,
+          nextSlotMeta.slide
+        )}.`,
+        `Next priority: ${nextSlotMeta.key} (${nextSlotMeta.label}) on ${getSlideLabel(
+          lang,
+          nextSlotMeta.slide
+        )}.`
       )
     : localMessage(
         lang,
-        "Er is geen duidelijke volgende prioriteit gevonden.",
-        "No clear next priority was found."
+        "Er is geen duidelijke volgende prioriteitsslot gevonden.",
+        "No clear next priority slot was found."
       );
+
+  const intensityLine =
+    planner.intent === "strong_plan_ready"
+      ? localMessage(
+          lang,
+          "Het plan is inhoudelijk al sterk. Bouw gericht verder en voorkom herhaling.",
+          "The plan is already strong. Build forward selectively and avoid repetition."
+        )
+      : planner.intent === "backbone_ready"
+      ? localMessage(
+          lang,
+          "De basis staat. Ga door naar de volgende planlagen in plaats van de kern opnieuw te openen.",
+          "The backbone is there. Move into the next plan layers instead of reopening the core."
+        )
+      : localMessage(
+          lang,
+          "De kern is nog niet scherp genoeg. Zet de grootste inhoudelijke stap vooruit met minimale frictie.",
+          "The core is not sharp enough yet. Create the biggest content gain with minimal friction."
+        );
+
+  const progressLine = localMessage(
+    lang,
+    `Live progress: ${planner.liveProgress}%. Basis: ${planner.backboneProgress}%. Sterk plan: ${planner.strongPlanProgress}%.`,
+    `Live progress: ${planner.liveProgress}%. Backbone: ${planner.backboneProgress}%. Strong plan: ${planner.strongPlanProgress}%.`
+  );
 
   const planSignal = JSON.stringify(
     {
       slide2: draftPlan.slide2,
       slideContext: draftPlan.slideContext,
+      slide3: draftPlan.slide3,
       slide3Baseline: draftPlan.slide3Baseline,
       slide4DevelopmentRoute: draftPlan.slide4DevelopmentRoute,
       slide6SuccessDefinition: draftPlan.slide6SuccessDefinition,
@@ -309,38 +338,26 @@ function buildRoutingInstruction(
     2
   );
 
-  const recentUserMessages = messages
-    .filter((m) => m.role === "user")
-    .slice(-3)
-    .map((m) => m.content)
-    .join(" | ");
-
-  const lastUserMessage = getLastUserMessage(messages);
-
   return `
+${currentSlideLine}
+${nextSlideLine}
 ${slotLine}
-
-Recent user direction:
-${recentUserMessages || "-"}
-
-Last user message:
-${lastUserMessage || "-"}
+${intensityLine}
+${progressLine}
 
 Current plan signal:
 ${planSignal}
 
 Decision rules:
-- Do not use draft language in user-facing output
-- If a section is already usable, lock it and move forward
-- If the user says move on, actually move on
-- If the user says this was already answered, do not ask it again
-- Prefer writing a usable line into planPatch before asking again
-- Use short section-led phrasing when helpful
-- Use suggestedResponses when the UI would benefit from compact click options
-- Keep questions short
-- Keep options very short
-- Build the full plan progressively, not just the core
-- Prefer ownership, intervention, evidence and success once the core is usable
+- Keep the visible section label aligned with the actual content of the turn
+- Ask at most one question
+- Prefer writing a sharper draft line into planPatch before asking again
+- Do not repeat or re-ask usable information
+- Do not keep the user inside one section too long after it is usable
+- Prefer movement through the full plan over over-refining one slot
+- If one section is usable, move into the next relevant section
+- Only ask for narrowing detail if it materially improves plan quality
+- If the user says distinctions are not important, abstract to the strongest supported pattern and move on
   `.trim();
 }
 
@@ -371,7 +388,8 @@ export async function POST(req: Request) {
     const incomingPlanner = sanitizePlannerState(body.plannerState);
 
     const basePlanner: PlannerState =
-      incomingPlanner && Object.keys(incomingPlanner.filledSlots || {}).length
+      incomingPlanner &&
+      Object.keys(incomingPlanner.filledSlots || {}).length
         ? {
             ...plannerFromPlan,
             ...incomingPlanner,
@@ -381,12 +399,11 @@ export async function POST(req: Request) {
     if (!hasMeaningfulUserInput(messages)) {
       return NextResponse.json({
         type: "question",
-        message: buildFallbackQuestion(lang, basePlanner, draftPlan),
+        message: buildFallbackQuestion(lang, basePlanner),
         done: false,
         derived: {
           planner: basePlanner,
         },
-        suggestedResponses: [],
       });
     }
 
@@ -409,13 +426,12 @@ export async function POST(req: Request) {
     const routingInstruction = buildRoutingInstruction(
       lang,
       basePlanner,
-      draftPlan,
-      messages
+      draftPlan
     );
 
     const response = await client.responses.create({
       model: "gpt-4.1",
-      temperature: 0.2,
+      temperature: 0.28,
       input: [
         {
           role: "system",
@@ -453,21 +469,20 @@ ${routingInstruction}
 
 Output rules:
 - Return only valid JSON
-- Use exactly this shape:
+- Use this shape:
   {
-    "type": "question",
     "message": "string",
-    "planPatch": {},
-    "suggestedResponses": []
+    "planPatch": {}
   }
-- Do not use draft language
-- Build forward through the plan
-- Ask at most one short high-value question
-- Prefer planPatch over repetition
-- Use the knowledge context only as internal football intelligence
+- Ask at most one high-value next question
+- Prefer one sharp next question over broad summaries
+- Prefer a small truthful planPatch over no planPatch
+- Only mark progress forward when the conversation truly supports it
+- Use the knowledge context as an internal football thinking frame, not as encyclopaedic output
 - Stay specific to observable football behaviour, role demands and plan usefulness
 - Do not invent plan content
 - Do not output markdown
+- Keep the section label aligned with the real step
           `.trim(),
         },
       ],
@@ -478,12 +493,11 @@ Output rules:
     if (!text) {
       return NextResponse.json({
         type: "question",
-        message: buildFallbackQuestion(lang, basePlanner, draftPlan),
+        message: buildFallbackQuestion(lang, basePlanner),
         done: false,
         derived: {
           planner: basePlanner,
         },
-        suggestedResponses: [],
       });
     }
 
@@ -499,12 +513,11 @@ Output rules:
     return NextResponse.json({
       type: "question",
       message:
-        parsed.message || buildFallbackQuestion(lang, recomputedPlanner, patchedPlan),
+        parsed.message || buildFallbackQuestion(lang, recomputedPlanner),
       done: false,
       derived: {
         planner: recomputedPlanner,
       },
-      suggestedResponses: parsed.suggestedResponses || [],
     });
   } catch (error: any) {
     console.error("/api/pdp/chat error", error);

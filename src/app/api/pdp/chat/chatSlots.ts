@@ -19,7 +19,6 @@ export type ChatSlotKey =
   | "successSignals";
 
 export type ChatSlotSlide =
-  | "cover"
   | "agreement"
   | "role_context"
   | "reality"
