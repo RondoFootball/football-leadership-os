@@ -38,7 +38,7 @@ const UI = {
   },
 
   en: {
-    agreement: "Agreement",
+    agreement: "agreement",
     context: "Context",
     reality: "Reality",
     approach: "Approach",

@@ -229,7 +229,7 @@ function getSlideLabel(
   if (!slide) return lang === "nl" ? "Plan" : "Plan";
 
   const labels = {
-    agreement: { nl: "Afspraak", en: "Agreement" },
+    agreement: { nl: "Afspraak", en: "agreement" },
     role_context: { nl: "Rolcontext", en: "Role context" },
     reality: { nl: "Realiteit", en: "Reality" },
     approach: { nl: "Aanpak", en: "Approach" },

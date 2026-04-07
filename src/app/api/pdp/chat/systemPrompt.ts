@@ -14,7 +14,7 @@ function getSlideLabel(
   if (!slide) return lang === "nl" ? "Plan" : "Plan";
 
   const labels = {
-    agreement: { nl: "Afspraak", en: "Agreement" },
+    agreement: { nl: "Afspraak", en: "agreement" },
     role_context: { nl: "Rolcontext", en: "Role context" },
     reality: { nl: "Realiteit", en: "Reality" },
     approach: { nl: "Aanpak", en: "Approach" },
@@ -263,7 +263,7 @@ Hard rule:
 The visible section label must match the actual content of the turn.
 
 So:
-- never say "Agreement" if the question is really about Role context
+- never say "agreement" if the question is really about Role context
 - never say "Role context" if the turn is actually sharpening Reality
 - never mismatch label and question
 

@@ -32,6 +32,13 @@ import {
   competitionsById,
   countriesById,
 } from "./lib/clubDatabase";
+import {
+  uiLabel,
+  sectionLabel,
+  actionLabel,
+  plannerLabel,
+  fallbackLabel,
+} from "./lib/pdp/pdpLabels";
 
 type Lang = "nl" | "en";
 type Mode = "chat" | "manual";
@@ -134,14 +141,14 @@ const UI = {
     progressBody:
       "Deze voortgang combineert planbasis, inhoudelijke uitwerking en bewijs.",
 
-    evidenceTitle: "Evidence",
+    evidenceTitle: "Bewijs",
     evidenceBody:
       "Voeg bewijs toe wanneer het helpt om observatie, context en opvolging scherper te maken.",
 
-    videoTitle: "Video evidence",
+    videoTitle: "Video-bewijs",
     videoBody:
       "Voeg clips toe als visueel bewijs voor het ontwikkelpunt. Houd het concreet en relevant.",
-    dataTitle: "Data evidence",
+    dataTitle: "Data-bewijs",
     dataBody:
       "Koppel later databronnen en indicatoren aan het plan. Deze functie komt in een volgende versie.",
     notYetAvailable: "Nog niet beschikbaar",
@@ -187,14 +194,14 @@ const UI = {
     presetActive: "Clubpreset actief",
     coverSystemLine: "Persoonlijk Ontwikkelplan",
 
-    workspaceTitle: "Workspace",
+    workspaceTitle: "Werkveld",
     workspaceBody:
       "Van observatie naar plan. Bouw eerst het gesprek of ontwikkelpunt, voeg daarna bewijs toe.",
 
     controlLayer: "Planstatus",
-    clubContext: "Club context",
-    pdfReady: "PDF-ready",
-    playerIdentity: "Player identity",
+    clubContext: "Clubcontext",
+    pdfReady: "PDF-klaar",
+    playerIdentity: "Spelerprofiel",
     brandingMetaClub: "Club",
     brandingMetaTeam: "Team",
     completion: "Compleet",
@@ -259,7 +266,7 @@ const UI = {
 
     developmentPoint: "Development point",
 
-    statusPoint: "Agreement",
+    statusPoint: "agreement",
     statusContext: "Context",
     statusReality: "Reality",
     statusApproach: "Approach",
@@ -2028,7 +2035,7 @@ export default function PlayerDevelopmentPlanBuilder() {
                 </div>
                 <div className="mt-2 text-[13px] leading-relaxed text-white/52">
                   {lang === "nl"
-                    ? "Setup, evidence en export blijven hier. De chat stuurt de inhoudelijke planopbouw."
+                    ? "Setup, bewijs en export blijven hier. De chat stuurt de inhoudelijke planopbouw."
                     : "Setup, evidence and export stay here. The chat drives the content build-up of the plan."}
                 </div>
 

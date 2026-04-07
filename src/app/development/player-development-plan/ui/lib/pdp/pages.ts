@@ -1,4 +1,5 @@
 // src/app/development/player-development-plan/ui/lib/pdp/pages.ts
+import { slideLabel, sectionLabel } from "./pdpLabels";
 
 export type Lang = "nl" | "en";
 
@@ -92,7 +93,7 @@ export function pageAgreementContract(args: {
   const safeStart = safeText(startDateLabel) || "—";
   const safeEnd = safeText(endDateLabel) || "—";
   const safeDuration = safeText(durationWeeksLabel) || "—";
-  const safeEval = safeText(evalLabel) || t(lang, "EVALUATIE", "EVALUATION");
+  const safeEval = safeText(evalLabel) || sectionLabel("evaluation", lang);
 
   const normalizeItems = (input: string | string[] | undefined | null) => {
     if (Array.isArray(input)) {
@@ -160,7 +161,7 @@ export function pageAgreementContract(args: {
   <div class="agreeS2__rail" aria-hidden="true"></div>
 
   <div class="agreeS2__header">
-    <div class="agreeS2__kicker">${esc(t(lang, "AFSPRAAK", "AGREEMENT"))}</div>
+    <div class="agreeS2__kicker">${esc(slideLabel("agreement", lang))}</div>
 
     <div class="agreeS2__hero">
       <div class="agreeS2__headline ${safeFocus ? "" : "agreeS2__headline--empty"}">
@@ -174,7 +175,7 @@ export function pageAgreementContract(args: {
 
   <div class="agreeS2__primary">
     <div class="agreeS2__sectionLabel">${esc(
-      t(lang, "GEWENST GEDRAG", "TARGET BEHAVIOUR")
+      sectionLabel("targetBehaviour", lang)
     )}</div>
 
     <div class="agreeS2__targetWrap">
@@ -188,7 +189,7 @@ export function pageAgreementContract(args: {
   <div class="agreeS2__secondary">
     <div class="agreeS2__secondaryBlock">
       <div class="agreeS2__sectionLabel">${esc(
-        t(lang, "WAAR DIT ZICHTBAAR MOET WORDEN", "WHERE THIS SHOULD BECOME VISIBLE")
+        sectionLabel("whereVisible", lang)
       )}</div>
       ${renderMomentList()}
     </div>
@@ -720,7 +721,7 @@ export function pageContext(args: {
 
   <div class="contextS3__header">
     <div class="contextS3__kicker">${esc(
-      t(lang, "CONTEXT", "CONTEXT")
+      slideLabel("role_context", lang)
     )}</div>
 
     <div class="contextS3__hero">
@@ -734,14 +735,14 @@ export function pageContext(args: {
   <div class="contextS3__secondary">
     <div class="contextS3__secondaryBlock contextS3__secondaryBlock--moment">
       <div class="contextS3__sectionLabel">${esc(
-        t(lang, "SPELMOMENTEN", "GAME MOMENTS")
+        sectionLabel("gameMoments", lang)
       )}</div>
       ${renderMiniList(roleItems, fallbackMoment, "moment")}
     </div>
 
     <div class="contextS3__secondaryBlock contextS3__secondaryBlock--zone">
       <div class="contextS3__sectionLabel">${esc(
-        t(lang, "ZONES / CONTEXT", "ZONES / CONTEXT")
+        sectionLabel("zones", lang)
       )}</div>
       ${renderMiniList(zoneItems, fallbackZone, "zone")}
     </div>
@@ -749,7 +750,7 @@ export function pageContext(args: {
 
   <div class="contextS3__primary">
     <div class="contextS3__sectionLabel">${esc(
-      t(lang, "PRINCIPES DIE HIER GELDEN", "PRINCIPLES THAT MATTER HERE")
+      sectionLabel("principles", lang)
     )}</div>
 
     <div class="contextS3__principles">
@@ -1256,7 +1257,7 @@ export function pageDiagnosis(args: {
   <div class="truthS4__rail" aria-hidden="true"></div>
 
   <div class="truthS4__header">
-    <div class="truthS4__kicker">${esc(t(lang, "REALITEIT", "REALITY"))}</div>
+    <div class="truthS4__kicker">${esc(slideLabel("reality", lang))}</div>
 
     <div class="truthS4__hero">
       <div class="truthS4__headline">${esc(heroPrimary)}</div>
@@ -1266,7 +1267,7 @@ export function pageDiagnosis(args: {
 
   <div class="truthS4__primary">
     <div class="truthS4__sectionLabel">${esc(
-      t(lang, "WAT WE NU ZIEN", "WHAT WE SEE NOW")
+      sectionLabel("observations", lang)
     )}</div>
 
     <div class="truthS4__observations">
@@ -1284,7 +1285,7 @@ export function pageDiagnosis(args: {
 
     <div class="truthS4__secondaryBlock truthS4__secondaryBlock--effect">
       <div class="truthS4__sectionLabel">${esc(
-        t(lang, "GEVOLG VOOR HET SPEL", "EFFECT ON THE GAME")
+        sectionLabel("effect", lang)
       )}</div>
       ${renderMiniList(effects, fallbackEffect, "effect")}
     </div>
@@ -1293,7 +1294,7 @@ export function pageDiagnosis(args: {
   <div class="truthS4__evidence">
     <div class="truthS4__evidenceHead">
       <div class="truthS4__sectionLabel">${esc(
-        t(lang, "BEWIJS / VIDEO", "EVIDENCE / VIDEO")
+        sectionLabel("evidence", lang)
       )}</div>
     </div>
 
@@ -1751,7 +1752,6 @@ export function pageDiagnosis(args: {
 `;
 }
 
-/** ---------------- SLIDE 5 ---------------- */
 export function pageDevelopmentRoute(args: {
   lang: Lang;
   accentHex: string;
@@ -1800,8 +1800,6 @@ export function pageDevelopmentRoute(args: {
     staffText,
   } = args;
 
-  const tt = (nl: string, en: string) => (lang === "nl" ? nl : en);
-
   const clean = (value?: string) =>
     typeof value === "string" ? value.trim() : "";
 
@@ -1837,34 +1835,34 @@ export function pageDevelopmentRoute(args: {
   const videoList = normalizeItems(videoItems, videoText);
   const offFieldList = normalizeItems(offFieldItems, offFieldText);
 
-  const fallbackTitle = tt(
-    "Nog geen aanpak gedefinieerd",
-    "No approach defined yet"
-  );
+  const fallbackTitle =
+    lang === "nl"
+      ? "Nog geen aanpak gedefinieerd"
+      : "No approach defined yet";
 
-  const fallbackSubtitle = tt(
-    "Nog geen toelichting toegevoegd",
-    "No explanation added yet"
-  );
+  const fallbackSubtitle =
+    lang === "nl"
+      ? "Nog geen toelichting toegevoegd"
+      : "No explanation added yet";
 
   const safeTitle = clean(title) || fallbackTitle;
   const safeSubtitle = clean(subtitle) || fallbackSubtitle;
 
   const alignmentItems = [
     {
-      label: tt("SPELER", "PLAYER"),
+      label: lang === "nl" ? "SPELER" : "PLAYER",
       text: clean(playerText || playerOwnText),
     },
     {
-      label: tt("COACH", "COACH"),
+      label: lang === "nl" ? "COACH" : "COACH",
       text: clean(coachText),
     },
     {
-      label: tt("ANALIST", "ANALYST"),
+      label: lang === "nl" ? "ANALIST" : "ANALYST",
       text: clean(analystText),
     },
     {
-      label: tt("STAFF", "STAFF"),
+      label: lang === "nl" ? "STAFF" : "STAFF",
       text: clean(staffText),
     },
   ].filter((item) => item.text);
@@ -1896,7 +1894,7 @@ export function pageDevelopmentRoute(args: {
     ? `
       <div class="routeS5__alignment">
         <div class="routeS5__alignmentLabel">${escapeHtml(
-          tt("AFSTEMMING", "ALIGNMENT")
+          sectionLabel("alignment", lang)
         )}</div>
 
         <div class="routeS5__alignmentGrid">
@@ -1929,7 +1927,7 @@ export function pageDevelopmentRoute(args: {
   <div class="routeS5__rail" aria-hidden="true"></div>
 
   <div class="routeS5__header">
-    <div class="routeS5__kicker">${escapeHtml(tt("AANPAK", "APPROACH"))}</div>
+    <div class="routeS5__kicker">${escapeHtml(slideLabel("approach", lang))}</div>
 
     <div class="routeS5__hero">
       <div class="routeS5__title">${escapeHtml(safeTitle)}</div>
@@ -1939,41 +1937,49 @@ export function pageDevelopmentRoute(args: {
 
   <div class="routeS5__grid">
     <div class="routeS5__block routeS5__block--primary">
-      <div class="routeS5__label">${escapeHtml(tt("TRAINING", "TRAINING"))}</div>
+      <div class="routeS5__label">${escapeHtml(sectionLabel("training", lang))}</div>
       <div class="routeS5__list">
         ${renderList(
           trainingList,
-          tt("Nog geen trainingsactie toegevoegd", "No training action added yet")
+          lang === "nl"
+            ? "Nog geen trainingsactie toegevoegd"
+            : "No training action added yet"
         )}
       </div>
     </div>
 
     <div class="routeS5__block routeS5__block--primary">
-      <div class="routeS5__label">${escapeHtml(tt("MATCH", "MATCH"))}</div>
+      <div class="routeS5__label">${escapeHtml(sectionLabel("match", lang))}</div>
       <div class="routeS5__list">
         ${renderList(
           matchList,
-          tt("Nog geen wedstrijdactie toegevoegd", "No match action added yet")
+          lang === "nl"
+            ? "Nog geen wedstrijdactie toegevoegd"
+            : "No match action added yet"
         )}
       </div>
     </div>
 
     <div class="routeS5__block">
-      <div class="routeS5__label">${escapeHtml(tt("VIDEO", "VIDEO"))}</div>
+      <div class="routeS5__label">${escapeHtml(sectionLabel("video", lang))}</div>
       <div class="routeS5__list">
         ${renderList(
           videoList,
-          tt("Nog geen videoactie toegevoegd", "No video action added yet")
+          lang === "nl"
+            ? "Nog geen videoactie toegevoegd"
+            : "No video action added yet"
         )}
       </div>
     </div>
 
     <div class="routeS5__block">
-      <div class="routeS5__label">${escapeHtml(tt("OFF FIELD", "OFF FIELD"))}</div>
+      <div class="routeS5__label">${escapeHtml(sectionLabel("offField", lang))}</div>
       <div class="routeS5__list">
         ${renderList(
           offFieldList,
-          tt("Nog geen off-field actie toegevoegd", "No off-field action added yet")
+          lang === "nl"
+            ? "Nog geen off-field actie toegevoegd"
+            : "No off-field action added yet"
         )}
       </div>
     </div>
@@ -2361,7 +2367,7 @@ export function pageSuccess(args: {
   <div class="successS6__rail" aria-hidden="true"></div>
 
   <div class="successS6__header">
-    <div class="successS6__kicker">${esc(t(lang, "SUCCES", "SUCCESS"))}</div>
+    <div class="successS6__kicker">${esc(slideLabel("success", lang))}</div>
 
     <div class="successS6__hero">
       <div class="successS6__headline ${
@@ -2386,14 +2392,14 @@ export function pageSuccess(args: {
   <div class="successS6__secondary">
     <div class="successS6__secondaryBlock successS6__secondaryBlock--game">
       <div class="successS6__sectionLabel">${esc(
-        t(lang, "ZICHTBAAR IN HET SPEL", "VISIBLE IN THE GAME")
+        slideLabel("success", lang)
       )}</div>
       ${renderMiniList(gameItems, "game")}
     </div>
 
     <div class="successS6__secondaryBlock successS6__secondaryBlock--signal">
       <div class="successS6__sectionLabel">${esc(
-        t(lang, "EERSTE SIGNALEN", "EARLY SIGNALS")
+        sectionLabel("signals", lang)
       )}</div>
       ${renderMiniList(signalItems, "signal")}
     </div>

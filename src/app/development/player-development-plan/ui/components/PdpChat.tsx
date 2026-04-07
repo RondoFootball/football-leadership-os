@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { DevelopmentPlanV1, Lang } from "../lib/engineSchema";
+import { slideLabel } from "../lib/pdp/pdpLabels";
 
 type ChatMsg = {
   role: "user" | "assistant";
@@ -117,6 +118,11 @@ function getSafePlanSlide(
   return "agreement";
 }
 
+function clampPct(value: number) {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
 export function PdpChat({
   lang,
   draftPlan,
@@ -147,7 +153,7 @@ export function PdpChat({
       isNl
         ? {
             introQuestion: "Wat zie je concreet gebeuren bij deze speler?",
-            layerLabel: "Plan conversation",
+            layerLabel: "Plangesprek",
             title: "Bouw het plan vanuit wat je concreet ziet.",
             body:
               "Werk snel van observatie naar ontwikkelpunt, context, aanpak en succesdefinitie.",
@@ -165,8 +171,8 @@ export function PdpChat({
             sendHint: "CMD/CTRL + ENTER",
             nextFocus: "Nu bezig met",
             missing: "Open",
-            progress: "Plan progress",
-            section: "Section",
+            progress: "Planvoortgang",
+            section: "Onderdeel",
             quickPrompts: [
               "Beschrijf het gedrag onder druk",
               "Beschrijf de spelsituatie",
@@ -174,13 +180,6 @@ export function PdpChat({
             ],
             errorChat: "Er ging iets mis in de chat.",
             errorGenerate: "Er ging iets mis bij het bijwerken van het plan.",
-            sections: {
-              agreement: "Agreement",
-              role_context: "Context",
-              reality: "Reality",
-              approach: "Approach",
-              success: "Success",
-            } as Record<PlanSlide, string>,
             sectionExplainers: {
               agreement: "Ontwikkelpunt, doelgedrag en wedstrijdbetekenis.",
               role_context: "Rol-, fase- en teamcontext.",
@@ -246,13 +245,6 @@ export function PdpChat({
             ],
             errorChat: "Something went wrong in the chat.",
             errorGenerate: "Something went wrong while updating the plan.",
-            sections: {
-              agreement: "Agreement",
-              role_context: "Context",
-              reality: "Reality",
-              approach: "Approach",
-              success: "Success",
-            } as Record<PlanSlide, string>,
             sectionExplainers: {
               agreement:
                 "Development point, target behaviour and match meaning.",
@@ -530,7 +522,7 @@ export function PdpChat({
   }
 
   const currentSlide = getSafePlanSlide(planner?.nextPrioritySlide);
-  const currentSectionLabel = copy.sections[currentSlide];
+  const currentSectionLabel = slideLabel(currentSlide, lang);
   const currentSectionExplainer = copy.sectionExplainers[currentSlide];
 
   const slotStatuses = planner?.slotStatuses || {};
@@ -578,8 +570,12 @@ export function PdpChat({
         ? planner.firstDraftProgress
         : 0;
 
-    return Math.max(fromSections, fromPlanner);
-  }, [planner?.firstDraftProgress, planner?.strongDraftProgress, sectionProgress]);
+    return clampPct(Math.max(fromSections, fromPlanner));
+  }, [
+    planner?.firstDraftProgress,
+    planner?.strongDraftProgress,
+    sectionProgress,
+  ]);
 
   const plannerMissingCount = planner?.missingStrongDraft?.length ?? 0;
   const guidedOptions = copy.guided[currentSlide] || [];
@@ -649,8 +645,10 @@ export function PdpChat({
               </div>
               <div className="mt-3 h-2 rounded-full bg-white/[0.06]">
                 <div
-                  className="h-2 rounded-full bg-white"
-                  style={{ width: `${Math.max(4, Math.min(100, planProgress))}%` }}
+                  className="h-2 rounded-full bg-white transition-all"
+                  style={{
+                    width: `${Math.max(4, Math.min(100, planProgress))}%`,
+                  }}
                 />
               </div>
             </div>
@@ -677,7 +675,7 @@ export function PdpChat({
                       : "border-white/8 bg-white/[0.02] text-white/52",
                   ].join(" ")}
                 >
-                  {copy.sections[slide]} · {sectionProgress[slide]}%
+                  {slideLabel(slide, lang)} · {sectionProgress[slide]}%
                 </div>
               );
             })}
@@ -685,6 +683,39 @@ export function PdpChat({
             <div className="rounded-full border border-white/8 bg-white/[0.02] px-3 py-1.5 text-[11px] text-white/52">
               {copy.missing}: {plannerMissingCount}
             </div>
+          </div>
+        </div>
+      ) : null}
+
+      {!showHeader && showPromptChips ? (
+        <div className={embedded ? "px-6 pt-5 pb-4" : "px-6 pt-5 pb-4 sm:px-7"}>
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] text-white/68">
+              {copy.progress}: {planProgress}%
+            </div>
+
+            <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] text-white/68">
+              {copy.section}: {currentSectionLabel}
+            </div>
+
+            {planner?.nextPrioritySlot ? (
+              <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] text-white/68">
+                {copy.nextFocus}: {planner.nextPrioritySlot}
+              </div>
+            ) : null}
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {copy.quickPrompts.map((prompt) => (
+              <button
+                key={prompt}
+                type="button"
+                onClick={() => applyPrompt(prompt)}
+                className="rounded-full border border-white/8 bg-white/[0.02] px-3 py-1.5 text-[12px] text-white/56 transition hover:border-white/16 hover:bg-white/[0.04] hover:text-white/84"
+              >
+                {prompt}
+              </button>
+            ))}
           </div>
         </div>
       ) : null}
