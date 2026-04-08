@@ -146,143 +146,418 @@ export function PdpChat({
   hidePromptChips?: boolean;
   externalPrompt?: string;
 }) {
-  const isNl = lang === "nl";
+  const copy = useMemo(() => {
+    if (lang === "nl") {
+      return {
+        introQuestion: "Wat zie je concreet gebeuren bij deze speler?",
+        layerLabel: "Plangesprek",
+        title: "Bouw het plan vanuit wat je concreet ziet.",
+        body:
+          "Werk snel van observatie naar ontwikkelpunt, context, aanpak en succesdefinitie.",
+        synced: "Plan bijgewerkt",
+        live: "Live",
+        thinking: "Denkt…",
+        building: "Werkt plan bij…",
+        updatePlan: "Werk plan bij",
+        generated: "Plan bijgewerkt",
+        viewPlan: "Bekijk plan",
+        downloadPlan: "Download plan",
+        placeholder:
+          "Beschrijf concreet wat je ziet of kies hieronder een richting…",
+        send: "Verstuur",
+        sendHint: "CMD/CTRL + ENTER",
+        nextFocus: "Nu bezig met",
+        missing: "Open",
+        progress: "Planvoortgang",
+        section: "Onderdeel",
+        evidence: "Bewijs",
+        quickPrompts: [
+          "Beschrijf het gedrag onder druk",
+          "Beschrijf de spelsituatie",
+          "Beschrijf het effect op het team",
+        ],
+        errorChat: "Er ging iets mis in de chat.",
+        errorGenerate: "Er ging iets mis bij het bijwerken van het plan.",
+        sectionExplainers: {
+          agreement: "Ontwikkelpunt, doelgedrag en wedstrijdbetekenis.",
+          role_context: "Rol-, fase- en teamcontext.",
+          reality: "Wat nu zichtbaar gebeurt op het veld.",
+          approach: "Wat speler en staf concreet anders gaan doen.",
+          success: "Waaraan progressie zichtbaar wordt.",
+        } as Record<PlanSlide, string>,
+        guided: {
+          agreement: [
+            "Beschrijf het kernprobleem",
+            "Beschrijf het gewenste gedrag",
+            "Beschrijf de wedstrijdsituatie",
+          ],
+          role_context: [
+            "Wat vraagt de rol hier?",
+            "In welke fase wordt dit beslissend?",
+            "Wat verliest het team hier?",
+          ],
+          reality: [
+            "Wat zie je als eerste gebeuren?",
+            "Wanneer gebeurt dit het meest?",
+            "Wat is het directe effect?",
+          ],
+          approach: [
+            "Wat moet de speler direct anders doen?",
+            "Wat pakt de coach op?",
+            "Wat voeg je toe via video?",
+          ],
+          success: [
+            "Waaraan zie je dit in de wedstrijd?",
+            "Welk gedrag moet veranderen?",
+            "Wat is een vroeg signaal?",
+          ],
+        } as Record<PlanSlide, string[]>,
+      };
+    }
 
-  const copy = useMemo(
-    () =>
-      isNl
-        ? {
-            introQuestion: "Wat zie je concreet gebeuren bij deze speler?",
-            layerLabel: "Plangesprek",
-            title: "Bouw het plan vanuit wat je concreet ziet.",
-            body:
-              "Werk snel van observatie naar ontwikkelpunt, context, aanpak en succesdefinitie.",
-            synced: "Plan bijgewerkt",
-            live: "Live",
-            thinking: "Denkt…",
-            building: "Werkt plan bij…",
-            updatePlan: "Werk plan bij",
-            generated: "Plan bijgewerkt",
-            viewPlan: "Bekijk plan",
-            downloadPlan: "Download plan",
-            placeholder:
-              "Beschrijf concreet wat je ziet of kies hieronder een richting…",
-            send: "Verstuur",
-            sendHint: "CMD/CTRL + ENTER",
-            nextFocus: "Nu bezig met",
-            missing: "Open",
-            progress: "Planvoortgang",
-            section: "Onderdeel",
-            quickPrompts: [
-              "Beschrijf het gedrag onder druk",
-              "Beschrijf de spelsituatie",
-              "Beschrijf het effect op het team",
-            ],
-            errorChat: "Er ging iets mis in de chat.",
-            errorGenerate: "Er ging iets mis bij het bijwerken van het plan.",
-            sectionExplainers: {
-              agreement: "Ontwikkelpunt, doelgedrag en wedstrijdbetekenis.",
-              role_context: "Rol-, fase- en teamcontext.",
-              reality: "Wat nu zichtbaar gebeurt op het veld.",
-              approach: "Wat speler en staf concreet anders gaan doen.",
-              success: "Waaraan progressie zichtbaar wordt.",
-            } as Record<PlanSlide, string>,
-            guided: {
-              agreement: [
-                "Beschrijf het kernprobleem",
-                "Beschrijf het gewenste gedrag",
-                "Beschrijf de wedstrijdsituatie",
-              ],
-              role_context: [
-                "Wat vraagt de rol hier?",
-                "In welke fase wordt dit beslissend?",
-                "Wat verliest het team hier?",
-              ],
-              reality: [
-                "Wat zie je als eerste gebeuren?",
-                "Wanneer gebeurt dit het meest?",
-                "Wat is het directe effect?",
-              ],
-              approach: [
-                "Wat moet de speler direct anders doen?",
-                "Wat pakt de coach op?",
-                "Wat voeg je toe via video?",
-              ],
-              success: [
-                "Waaraan zie je dit in de wedstrijd?",
-                "Welk gedrag moet veranderen?",
-                "Wat is een vroeg signaal?",
-              ],
-            } as Record<PlanSlide, string[]>,
-          }
-        : {
-            introQuestion:
-              "What do you concretely see happening with this player?",
-            layerLabel: "Plan conversation",
-            title: "Build the plan from what you concretely see.",
-            body:
-              "Move quickly from observation to development point, context, approach and success definition.",
-            synced: "Plan synced",
-            live: "Live",
-            thinking: "Thinking…",
-            building: "Updating plan…",
-            updatePlan: "Update plan",
-            generated: "Plan updated",
-            viewPlan: "View plan",
-            downloadPlan: "Download plan",
-            placeholder:
-              "Describe concretely what you see or choose a direction below…",
-            send: "Send",
-            sendHint: "CMD/CTRL + ENTER",
-            nextFocus: "Now working on",
-            missing: "Open",
-            progress: "Plan progress",
-            section: "Section",
-            quickPrompts: [
-              "Describe the behaviour under pressure",
-              "Describe the match situation",
-              "Describe the effect on the team",
-            ],
-            errorChat: "Something went wrong in the chat.",
-            errorGenerate: "Something went wrong while updating the plan.",
-            sectionExplainers: {
-              agreement:
-                "Development point, target behaviour and match meaning.",
-              role_context: "Role, phase and team context.",
-              reality: "What is currently visible on the pitch.",
-              approach: "What player and staff will do differently.",
-              success: "What visible progress will look like.",
-            } as Record<PlanSlide, string>,
-            guided: {
-              agreement: [
-                "Describe the core issue",
-                "Describe the target behaviour",
-                "Describe the match situation",
-              ],
-              role_context: [
-                "What does the role ask here?",
-                "In which phase is this decisive?",
-                "What does the team lose here?",
-              ],
-              reality: [
-                "What is the first visible behaviour?",
-                "When does this happen most clearly?",
-                "What is the direct effect?",
-              ],
-              approach: [
-                "What must the player do differently right away?",
-                "What should the coach own?",
-                "What do you add through video?",
-              ],
-              success: [
-                "What should become visible in games?",
-                "What behaviour should change?",
-                "What is an early signal?",
-              ],
-            } as Record<PlanSlide, string[]>,
-          },
-    [isNl]
-  );
+    if (lang === "de") {
+      return {
+        introQuestion: "Was siehst du bei diesem Spieler konkret passieren?",
+        layerLabel: "Plangespräch",
+        title: "Baue den Plan aus dem auf, was du konkret siehst.",
+        body:
+          "Gehe schnell von der Beobachtung zum Entwicklungspunkt, Kontext, Vorgehen und Erfolgsbild.",
+        synced: "Plan aktualisiert",
+        live: "Live",
+        thinking: "Denkt nach…",
+        building: "Plan wird aktualisiert…",
+        updatePlan: "Plan aktualisieren",
+        generated: "Plan aktualisiert",
+        viewPlan: "Plan ansehen",
+        downloadPlan: "Plan herunterladen",
+        placeholder:
+          "Beschreibe konkret, was du siehst, oder wähle unten eine Richtung…",
+        send: "Senden",
+        sendHint: "CMD/CTRL + ENTER",
+        nextFocus: "Jetzt im Fokus",
+        missing: "Offen",
+        progress: "Planfortschritt",
+        section: "Bereich",
+        evidence: "Belege",
+        quickPrompts: [
+          "Beschreibe das Verhalten unter Druck",
+          "Beschreibe die Spielsituation",
+          "Beschreibe die Auswirkung auf das Team",
+        ],
+        errorChat: "Im Chat ist etwas schiefgelaufen.",
+        errorGenerate: "Beim Aktualisieren des Plans ist etwas schiefgelaufen.",
+        sectionExplainers: {
+          agreement: "Entwicklungspunkt, Zielverhalten und Spielbedeutung.",
+          role_context: "Rollen-, Phasen- und Teamkontext.",
+          reality: "Was aktuell auf dem Feld sichtbar passiert.",
+          approach: "Was Spieler und Staff konkret anders machen werden.",
+          success: "Woran sichtbarer Fortschritt erkennbar wird.",
+        } as Record<PlanSlide, string>,
+        guided: {
+          agreement: [
+            "Beschreibe das Kernproblem",
+            "Beschreibe das gewünschte Verhalten",
+            "Beschreibe die Spielsituation",
+          ],
+          role_context: [
+            "Was verlangt die Rolle hier?",
+            "In welcher Phase wird das entscheidend?",
+            "Was verliert das Team hier?",
+          ],
+          reality: [
+            "Was siehst du als Erstes passieren?",
+            "Wann passiert das am deutlichsten?",
+            "Was ist die direkte Auswirkung?",
+          ],
+          approach: [
+            "Was muss der Spieler sofort anders machen?",
+            "Was übernimmt der Trainer?",
+            "Was fügst du über Video hinzu?",
+          ],
+          success: [
+            "Woran siehst du das im Spiel?",
+            "Welches Verhalten muss sich ändern?",
+            "Was ist ein frühes Signal?",
+          ],
+        } as Record<PlanSlide, string[]>,
+      };
+    }
+
+    if (lang === "es") {
+      return {
+        introQuestion: "¿Qué ves exactamente que pasa con este jugador?",
+        layerLabel: "Conversación del plan",
+        title: "Construye el plan desde lo que ves de forma concreta.",
+        body:
+          "Pasa rápido de la observación al punto de desarrollo, contexto, enfoque y definición de éxito.",
+        synced: "Plan actualizado",
+        live: "En directo",
+        thinking: "Pensando…",
+        building: "Actualizando plan…",
+        updatePlan: "Actualizar plan",
+        generated: "Plan actualizado",
+        viewPlan: "Ver plan",
+        downloadPlan: "Descargar plan",
+        placeholder:
+          "Describe de forma concreta lo que ves o elige abajo una dirección…",
+        send: "Enviar",
+        sendHint: "CMD/CTRL + ENTER",
+        nextFocus: "Ahora trabajando en",
+        missing: "Abierto",
+        progress: "Progreso del plan",
+        section: "Bloque",
+        evidence: "Evidencia",
+        quickPrompts: [
+          "Describe el comportamiento bajo presión",
+          "Describe la situación de juego",
+          "Describe el efecto en el equipo",
+        ],
+        errorChat: "Algo ha fallado en el chat.",
+        errorGenerate: "Algo ha fallado al actualizar el plan.",
+        sectionExplainers: {
+          agreement:
+            "Punto de desarrollo, conducta objetivo y significado en el partido.",
+          role_context: "Contexto de rol, fase y equipo.",
+          reality: "Lo que ahora mismo se ve en el campo.",
+          approach: "Qué harán de forma diferente el jugador y el staff.",
+          success: "Cómo se verá un progreso visible.",
+        } as Record<PlanSlide, string>,
+        guided: {
+          agreement: [
+            "Describe el problema principal",
+            "Describe la conducta objetivo",
+            "Describe la situación de partido",
+          ],
+          role_context: [
+            "¿Qué pide aquí el rol?",
+            "¿En qué fase es esto decisivo?",
+            "¿Qué pierde aquí el equipo?",
+          ],
+          reality: [
+            "¿Qué es lo primero que ves pasar?",
+            "¿Cuándo pasa esto con más claridad?",
+            "¿Cuál es el efecto directo?",
+          ],
+          approach: [
+            "¿Qué debe hacer el jugador diferente de inmediato?",
+            "¿Qué asume el entrenador?",
+            "¿Qué añades a través del vídeo?",
+          ],
+          success: [
+            "¿En qué se ve esto en el partido?",
+            "¿Qué comportamiento debe cambiar?",
+            "¿Cuál es una primera señal?",
+          ],
+        } as Record<PlanSlide, string[]>,
+      };
+    }
+
+    if (lang === "it") {
+      return {
+        introQuestion: "Che cosa vedi concretamente succedere con questo giocatore?",
+        layerLabel: "Conversazione del piano",
+        title: "Costruisci il piano da quello che vedi in modo concreto.",
+        body:
+          "Passa in fretta dall’osservazione al punto di sviluppo, al contesto, all’approccio e alla definizione di successo.",
+        synced: "Piano aggiornato",
+        live: "Live",
+        thinking: "Sta pensando…",
+        building: "Aggiornamento del piano…",
+        updatePlan: "Aggiorna piano",
+        generated: "Piano aggiornato",
+        viewPlan: "Vedi piano",
+        downloadPlan: "Scarica piano",
+        placeholder:
+          "Descrivi in modo concreto quello che vedi oppure scegli sotto una direzione…",
+        send: "Invia",
+        sendHint: "CMD/CTRL + ENTER",
+        nextFocus: "Ora al lavoro su",
+        missing: "Aperto",
+        progress: "Avanzamento del piano",
+        section: "Sezione",
+        evidence: "Evidenza",
+        quickPrompts: [
+          "Descrivi il comportamento sotto pressione",
+          "Descrivi la situazione di gioco",
+          "Descrivi l’effetto sulla squadra",
+        ],
+        errorChat: "Qualcosa è andato storto nella chat.",
+        errorGenerate:
+          "Qualcosa è andato storto durante l’aggiornamento del piano.",
+        sectionExplainers: {
+          agreement:
+            "Punto di sviluppo, comportamento obiettivo e significato in partita.",
+          role_context: "Contesto di ruolo, fase e squadra.",
+          reality: "Ciò che ora è visibile in campo.",
+          approach: "Cosa faranno in modo diverso giocatore e staff.",
+          success: "Come apparirà un progresso visibile.",
+        } as Record<PlanSlide, string>,
+        guided: {
+          agreement: [
+            "Descrivi il problema principale",
+            "Descrivi il comportamento obiettivo",
+            "Descrivi la situazione di partita",
+          ],
+          role_context: [
+            "Che cosa richiede qui il ruolo?",
+            "In quale fase questo diventa decisivo?",
+            "Che cosa perde qui la squadra?",
+          ],
+          reality: [
+            "Qual è la prima cosa che vedi succedere?",
+            "Quando succede questo in modo più chiaro?",
+            "Qual è l’effetto diretto?",
+          ],
+          approach: [
+            "Che cosa deve fare il giocatore in modo diverso da subito?",
+            "Di cosa si occupa l’allenatore?",
+            "Che cosa aggiungi attraverso il video?",
+          ],
+          success: [
+            "Da cosa lo vedi in partita?",
+            "Quale comportamento deve cambiare?",
+            "Qual è un primo segnale?",
+          ],
+        } as Record<PlanSlide, string[]>,
+      };
+    }
+
+    if (lang === "fr") {
+      return {
+        introQuestion: "Que vois-tu concrètement chez ce joueur ?",
+        layerLabel: "Échange sur le plan",
+        title: "Construis le plan à partir de ce que tu vois concrètement.",
+        body:
+          "Passe vite de l’observation au point de développement, au contexte, à l’approche et à la définition de la réussite.",
+        synced: "Plan mis à jour",
+        live: "En direct",
+        thinking: "Réflexion…",
+        building: "Mise à jour du plan…",
+        updatePlan: "Mettre à jour le plan",
+        generated: "Plan mis à jour",
+        viewPlan: "Voir le plan",
+        downloadPlan: "Télécharger le plan",
+        placeholder:
+          "Décris concrètement ce que tu vois ou choisis une direction ci-dessous…",
+        send: "Envoyer",
+        sendHint: "CMD/CTRL + ENTER",
+        nextFocus: "En cours sur",
+        missing: "Ouvert",
+        progress: "Progression du plan",
+        section: "Section",
+        evidence: "Éléments d’appui",
+        quickPrompts: [
+          "Décris le comportement sous pression",
+          "Décris la situation de jeu",
+          "Décris l’effet sur l’équipe",
+        ],
+        errorChat: "Quelque chose n’a pas fonctionné dans le chat.",
+        errorGenerate:
+          "Quelque chose n’a pas fonctionné pendant la mise à jour du plan.",
+        sectionExplainers: {
+          agreement:
+            "Point de développement, comportement cible et sens dans le match.",
+          role_context: "Contexte de rôle, de phase et d’équipe.",
+          reality: "Ce qui est actuellement visible sur le terrain.",
+          approach: "Ce que le joueur et le staff vont faire différemment.",
+          success: "À quoi ressemblera un progrès visible.",
+        } as Record<PlanSlide, string>,
+        guided: {
+          agreement: [
+            "Décris le problème principal",
+            "Décris le comportement cible",
+            "Décris la situation de match",
+          ],
+          role_context: [
+            "Qu’est-ce que le rôle demande ici ?",
+            "Dans quelle phase cela devient-il décisif ?",
+            "Qu’est-ce que l’équipe perd ici ?",
+          ],
+          reality: [
+            "Qu’est-ce que tu vois d’abord ?",
+            "Quand est-ce que cela se voit le plus ?",
+            "Quel est l’effet direct ?",
+          ],
+          approach: [
+            "Que doit faire le joueur différemment tout de suite ?",
+            "Qu’est-ce que le coach prend en charge ?",
+            "Qu’ajoutes-tu avec la vidéo ?",
+          ],
+          success: [
+            "À quoi vois-tu cela dans le match ?",
+            "Quel comportement doit changer ?",
+            "Quel est un premier signal ?",
+          ],
+        } as Record<PlanSlide, string[]>,
+      };
+    }
+
+    return {
+      introQuestion: "What do you concretely see happening with this player?",
+      layerLabel: "Plan conversation",
+      title: "Build the plan from what you concretely see.",
+      body:
+        "Move quickly from observation to development point, context, approach and success definition.",
+      synced: "Plan synced",
+      live: "Live",
+      thinking: "Thinking…",
+      building: "Updating plan…",
+      updatePlan: "Update plan",
+      generated: "Plan updated",
+      viewPlan: "View plan",
+      downloadPlan: "Download plan",
+      placeholder:
+        "Describe concretely what you see or choose a direction below…",
+      send: "Send",
+      sendHint: "CMD/CTRL + ENTER",
+      nextFocus: "Now working on",
+      missing: "Open",
+      progress: "Plan progress",
+      section: "Section",
+      evidence: "Evidence",
+      quickPrompts: [
+        "Describe the behaviour under pressure",
+        "Describe the match situation",
+        "Describe the effect on the team",
+      ],
+      errorChat: "Something went wrong in the chat.",
+      errorGenerate: "Something went wrong while updating the plan.",
+      sectionExplainers: {
+        agreement: "Development point, target behaviour and match meaning.",
+        role_context: "Role, phase and team context.",
+        reality: "What is currently visible on the pitch.",
+        approach: "What player and staff will do differently.",
+        success: "What visible progress will look like.",
+      } as Record<PlanSlide, string>,
+      guided: {
+        agreement: [
+          "Describe the core issue",
+          "Describe the target behaviour",
+          "Describe the match situation",
+        ],
+        role_context: [
+          "What does the role ask here?",
+          "In which phase is this decisive?",
+          "What does the team lose here?",
+        ],
+        reality: [
+          "What is the first visible behaviour?",
+          "When does this happen most clearly?",
+          "What is the direct effect?",
+        ],
+        approach: [
+          "What must the player do differently right away?",
+          "What should the coach own?",
+          "What do you add through video?",
+        ],
+        success: [
+          "What should become visible in games?",
+          "What behaviour should change?",
+          "What is an early signal?",
+        ],
+      } as Record<PlanSlide, string[]>,
+    };
+  }, [lang]);
 
   const [messages, setMessages] = useState<ChatMsg[]>([
     {
@@ -577,7 +852,11 @@ export function PdpChat({
     sectionProgress,
   ]);
 
-  const plannerMissingCount = planner?.missingStrongDraft?.length ?? 0;
+  const plannerMissingCount =
+    planner?.missingStrongDraft?.length ??
+    planner?.missingFirstDraft?.length ??
+    0;
+
   const guidedOptions = copy.guided[currentSlide] || [];
   const activeResponseOptions =
     suggestedResponses.length > 0 ? suggestedResponses : guidedOptions;

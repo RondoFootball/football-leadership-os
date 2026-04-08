@@ -40,7 +40,7 @@ import {
   fallbackLabel,
 } from "./lib/pdp/pdpLabels";
 
-type Lang = "nl" | "en";
+type Lang = "nl" | "en" | "de" | "es" | "it" | "fr";
 type Mode = "chat" | "manual";
 type TeamType = "academy" | "first_team";
 type ClubMode = "preset" | "custom";
@@ -49,6 +49,8 @@ type LocalVideoUpload = {
   fileName: string;
   objectUrl: string;
 };
+
+const SUPPORTED_LANGS: Lang[] = ["nl", "en", "de", "es", "it", "fr"];
 
 const ACADEMY_AGES = [
   "O13",
@@ -130,8 +132,7 @@ const UI = {
     noPlayerYet: "Speler",
 
     downloadPlayer: "Download spelerplan",
-    availableOther: "Ook beschikbaar in het Engels",
-    downloadOther: "Download EN",
+    availableOther: "Ook beschikbaar in andere talen",
     exportTitle: "Download Plan",
     exportAlways: "Direct exporteerbaar",
     exportStrong:
@@ -171,9 +172,15 @@ const UI = {
     compactVideoCount: "clips",
     openClip: "Open clip",
     closeClip: "Sluit clip",
+    activeLabel: "Actief",
+    optionalLabel: "Optioneel",
 
     langNl: "NL",
     langEn: "EN",
+    langDe: "DE",
+    langEs: "ES",
+    langIt: "IT",
+    langFr: "FR",
 
     step1Eyebrow: "Stap 1",
     step1Title: "Voor wie is dit plan?",
@@ -199,6 +206,8 @@ const UI = {
       "Van observatie naar plan. Bouw eerst het gesprek of ontwikkelpunt, voeg daarna bewijs toe.",
 
     controlLayer: "Planstatus",
+    controlLayerBody:
+      "Setup, bewijs en export blijven hier. De chat stuurt de inhoudelijke planopbouw.",
     clubContext: "Clubcontext",
     pdfReady: "PDF-klaar",
     playerIdentity: "Spelerprofiel",
@@ -206,6 +215,11 @@ const UI = {
     brandingMetaTeam: "Team",
     completion: "Compleet",
     completed: "Voltooid",
+
+    weekSingle: "week",
+    weekPlural: "weken",
+
+    downloadFailedAlert: "Er ging iets mis bij het downloaden van de PDF.",
   },
 
   en: {
@@ -266,7 +280,7 @@ const UI = {
 
     developmentPoint: "Development point",
 
-    statusPoint: "agreement",
+    statusPoint: "Agreement",
     statusContext: "Context",
     statusReality: "Reality",
     statusApproach: "Approach",
@@ -275,8 +289,7 @@ const UI = {
     noPlayerYet: "Player",
 
     downloadPlayer: "Download player plan",
-    availableOther: "Also available in Dutch",
-    downloadOther: "Download NL",
+    availableOther: "Also available in other languages",
     exportTitle: "Download Plan",
     exportAlways: "Directly exportable",
     exportStrong:
@@ -316,9 +329,15 @@ const UI = {
     compactVideoCount: "clips",
     openClip: "Open clip",
     closeClip: "Close clip",
+    activeLabel: "Active",
+    optionalLabel: "Optional",
 
     langNl: "NL",
     langEn: "EN",
+    langDe: "DE",
+    langEs: "ES",
+    langIt: "IT",
+    langFr: "FR",
 
     step1Eyebrow: "Step 1",
     step1Title: "Who is this plan for?",
@@ -344,6 +363,8 @@ const UI = {
       "From observation to plan. Build the conversation or development point first, then add evidence.",
 
     controlLayer: "Plan status",
+    controlLayerBody:
+      "Setup, evidence and export stay here. The chat drives the content build-up of the plan.",
     clubContext: "Club context",
     pdfReady: "PDF-ready",
     playerIdentity: "Player identity",
@@ -351,21 +372,738 @@ const UI = {
     brandingMetaTeam: "Team",
     completion: "Completion",
     completed: "Completed",
+
+    weekSingle: "week",
+    weekPlural: "weeks",
+
+    downloadFailedAlert: "Something went wrong while downloading the PDF.",
+  },
+
+  de: {
+    modeChat: "Gespräch",
+    modeManual: "Manuell",
+
+    basicsTitle: "Planbasis",
+    basicsSubtitle:
+      "Lege zuerst fest, für wen dieser Plan gilt. Verein, Team und Branding bestimmen danach automatisch den richtigen Kontext.",
+
+    basicsSectionClubContext: "Vereinskontext",
+    basicsSectionPlanSetup: "Planeinstellung",
+
+    brandingTitle: "Live-Cover-Vorschau",
+    brandingEdit: "Branding anpassen",
+    brandingCollapse: "Einklappen",
+
+    playerName: "Name des Spielers",
+    playerPosition: "Position",
+    playerPhoto: "Spielerfoto URL",
+    club: "Verein",
+    customClub: "Vereinsname manuell",
+    teamType: "Team",
+    academy: "Akademie",
+    firstTeam: "1. Mannschaft",
+    ageCategory: "Alterskategorie",
+    chooseAgeCategory: "Alterskategorie wählen",
+    periodWeeks: "Zeitraum Entwicklungsplan",
+
+    country: "Land",
+    chooseCountry: "Land wählen",
+    league: "Liga",
+    chooseLeague: "Liga wählen",
+    chooseClub: "Verein wählen",
+    clubModePreset: "Verein aus Liste",
+    clubModeCustom: "Eigener Verein",
+    customClubHelp:
+      "Nutze dies für einen Verein, der nicht in der Liste steht. Danach kannst du Logo und Farben manuell ausfüllen.",
+
+    primaryColor: "Primärfarbe",
+    secondaryColor: "Sekundärfarbe",
+    tertiaryColor: "Tertiärfarbe",
+    colorBalance: "Primärbalance (%)",
+    logoUrl: "Vereinslogo URL",
+
+    heroChatTitle: "Arbeite von dem aus, was du konkret siehst.",
+    heroChatBody:
+      "Beschreibe eine Situation, das Verhalten des Spielers und die Auswirkung auf das Spiel.",
+
+    heroManualTitle: "Arbeite manuell von einem klaren Entwicklungspunkt aus.",
+    heroManualBody:
+      "Fülle Schritt für Schritt den Kern des Plans aus. Beginne mit dem Entwicklungspunkt.",
+
+    hintObservation: "Beobachtung",
+    hintMoment: "Moment",
+    hintGoal: "Effekt",
+    hintRefine: "Vertiefen",
+
+    developmentPoint: "Entwicklungspunkt",
+
+    statusPoint: "Vereinbarung",
+    statusContext: "Kontext",
+    statusReality: "Realität",
+    statusApproach: "Ansatz",
+    statusSuccess: "Erfolg",
+
+    noPlayerYet: "Spieler",
+
+    downloadPlayer: "Spielerplan herunterladen",
+    availableOther: "Auch in anderen Sprachen verfügbar",
+    exportTitle: "Plan herunterladen",
+    exportAlways: "Direkt exportierbar",
+    exportStrong:
+      "Du kannst jederzeit ein brauchbares PDF herunterladen, auch wenn der Plan noch nicht vollständig ausgearbeitet ist.",
+
+    progressTitle: "Planfortschritt",
+    progressBody:
+      "Dieser Fortschritt kombiniert Planbasis, inhaltliche Ausarbeitung und Nachweise.",
+
+    evidenceTitle: "Nachweise",
+    evidenceBody:
+      "Füge Nachweise hinzu, wenn sie helfen, Beobachtung, Kontext und Nachverfolgung zu schärfen.",
+
+    videoTitle: "Video-Nachweis",
+    videoBody:
+      "Füge Clips als visuellen Nachweis für den Entwicklungspunkt hinzu. Halte es konkret und relevant.",
+    dataTitle: "Daten-Nachweis",
+    dataBody:
+      "Später kannst du Datenquellen und Indikatoren mit dem Plan verknüpfen. Diese Funktion kommt in einer späteren Version.",
+    notYetAvailable: "Noch nicht verfügbar",
+
+    videoClip1: "Clip 1",
+    videoClip2: "Clip 2",
+    videoClip3: "Clip 3",
+    videoName: "Titel",
+    videoUrl: "Video URL",
+    videoMoment: "Datum / Moment",
+    videoSource: "Quelle",
+    videoMatch: "Spiel",
+    videoTraining: "Training",
+    videoUpload: "Video hochladen",
+    videoUploadHelp:
+      "Der Upload funktioniert in dieser Version innerhalb deiner Sitzung. Für feste Speicherung binden wir später eine Upload-API an.",
+    compactVideoOpen: "Öffnen",
+    compactVideoClose: "Schließen",
+    compactVideoEmpty: "Keine Clips",
+    compactVideoCount: "Clips",
+    openClip: "Clip öffnen",
+    closeClip: "Clip schließen",
+    activeLabel: "Aktiv",
+    optionalLabel: "Optional",
+
+    langNl: "NL",
+    langEn: "EN",
+    langDe: "DE",
+    langEs: "ES",
+    langIt: "IT",
+    langFr: "FR",
+
+    step1Eyebrow: "Schritt 1",
+    step1Title: "Für wen ist dieser Plan?",
+    step1Body:
+      "Lege fest, für welchen Spieler dieser Plan erstellt wird. Name und Position bilden die Basis. Ein Foto ist optional, hilft aber dabei, den Plan in Vorschau und PDF visuell klarer und direkt erkennbar zu machen.",
+    editPhoto: "Foto anpassen",
+    removePhoto: "Entfernen",
+    playerVisualIdentity: "Visuelle Identität",
+    newPlayer: "Neuer Spieler",
+    photoHelp:
+      "Verwende vorerst eine Bild-URL. Dieses Foto wird in der visuellen Vorschau und auf dem PDF-Cover verwendet.",
+    photoPill: "Foto",
+    avatarAdd: "Hinzufügen",
+    avatarEdit: "Anpassen",
+
+    coverPreviewSub:
+      "Diese Vorschau nutzt dasselbe Hochformat wie das endgültige PDF.",
+    presetActive: "Vereinspreset aktiv",
+    coverSystemLine: "Persönlicher Entwicklungsplan",
+
+    workspaceTitle: "Arbeitsbereich",
+    workspaceBody:
+      "Von Beobachtung zu Plan. Erstelle zuerst das Gespräch oder den Entwicklungspunkt und füge danach Nachweise hinzu.",
+
+    controlLayer: "Planstatus",
+    controlLayerBody:
+      "Setup, Nachweise und Export bleiben hier. Der Chat steuert den inhaltlichen Planaufbau.",
+    clubContext: "Vereinskontext",
+    pdfReady: "PDF-bereit",
+    playerIdentity: "Spielerprofil",
+    brandingMetaClub: "Verein",
+    brandingMetaTeam: "Team",
+    completion: "Fertig",
+    completed: "Abgeschlossen",
+
+    weekSingle: "Woche",
+    weekPlural: "Wochen",
+
+    downloadFailedAlert:
+      "Beim Herunterladen der PDF ist ein Fehler aufgetreten.",
+  },
+
+  es: {
+    modeChat: "Conversación",
+    modeManual: "Manual",
+
+    basicsTitle: "Base del plan",
+    basicsSubtitle:
+      "Primero define para quién es este plan. Club, equipo y branding determinan después automáticamente el contexto adecuado.",
+
+    basicsSectionClubContext: "Contexto del club",
+    basicsSectionPlanSetup: "Configuración del plan",
+
+    brandingTitle: "Vista previa de portada en vivo",
+    brandingEdit: "Ajustar branding",
+    brandingCollapse: "Contraer",
+
+    playerName: "Nombre del jugador",
+    playerPosition: "Posición",
+    playerPhoto: "URL de la foto del jugador",
+    club: "Club",
+    customClub: "Nombre del club manualmente",
+    teamType: "Equipo",
+    academy: "Academia",
+    firstTeam: "Primer equipo",
+    ageCategory: "Categoría de edad",
+    chooseAgeCategory: "Elegir categoría de edad",
+    periodWeeks: "Periodo del plan de desarrollo",
+
+    country: "País",
+    chooseCountry: "Elegir país",
+    league: "Liga",
+    chooseLeague: "Elegir liga",
+    chooseClub: "Elegir club",
+    clubModePreset: "Club de la lista",
+    clubModeCustom: "Club propio",
+    customClubHelp:
+      "Usa esto para un club que no está en la lista. Después puedes completar manualmente el logo y los colores.",
+
+    primaryColor: "Color principal",
+    secondaryColor: "Color secundario",
+    tertiaryColor: "Color terciario",
+    colorBalance: "Balance principal (%)",
+    logoUrl: "URL del logo del club",
+
+    heroChatTitle: "Trabaja desde lo que ves de forma concreta.",
+    heroChatBody:
+      "Describe una situación, el comportamiento del jugador y el efecto sobre el juego.",
+
+    heroManualTitle: "Trabaja manualmente desde un punto de desarrollo claro.",
+    heroManualBody:
+      "Completa paso a paso el núcleo del plan. Empieza por el punto de desarrollo.",
+
+    hintObservation: "Observación",
+    hintMoment: "Momento",
+    hintGoal: "Efecto",
+    hintRefine: "Profundizar",
+
+    developmentPoint: "Punto de desarrollo",
+
+    statusPoint: "Acuerdo",
+    statusContext: "Contexto",
+    statusReality: "Realidad",
+    statusApproach: "Enfoque",
+    statusSuccess: "Éxito",
+
+    noPlayerYet: "Jugador",
+
+    downloadPlayer: "Descargar plan del jugador",
+    availableOther: "También disponible en otros idiomas",
+    exportTitle: "Descargar plan",
+    exportAlways: "Directamente exportable",
+    exportStrong:
+      "Puedes descargar un PDF útil en cualquier momento, incluso si el plan todavía no está completamente desarrollado.",
+
+    progressTitle: "Progreso del plan",
+    progressBody:
+      "Este progreso combina base del plan, desarrollo de contenido y evidencia.",
+
+    evidenceTitle: "Evidencia",
+    evidenceBody:
+      "Añade evidencia cuando ayude a concretar mejor la observación, el contexto y el seguimiento.",
+
+    videoTitle: "Evidencia en vídeo",
+    videoBody:
+      "Añade clips como evidencia visual del punto de desarrollo. Mantenlo concreto y relevante.",
+    dataTitle: "Evidencia de datos",
+    dataBody:
+      "Más adelante podrás conectar fuentes de datos e indicadores al plan. Esta función llegará en una versión futura.",
+    notYetAvailable: "Aún no disponible",
+
+    videoClip1: "Clip 1",
+    videoClip2: "Clip 2",
+    videoClip3: "Clip 3",
+    videoName: "Título",
+    videoUrl: "URL del vídeo",
+    videoMoment: "Fecha / momento",
+    videoSource: "Fuente",
+    videoMatch: "Partido",
+    videoTraining: "Entrenamiento",
+    videoUpload: "Subir vídeo",
+    videoUploadHelp:
+      "La subida funciona en esta versión dentro de tu sesión. Más adelante conectaremos una API de subida para almacenamiento fijo.",
+    compactVideoOpen: "Abrir",
+    compactVideoClose: "Cerrar",
+    compactVideoEmpty: "Sin clips",
+    compactVideoCount: "clips",
+    openClip: "Abrir clip",
+    closeClip: "Cerrar clip",
+    activeLabel: "Activo",
+    optionalLabel: "Opcional",
+
+    langNl: "NL",
+    langEn: "EN",
+    langDe: "DE",
+    langEs: "ES",
+    langIt: "IT",
+    langFr: "FR",
+
+    step1Eyebrow: "Paso 1",
+    step1Title: "¿Para quién es este plan?",
+    step1Body:
+      "Define para qué jugador se construye este plan. El nombre y la posición forman la base. Una foto es opcional, pero ayuda a que el plan sea visualmente propio y reconocible de inmediato en la vista previa y en el PDF.",
+    editPhoto: "Ajustar foto",
+    removePhoto: "Eliminar",
+    playerVisualIdentity: "Identidad visual",
+    newPlayer: "Nuevo jugador",
+    photoHelp:
+      "Por ahora utiliza una URL de imagen. Esta foto se usa en la vista previa visual y en la portada del PDF.",
+    photoPill: "Foto",
+    avatarAdd: "Añadir",
+    avatarEdit: "Editar",
+
+    coverPreviewSub:
+      "Esta vista previa utiliza el mismo formato vertical que el PDF final.",
+    presetActive: "Preset del club activo",
+    coverSystemLine: "Plan Personal de Desarrollo",
+
+    workspaceTitle: "Espacio de trabajo",
+    workspaceBody:
+      "De la observación al plan. Construye primero la conversación o el punto de desarrollo y añade después la evidencia.",
+
+    controlLayer: "Estado del plan",
+    controlLayerBody:
+      "Configuración, evidencia y exportación se quedan aquí. El chat impulsa la construcción del contenido del plan.",
+    clubContext: "Contexto del club",
+    pdfReady: "PDF listo",
+    playerIdentity: "Perfil del jugador",
+    brandingMetaClub: "Club",
+    brandingMetaTeam: "Equipo",
+    completion: "Completado",
+    completed: "Terminado",
+
+    weekSingle: "semana",
+    weekPlural: "semanas",
+
+    downloadFailedAlert:
+      "Ha ocurrido un error al descargar el PDF.",
+  },
+
+  it: {
+    modeChat: "Conversazione",
+    modeManual: "Manuale",
+
+    basicsTitle: "Base del piano",
+    basicsSubtitle:
+      "Definisci prima per chi è questo piano. Club, squadra e branding determinano poi automaticamente il contesto corretto.",
+
+    basicsSectionClubContext: "Contesto del club",
+    basicsSectionPlanSetup: "Impostazione del piano",
+
+    brandingTitle: "Anteprima live della copertina",
+    brandingEdit: "Modifica branding",
+    brandingCollapse: "Riduci",
+
+    playerName: "Nome del giocatore",
+    playerPosition: "Posizione",
+    playerPhoto: "URL della foto del giocatore",
+    club: "Club",
+    customClub: "Nome del club manualmente",
+    teamType: "Squadra",
+    academy: "Academy",
+    firstTeam: "Prima squadra",
+    ageCategory: "Categoria d'età",
+    chooseAgeCategory: "Scegli categoria d'età",
+    periodWeeks: "Periodo del piano di sviluppo",
+
+    country: "Paese",
+    chooseCountry: "Scegli paese",
+    league: "Campionato",
+    chooseLeague: "Scegli campionato",
+    chooseClub: "Scegli club",
+    clubModePreset: "Club dalla lista",
+    clubModeCustom: "Club personalizzato",
+    customClubHelp:
+      "Usa questa opzione per un club che non è nella lista. Poi puoi compilare manualmente logo e colori.",
+
+    primaryColor: "Colore primario",
+    secondaryColor: "Colore secondario",
+    tertiaryColor: "Colore terziario",
+    colorBalance: "Bilanciamento primario (%)",
+    logoUrl: "URL del logo del club",
+
+    heroChatTitle: "Lavora da ciò che vedi concretamente.",
+    heroChatBody:
+      "Descrivi una situazione, il comportamento del giocatore e l'effetto sul gioco.",
+
+    heroManualTitle: "Lavora manualmente da un punto di sviluppo chiaro.",
+    heroManualBody:
+      "Compila passo dopo passo il nucleo del piano. Inizia dal punto di sviluppo.",
+
+    hintObservation: "Osservazione",
+    hintMoment: "Momento",
+    hintGoal: "Effetto",
+    hintRefine: "Approfondire",
+
+    developmentPoint: "Punto di sviluppo",
+
+    statusPoint: "Accordo",
+    statusContext: "Contesto",
+    statusReality: "Realtà",
+    statusApproach: "Approccio",
+    statusSuccess: "Successo",
+
+    noPlayerYet: "Giocatore",
+
+    downloadPlayer: "Scarica piano del giocatore",
+    availableOther: "Disponibile anche in altre lingue",
+    exportTitle: "Scarica piano",
+    exportAlways: "Direttamente esportabile",
+    exportStrong:
+      "Puoi scaricare un PDF utile in qualsiasi momento, anche se il piano non è ancora completamente sviluppato.",
+
+    progressTitle: "Avanzamento del piano",
+    progressBody:
+      "Questo avanzamento combina base del piano, sviluppo del contenuto ed evidenze.",
+
+    evidenceTitle: "Evidenze",
+    evidenceBody:
+      "Aggiungi evidenze quando aiutano a rendere più precise osservazione, contesto e seguito.",
+
+    videoTitle: "Evidenza video",
+    videoBody:
+      "Aggiungi clip come evidenza visiva del punto di sviluppo. Mantienilo concreto e rilevante.",
+    dataTitle: "Evidenza dati",
+    dataBody:
+      "Più avanti potrai collegare fonti dati e indicatori al piano. Questa funzione arriverà in una versione successiva.",
+    notYetAvailable: "Non ancora disponibile",
+
+    videoClip1: "Clip 1",
+    videoClip2: "Clip 2",
+    videoClip3: "Clip 3",
+    videoName: "Titolo",
+    videoUrl: "URL del video",
+    videoMoment: "Data / momento",
+    videoSource: "Fonte",
+    videoMatch: "Partita",
+    videoTraining: "Allenamento",
+    videoUpload: "Carica video",
+    videoUploadHelp:
+      "L'upload funziona in questa versione all'interno della tua sessione. Per uno storage fisso collegheremo più avanti una upload API.",
+    compactVideoOpen: "Apri",
+    compactVideoClose: "Chiudi",
+    compactVideoEmpty: "Nessuna clip",
+    compactVideoCount: "clip",
+    openClip: "Apri clip",
+    closeClip: "Chiudi clip",
+    activeLabel: "Attivo",
+    optionalLabel: "Opzionale",
+
+    langNl: "NL",
+    langEn: "EN",
+    langDe: "DE",
+    langEs: "ES",
+    langIt: "IT",
+    langFr: "FR",
+
+    step1Eyebrow: "Passo 1",
+    step1Title: "Per chi è questo piano?",
+    step1Body:
+      "Definisci per quale giocatore viene costruito questo piano. Nome e posizione formano la base. Una foto è opzionale, ma aiuta a rendere il piano visivamente più personale e subito riconoscibile nell'anteprima e nel PDF.",
+    editPhoto: "Modifica foto",
+    removePhoto: "Rimuovi",
+    playerVisualIdentity: "Identità visiva",
+    newPlayer: "Nuovo giocatore",
+    photoHelp:
+      "Per ora usa un URL immagine. Questa foto viene utilizzata nell'anteprima visiva e nella copertina PDF.",
+    photoPill: "Foto",
+    avatarAdd: "Aggiungi",
+    avatarEdit: "Modifica",
+
+    coverPreviewSub:
+      "Questa anteprima usa lo stesso formato verticale del PDF finale.",
+    presetActive: "Preset club attivo",
+    coverSystemLine: "Piano Personale di Sviluppo",
+
+    workspaceTitle: "Spazio di lavoro",
+    workspaceBody:
+      "Dall'osservazione al piano. Costruisci prima la conversazione o il punto di sviluppo e aggiungi poi le evidenze.",
+
+    controlLayer: "Stato del piano",
+    controlLayerBody:
+      "Setup, evidenze ed export restano qui. La chat guida la costruzione del contenuto del piano.",
+    clubContext: "Contesto del club",
+    pdfReady: "PDF pronto",
+    playerIdentity: "Profilo del giocatore",
+    brandingMetaClub: "Club",
+    brandingMetaTeam: "Squadra",
+    completion: "Completamento",
+    completed: "Completato",
+
+    weekSingle: "settimana",
+    weekPlural: "settimane",
+
+    downloadFailedAlert:
+      "Si è verificato un errore durante il download del PDF.",
+  },
+
+  fr: {
+    modeChat: "Conversation",
+    modeManual: "Manuel",
+
+    basicsTitle: "Base du plan",
+    basicsSubtitle:
+      "Définis d'abord pour qui ce plan est destiné. Club, équipe et branding déterminent ensuite automatiquement le bon contexte.",
+
+    basicsSectionClubContext: "Contexte du club",
+    basicsSectionPlanSetup: "Configuration du plan",
+
+    brandingTitle: "Aperçu live de la couverture",
+    brandingEdit: "Ajuster le branding",
+    brandingCollapse: "Réduire",
+
+    playerName: "Nom du joueur",
+    playerPosition: "Poste",
+    playerPhoto: "URL de la photo du joueur",
+    club: "Club",
+    customClub: "Nom du club manuellement",
+    teamType: "Équipe",
+    academy: "Académie",
+    firstTeam: "Équipe première",
+    ageCategory: "Catégorie d'âge",
+    chooseAgeCategory: "Choisir la catégorie d'âge",
+    periodWeeks: "Période du plan de développement",
+
+    country: "Pays",
+    chooseCountry: "Choisir le pays",
+    league: "Championnat",
+    chooseLeague: "Choisir le championnat",
+    chooseClub: "Choisir le club",
+    clubModePreset: "Club de la liste",
+    clubModeCustom: "Club personnalisé",
+    customClubHelp:
+      "Utilise ceci pour un club qui n'est pas dans la liste. Tu peux ensuite remplir manuellement le logo et les couleurs.",
+
+    primaryColor: "Couleur principale",
+    secondaryColor: "Couleur secondaire",
+    tertiaryColor: "Couleur tertiaire",
+    colorBalance: "Balance principale (%)",
+    logoUrl: "URL du logo du club",
+
+    heroChatTitle: "Travaille à partir de ce que tu vois concrètement.",
+    heroChatBody:
+      "Décris une situation, le comportement du joueur et l'effet sur le jeu.",
+
+    heroManualTitle: "Travaille manuellement à partir d'un point de développement clair.",
+    heroManualBody:
+      "Remplis étape par étape le noyau du plan. Commence par le point de développement.",
+
+    hintObservation: "Observation",
+    hintMoment: "Moment",
+    hintGoal: "Effet",
+    hintRefine: "Affiner",
+
+    developmentPoint: "Point de développement",
+
+    statusPoint: "Accord",
+    statusContext: "Contexte",
+    statusReality: "Réalité",
+    statusApproach: "Approche",
+    statusSuccess: "Réussite",
+
+    noPlayerYet: "Joueur",
+
+    downloadPlayer: "Télécharger le plan du joueur",
+    availableOther: "Aussi disponible dans d'autres langues",
+    exportTitle: "Télécharger le plan",
+    exportAlways: "Directement exportable",
+    exportStrong:
+      "Tu peux télécharger un PDF exploitable à tout moment, même si le plan n'est pas encore complètement développé.",
+
+    progressTitle: "Progression du plan",
+    progressBody:
+      "Cette progression combine base du plan, élaboration du contenu et preuves.",
+
+    evidenceTitle: "Preuves",
+    evidenceBody:
+      "Ajoute des preuves quand cela aide à rendre plus précis l'observation, le contexte et le suivi.",
+
+    videoTitle: "Preuve vidéo",
+    videoBody:
+      "Ajoute des clips comme preuve visuelle du point de développement. Garde cela concret et pertinent.",
+    dataTitle: "Preuve de données",
+    dataBody:
+      "Plus tard, tu pourras relier des sources de données et des indicateurs au plan. Cette fonction arrivera dans une version suivante.",
+    notYetAvailable: "Pas encore disponible",
+
+    videoClip1: "Clip 1",
+    videoClip2: "Clip 2",
+    videoClip3: "Clip 3",
+    videoName: "Titre",
+    videoUrl: "URL vidéo",
+    videoMoment: "Date / moment",
+    videoSource: "Source",
+    videoMatch: "Match",
+    videoTraining: "Entraînement",
+    videoUpload: "Téléverser une vidéo",
+    videoUploadHelp:
+      "L'upload fonctionne dans cette version au sein de ta session. Pour un stockage fixe, nous relierons plus tard une API d'upload.",
+    compactVideoOpen: "Ouvrir",
+    compactVideoClose: "Fermer",
+    compactVideoEmpty: "Aucun clip",
+    compactVideoCount: "clips",
+    openClip: "Ouvrir le clip",
+    closeClip: "Fermer le clip",
+    activeLabel: "Actif",
+    optionalLabel: "Optionnel",
+
+    langNl: "NL",
+    langEn: "EN",
+    langDe: "DE",
+    langEs: "ES",
+    langIt: "IT",
+    langFr: "FR",
+
+    step1Eyebrow: "Étape 1",
+    step1Title: "Pour qui est ce plan ?",
+    step1Body:
+      "Définis pour quel joueur ce plan est construit. Le nom et le poste forment la base. Une photo est optionnelle, mais elle aide à rendre le plan visuellement identifiable et immédiatement reconnaissable dans l'aperçu et le PDF.",
+    editPhoto: "Modifier la photo",
+    removePhoto: "Supprimer",
+    playerVisualIdentity: "Identité visuelle",
+    newPlayer: "Nouveau joueur",
+    photoHelp:
+      "Utilise pour l'instant une URL d'image. Cette photo est utilisée dans l'aperçu visuel et sur la couverture du PDF.",
+    photoPill: "Photo",
+    avatarAdd: "Ajouter",
+    avatarEdit: "Modifier",
+
+    coverPreviewSub:
+      "Cet aperçu utilise le même format portrait que le PDF final.",
+    presetActive: "Preset club actif",
+    coverSystemLine: "Plan Personnel de Développement",
+
+    workspaceTitle: "Espace de travail",
+    workspaceBody:
+      "De l'observation au plan. Construis d'abord l'échange ou le point de développement, puis ajoute les preuves.",
+
+    controlLayer: "Statut du plan",
+    controlLayerBody:
+      "Setup, preuves et export restent ici. Le chat guide la construction du contenu du plan.",
+    clubContext: "Contexte du club",
+    pdfReady: "PDF prêt",
+    playerIdentity: "Profil du joueur",
+    brandingMetaClub: "Club",
+    brandingMetaTeam: "Équipe",
+    completion: "Avancement",
+    completed: "Terminé",
+
+    weekSingle: "semaine",
+    weekPlural: "semaines",
+
+    downloadFailedAlert:
+      "Une erreur s'est produite lors du téléchargement du PDF.",
   },
 } as const;
 
-const COUNTRY_LABELS: Record<string, { nl: string; en: string }> = {
-  Netherlands: { nl: "Nederland", en: "Netherlands" },
-  Belgium: { nl: "België", en: "Belgium" },
-  Germany: { nl: "Duitsland", en: "Germany" },
-  England: { nl: "Engeland", en: "England" },
-  France: { nl: "Frankrijk", en: "France" },
-  Spain: { nl: "Spanje", en: "Spain" },
-  Italy: { nl: "Italië", en: "Italy" },
-  Portugal: { nl: "Portugal", en: "Portugal" },
-  Sweden: { nl: "Zweden", en: "Sweden" },
-  "United States": { nl: "Verenigde Staten", en: "United States" },
-  Other: { nl: "Overig", en: "Other" },
+const COUNTRY_LABELS: Record<
+  string,
+  { nl: string; en: string; de: string; es: string; it: string; fr: string }
+> = {
+  Netherlands: {
+    nl: "Nederland",
+    en: "Netherlands",
+    de: "Niederlande",
+    es: "Países Bajos",
+    it: "Paesi Bassi",
+    fr: "Pays-Bas",
+  },
+  Belgium: {
+    nl: "België",
+    en: "Belgium",
+    de: "Belgien",
+    es: "Bélgica",
+    it: "Belgio",
+    fr: "Belgique",
+  },
+  Germany: {
+    nl: "Duitsland",
+    en: "Germany",
+    de: "Deutschland",
+    es: "Alemania",
+    it: "Germania",
+    fr: "Allemagne",
+  },
+  England: {
+    nl: "Engeland",
+    en: "England",
+    de: "England",
+    es: "Inglaterra",
+    it: "Inghilterra",
+    fr: "Angleterre",
+  },
+  France: {
+    nl: "Frankrijk",
+    en: "France",
+    de: "Frankreich",
+    es: "Francia",
+    it: "Francia",
+    fr: "France",
+  },
+  Spain: {
+    nl: "Spanje",
+    en: "Spain",
+    de: "Spanien",
+    es: "España",
+    it: "Spagna",
+    fr: "Espagne",
+  },
+  Italy: {
+    nl: "Italië",
+    en: "Italy",
+    de: "Italien",
+    es: "Italia",
+    it: "Italia",
+    fr: "Italie",
+  },
+  Portugal: {
+    nl: "Portugal",
+    en: "Portugal",
+    de: "Portugal",
+    es: "Portugal",
+    it: "Portogallo",
+    fr: "Portugal",
+  },
+  Sweden: {
+    nl: "Zweden",
+    en: "Sweden",
+    de: "Schweden",
+    es: "Suecia",
+    it: "Svezia",
+    fr: "Suède",
+  },
+  "United States": {
+    nl: "Verenigde Staten",
+    en: "United States",
+    de: "Vereinigte Staaten",
+    es: "Estados Unidos",
+    it: "Stati Uniti",
+    fr: "États-Unis",
+  },
+  Other: {
+    nl: "Overig",
+    en: "Other",
+    de: "Andere",
+    es: "Otro",
+    it: "Altro",
+    fr: "Autre",
+  },
 };
 
 function countryLabel(country: string, lang: Lang) {
@@ -513,7 +1251,7 @@ export default function PlayerDevelopmentPlanBuilder() {
   >({});
 
   const t = UI[lang];
-  const otherLang: Lang = lang === "nl" ? "en" : "nl";
+  const exportAlternativeLangs = SUPPORTED_LANGS.filter((l) => l !== lang);
 
   const hasTrackedViewRef = useRef(false);
   const hasTrackedStartRef = useRef(false);
@@ -815,7 +1553,7 @@ export default function PlayerDevelopmentPlanBuilder() {
     lang,
   ]);
 
-  const clipCount = [0, 1, 2].filter(
+    const clipCount = [0, 1, 2].filter(
     (idx) =>
       !!(plan as any)?.slide3Baseline?.videoClips?.[idx]?.url ||
       !!localVideoUploads[idx]
@@ -1121,8 +1859,16 @@ export default function PlayerDevelopmentPlanBuilder() {
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "");
 
-      const planLabel =
-        exportLang === "nl" ? "ontwikkelplan" : "development-plan";
+      const planLabelMap: Record<Lang, string> = {
+        nl: "ontwikkelplan",
+        en: "development-plan",
+        de: "entwicklungsplan",
+        es: "plan-de-desarrollo",
+        it: "piano-di-sviluppo",
+        fr: "plan-de-developpement",
+      };
+
+      const planLabel = planLabelMap[exportLang];
 
       const a = document.createElement("a");
       a.href = url;
@@ -1159,15 +1905,11 @@ export default function PlayerDevelopmentPlanBuilder() {
         lang,
       });
 
-      alert(
-        lang === "nl"
-          ? "Er ging iets mis bij het downloaden van de PDF."
-          : "Something went wrong while downloading the PDF."
-      );
+      alert(t.downloadFailedAlert);
     }
   }
 
-  function insertPrompt(text: string) {
+    function insertPrompt(text: string) {
     ensureStarted("hint");
 
     trackPdpHintUsed({
@@ -1190,7 +1932,15 @@ export default function PlayerDevelopmentPlanBuilder() {
           prompt:
             lang === "nl"
               ? "Beschrijf 1 concreet moment: wat doet de speler en wat gebeurt er daarna?"
-              : "Describe 1 concrete moment: what does the player do and what happens next?",
+              : lang === "de"
+                ? "Beschreibe 1 konkreten Moment: Was macht der Spieler und was passiert danach?"
+                : lang === "es"
+                  ? "Describe 1 momento concreto: ¿qué hace el jugador y qué ocurre después?"
+                  : lang === "it"
+                    ? "Descrivi 1 momento concreto: cosa fa il giocatore e cosa succede dopo?"
+                    : lang === "fr"
+                      ? "Décris 1 moment concret : que fait le joueur et que se passe-t-il ensuite ?"
+                      : "Describe 1 concrete moment: what does the player do and what happens next?",
         },
       ];
     }
@@ -1202,21 +1952,45 @@ export default function PlayerDevelopmentPlanBuilder() {
           prompt:
             lang === "nl"
               ? "Wat is het concrete gedrag dat nu het meest in de weg zit?"
-              : "What is the concrete behaviour that currently gets in the way most?",
+              : lang === "de"
+                ? "Welches konkrete Verhalten steht momenteel het meest im Weg?"
+                : lang === "es"
+                  ? "¿Qué comportamiento concreto está interfiriendo más en este momento?"
+                  : lang === "it"
+                    ? "Qual è il comportamento concreto che in questo momento ostacola di più?"
+                    : lang === "fr"
+                      ? "Quel comportement concret gêne le plus actuellement ?"
+                      : "What is the concrete behaviour that currently gets in the way most?",
         },
         {
           label: t.hintMoment,
           prompt:
             lang === "nl"
               ? "In welk specifiek wedstrijdmoment zie je dit het duidelijkst?"
-              : "In which specific match moment do you see this most clearly?",
+              : lang === "de"
+                ? "In welchem konkreten Spielmoment siehst du das am deutlichsten?"
+                : lang === "es"
+                  ? "¿En qué momento específico del partido se ve esto con más claridad?"
+                  : lang === "it"
+                    ? "In quale momento specifico della partita lo vedi più chiaramente?"
+                    : lang === "fr"
+                      ? "Dans quel moment précis du match vois-tu cela le plus clairement ?"
+                      : "In which specific match moment do you see this most clearly?",
         },
         {
           label: t.hintGoal,
           prompt:
             lang === "nl"
               ? "Welk gedrag wil je in deze situatie juist wél terugzien?"
-              : "What behaviour do you want to see in this situation instead?",
+              : lang === "de"
+                ? "Welches Verhalten möchtest du in dieser Situation stattdessen sehen?"
+                : lang === "es"
+                  ? "¿Qué comportamiento quieres ver en esta situación en su lugar?"
+                  : lang === "it"
+                    ? "Quale comportamento vuoi vedere invece in questa situazione?"
+                    : lang === "fr"
+                      ? "Quel comportement veux-tu voir à la place dans cette situation ?"
+                      : "What behaviour do you want to see in this situation instead?",
         },
       ];
     }
@@ -1228,21 +2002,45 @@ export default function PlayerDevelopmentPlanBuilder() {
           prompt:
             lang === "nl"
               ? "Wat vraagt zijn rol of positie hier van hem in dit team?"
-              : "What does his role or position require from him here in this team?",
+              : lang === "de"
+                ? "Was verlangt seine Rolle oder Position hier in diesem Team von ihm?"
+                : lang === "es"
+                  ? "¿Qué exige aquí su rol o posición dentro de este equipo?"
+                  : lang === "it"
+                    ? "Cosa richiede qui il suo ruolo o la sua posizione in questa squadra?"
+                    : lang === "fr"
+                      ? "Qu’est-ce que son rôle ou son poste exige ici dans cette équipe ?"
+                      : "What does his role or position require from him here in this team?",
         },
         {
           label: t.hintMoment,
           prompt:
             lang === "nl"
               ? "In welke teamfase wordt dit echt beslissend?"
-              : "In which team phase does this become truly decisive?",
+              : lang === "de"
+                ? "In welcher Teamphase wird das wirklich entscheidend?"
+                : lang === "es"
+                  ? "¿En qué fase del equipo se vuelve esto realmente decisivo?"
+                  : lang === "it"
+                    ? "In quale fase della squadra questo diventa davvero decisivo?"
+                    : lang === "fr"
+                      ? "Dans quelle phase de l’équipe cela devient-il vraiment décisif ?"
+                      : "In which team phase does this become truly decisive?",
         },
         {
           label: t.hintGoal,
           prompt:
             lang === "nl"
               ? "Wat wint of verliest het team als dit gedrag wel of niet lukt?"
-              : "What does the team gain or lose when this behaviour does or does not happen?",
+              : lang === "de"
+                ? "Was gewinnt oder verliert das Team, wenn dieses Verhalten gelingt oder nicht gelingt?"
+                : lang === "es"
+                  ? "¿Qué gana o pierde el equipo si este comportamiento ocurre o no ocurre?"
+                  : lang === "it"
+                    ? "Cosa guadagna o perde la squadra se questo comportamento riesce o non riesce?"
+                    : lang === "fr"
+                      ? "Que gagne ou perd l’équipe si ce comportement réussit ou non ?"
+                      : "What does the team gain or lose when this behaviour does or does not happen?",
         },
       ];
     }
@@ -1254,21 +2052,45 @@ export default function PlayerDevelopmentPlanBuilder() {
           prompt:
             lang === "nl"
               ? "Wat zie je concreet terug in zijn gedrag of keuzes?"
-              : "What do you concretely see in his behaviour or decisions?",
+              : lang === "de"
+                ? "Was siehst du konkret in seinem Verhalten oder seinen Entscheidungen?"
+                : lang === "es"
+                  ? "¿Qué ves de forma concreta en su comportamiento o en sus decisiones?"
+                  : lang === "it"
+                    ? "Cosa vedi concretamente nel suo comportamento o nelle sue scelte?"
+                    : lang === "fr"
+                      ? "Que vois-tu concrètement dans son comportement ou ses choix ?"
+                      : "What do you concretely see in his behaviour or decisions?",
         },
         {
           label: t.hintMoment,
           prompt:
             lang === "nl"
               ? "Wanneer zie je dit vooral terug: onder welke trigger of omstandigheid?"
-              : "When do you mainly see this: under which trigger or condition?",
+              : lang === "de"
+                ? "Wann siehst du das vor allem: unter welchem Auslöser oder unter welchen Umständen?"
+                : lang === "es"
+                  ? "¿Cuándo lo ves sobre todo: bajo qué detonante o circunstancia?"
+                  : lang === "it"
+                    ? "Quando lo vedi soprattutto: con quale trigger o in quale circostanza?"
+                    : lang === "fr"
+                      ? "Quand vois-tu cela surtout : sous quel déclencheur ou dans quelle circonstance ?"
+                      : "When do you mainly see this: under which trigger or condition?",
         },
         {
           label: t.hintGoal,
           prompt:
             lang === "nl"
               ? "Wat is het directe effect op het spel of team als dit gebeurt?"
-              : "What is the direct effect on the game or team when this happens?",
+              : lang === "de"
+                ? "Was ist die direkte Auswirkung auf das Spiel oder das Team, wenn das passiert?"
+                : lang === "es"
+                  ? "¿Cuál es el efecto directo en el juego o en el equipo cuando esto ocurre?"
+                  : lang === "it"
+                    ? "Qual è l’effetto diretto sul gioco o sulla squadra quando succede?"
+                    : lang === "fr"
+                      ? "Quel est l’effet direct sur le jeu ou l’équipe quand cela se produit ?"
+                      : "What is the direct effect on the game or team when this happens?",
         },
       ];
     }
@@ -1280,21 +2102,45 @@ export default function PlayerDevelopmentPlanBuilder() {
           prompt:
             lang === "nl"
               ? "Wat moet de speler zelf concreet anders gaan doen?"
-              : "What must the player concretely start doing differently?",
+              : lang === "de"
+                ? "Was muss der Spieler konkret anders machen?"
+                : lang === "es"
+                  ? "¿Qué debe hacer el jugador de forma concreta de manera diferente?"
+                  : lang === "it"
+                    ? "Cosa deve fare concretamente il giocatore in modo diverso?"
+                    : lang === "fr"
+                      ? "Que doit concrètement faire le joueur différemment ?"
+                      : "What must the player concretely start doing differently?",
         },
         {
           label: t.hintMoment,
           prompt:
             lang === "nl"
               ? "Hoe werk je hieraan in training of met beelden?"
-              : "How do you work on this in training or through video?",
+              : lang === "de"
+                ? "Wie arbeitest du daran im Training oder mit Videos?"
+                : lang === "es"
+                  ? "¿Cómo trabajas esto en el entrenamiento o con vídeo?"
+                  : lang === "it"
+                    ? "Come lavori su questo in allenamento o con il video?"
+                    : lang === "fr"
+                      ? "Comment travailles-tu cela à l’entraînement ou avec la vidéo ?"
+                      : "How do you work on this in training or through video?",
         },
         {
           label: t.hintGoal,
           prompt:
             lang === "nl"
               ? "Wie draagt hier concreet wat in: speler, trainer, analist of staff?"
-              : "Who concretely owns what here: player, coach, analyst or staff?",
+              : lang === "de"
+                ? "Wer übernimmt hier konkret was: Spieler, Trainer, Analyst oder Staff?"
+                : lang === "es"
+                  ? "¿Quién asume aquí concretamente qué: jugador, entrenador, analista o staff?"
+                  : lang === "it"
+                    ? "Chi si occupa concretamente di cosa qui: giocatore, allenatore, analista o staff?"
+                    : lang === "fr"
+                      ? "Qui prend concrètement quoi en charge ici : joueur, coach, analyste ou staff ?"
+                      : "Who concretely owns what here: player, coach, analyst or staff?",
         },
       ];
     }
@@ -1306,21 +2152,45 @@ export default function PlayerDevelopmentPlanBuilder() {
           prompt:
             lang === "nl"
               ? "Waaraan zie je in het spel dat dit begint te landen?"
-              : "What do you see in the game that shows this is starting to land?",
+              : lang === "de"
+                ? "Woran siehst du im Spiel, dass das anfängt zu greifen?"
+                : lang === "es"
+                  ? "¿En qué ves dentro del juego que esto empieza a asentarse?"
+                  : lang === "it"
+                    ? "Da cosa vedi in partita che questo sta iniziando a funzionare?"
+                    : lang === "fr"
+                      ? "À quoi vois-tu dans le jeu que cela commence à s’installer ?"
+                      : "What do you see in the game that shows this is starting to land?",
         },
         {
           label: t.hintMoment,
           prompt:
             lang === "nl"
               ? "Welk gedrag van de speler laat zien dat dit echt begint te landen?"
-              : "What player behaviour shows that this is truly starting to land?",
+              : lang === "de"
+                ? "Welches Verhalten des Spielers zeigt, dass das wirklich anfängt zu greifen?"
+                : lang === "es"
+                  ? "¿Qué comportamiento del jugador muestra que esto realmente empieza a asentarse?"
+                  : lang === "it"
+                    ? "Quale comportamento del giocatore mostra che questo sta davvero iniziando a consolidarsi?"
+                    : lang === "fr"
+                      ? "Quel comportement du joueur montre que cela commence vraiment à s’installer ?"
+                      : "What player behaviour shows that this is truly starting to land?",
         },
         {
           label: t.hintGoal,
           prompt:
             lang === "nl"
               ? "Wat zijn vroege signalen dat dit plan begint te werken?"
-              : "What are early signals that this plan is starting to work?",
+              : lang === "de"
+                ? "Was sind frühe Signale dafür, dass dieser Plan zu wirken beginnt?"
+                : lang === "es"
+                  ? "¿Cuáles son señales tempranas de que este plan empieza a funcionar?"
+                  : lang === "it"
+                    ? "Quali sono i primi segnali che questo piano sta iniziando a funzionare?"
+                    : lang === "fr"
+                      ? "Quels sont les premiers signaux que ce plan commence à fonctionner ?"
+                      : "What are early signals that this plan is starting to work?",
         },
       ];
     }
@@ -1331,7 +2201,15 @@ export default function PlayerDevelopmentPlanBuilder() {
         prompt:
           lang === "nl"
             ? "Maak het scherper: wat doet de speler exact anders dan nodig en wat is direct het gevolg?"
-            : "Make it sharper: what exactly does the player do differently than needed, and what is the direct consequence?",
+            : lang === "de"
+              ? "Mach es schärfer: Was genau macht der Spieler anders als nötig und was ist die direkte Folge?"
+              : lang === "es"
+                ? "Hazlo más preciso: ¿qué hace exactamente el jugador distinto de lo que se necesita y cuál es la consecuencia directa?"
+                : lang === "it"
+                  ? "Rendilo più preciso: cosa fa esattamente il giocatore in modo diverso da quanto serve e qual è la conseguenza diretta?"
+                  : lang === "fr"
+                    ? "Affine : que fait exactement le joueur différemment de ce qu’il faudrait, et quelle en est la conséquence directe ?"
+                    : "Make it sharper: what exactly does the player do differently than needed, and what is the direct consequence?",
       },
     ];
   }, [chatPlannerState, t, lang]);
@@ -2034,9 +2912,7 @@ export default function PlayerDevelopmentPlanBuilder() {
                   {t.controlLayer}
                 </div>
                 <div className="mt-2 text-[13px] leading-relaxed text-white/52">
-                  {lang === "nl"
-                    ? "Setup, bewijs en export blijven hier. De chat stuurt de inhoudelijke planopbouw."
-                    : "Setup, evidence and export stay here. The chat drives the content build-up of the plan."}
+                  {t.controlLayerBody}
                 </div>
 
                 <div className="mt-5 flex flex-wrap gap-2">
@@ -2136,7 +3012,7 @@ export default function PlayerDevelopmentPlanBuilder() {
                                       {titles[idx]}
                                     </div>
                                     <div className="mt-1 text-[11px] text-white/40">
-                                      {isActive ? "Active" : "Optional"}
+                                      {isActive ? t.activeLabel : t.optionalLabel}
                                     </div>
                                   </div>
 
@@ -2212,12 +3088,17 @@ export default function PlayerDevelopmentPlanBuilder() {
                     {t.availableOther}
                   </div>
 
-                  <button
-                    onClick={() => download("player", otherLang)}
-                    className="w-full rounded-full border border-white/10 bg-white/[0.02] py-2.5 text-[12px] text-white/72 transition hover:border-white/18 hover:text-white"
-                  >
-                    {t.downloadOther}
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    {exportAlternativeLangs.map((exportLang) => (
+                      <button
+                        key={exportLang}
+                        onClick={() => download("player", exportLang)}
+                        className="flex-1 rounded-full border border-white/10 bg-white/[0.02] py-2.5 text-[12px] text-white/72 transition hover:border-white/18 hover:text-white"
+                      >
+                        {exportLang.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -2531,7 +3412,7 @@ function VideoCardCompact({
   title: string;
   clip?: any;
   upload?: LocalVideoUpload;
-  t: (typeof UI)["nl"] | (typeof UI)["en"];
+  t: (typeof UI)[Lang];
   onChange: (patch: Record<string, string>) => void;
   onUpload: (file: File | null) => void;
   compact?: boolean;
@@ -2551,7 +3432,7 @@ function VideoCardCompact({
         <div className="mb-3 flex items-center justify-between gap-3">
           <div className="text-[13px] font-medium text-white/86">{title}</div>
           <div className="text-[10px] uppercase tracking-[0.14em] text-white/34">
-            {upload?.fileName || clip?.url ? "Active" : "Optional"}
+            {upload?.fileName || clip?.url ? t.activeLabel : t.optionalLabel}
           </div>
         </div>
       )}
@@ -2653,6 +3534,7 @@ function WeekLengthPicker({
 }) {
   const options = [1, 2, 4, 6, 8];
   const current = value || 8;
+  const t = UI[lang];
 
   return (
     <div>
@@ -2663,14 +3545,7 @@ function WeekLengthPicker({
       <div className="flex flex-wrap gap-2">
         {options.map((option) => {
           const active = current === option;
-          const suffix =
-            lang === "nl"
-              ? option === 1
-                ? "week"
-                : "weken"
-              : option === 1
-                ? "week"
-                : "weeks";
+          const suffix = option === 1 ? t.weekSingle : t.weekPlural;
 
           return (
             <button
@@ -2767,10 +3642,10 @@ function LangPill({
 }: {
   lang: Lang;
   setLang: (l: Lang) => void;
-  t: (typeof UI)["nl"] | (typeof UI)["en"];
+  t: (typeof UI)[Lang];
 }) {
   return (
-    <div className="inline-flex rounded-full border border-white/10 bg-white/[0.04] p-1 text-[11px] tracking-[0.14em]">
+    <div className="inline-flex flex-wrap rounded-full border border-white/10 bg-white/[0.04] p-1 text-[11px] tracking-[0.14em]">
       <button
         onClick={() => setLang("nl")}
         className={`rounded-full px-3 py-1.5 transition ${
@@ -2786,6 +3661,38 @@ function LangPill({
         }`}
       >
         {t.langEn}
+      </button>
+      <button
+        onClick={() => setLang("de")}
+        className={`rounded-full px-3 py-1.5 transition ${
+          lang === "de" ? "bg-white text-black" : "text-white/48 hover:text-white/78"
+        }`}
+      >
+        {t.langDe}
+      </button>
+      <button
+        onClick={() => setLang("es")}
+        className={`rounded-full px-3 py-1.5 transition ${
+          lang === "es" ? "bg-white text-black" : "text-white/48 hover:text-white/78"
+        }`}
+      >
+        {t.langEs}
+      </button>
+      <button
+        onClick={() => setLang("it")}
+        className={`rounded-full px-3 py-1.5 transition ${
+          lang === "it" ? "bg-white text-black" : "text-white/48 hover:text-white/78"
+        }`}
+      >
+        {t.langIt}
+      </button>
+      <button
+        onClick={() => setLang("fr")}
+        className={`rounded-full px-3 py-1.5 transition ${
+          lang === "fr" ? "bg-white text-black" : "text-white/48 hover:text-white/78"
+        }`}
+      >
+        {t.langFr}
       </button>
     </div>
   );
@@ -2837,7 +3744,7 @@ function CoverPreviewStage({
   systemLine,
   teamLabel,
 }: {
-  t: (typeof UI)["nl"] | (typeof UI)["en"];
+  t: (typeof UI)[Lang];
   clubName: string;
   logoUrl?: string;
   playerName: string;

@@ -1,7 +1,7 @@
 import posthog from "posthog-js";
 import { track } from "@vercel/analytics";
 
-export type AnalyticsLang = "nl" | "en";
+export type AnalyticsLang = "nl" | "en" | "de" | "es" | "it" | "fr";
 export type AnalyticsMode = "chat" | "manual";
 export type AnalyticsDownloadVersion = "player" | "staff";
 

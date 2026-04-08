@@ -52,6 +52,12 @@ type ParsedGenerateResponse = {
   planPatch?: Partial<DevelopmentPlanV1>;
 };
 
+const SUPPORTED_LANGS: Lang[] = ["nl", "en", "de", "es", "it", "fr"];
+
+function normalizeLang(lang?: unknown): Lang {
+  return SUPPORTED_LANGS.includes(lang as Lang) ? (lang as Lang) : "nl";
+}
+
 function deepMergePlan(
   base: Partial<DevelopmentPlanV1>,
   patch: Partial<DevelopmentPlanV1>
@@ -79,8 +85,11 @@ function deepMergePlan(
   return merge(out, patch || {});
 }
 
-function localMessage(lang: Lang, nl: string, en: string) {
-  return lang === "nl" ? nl : en;
+function localMessage(
+  lang: Lang,
+  messages: Record<Lang, string>
+) {
+  return messages[lang] || messages.nl;
 }
 
 function hasMeaningfulUserInput(messages: ChatMsg[]) {
@@ -176,7 +185,27 @@ function sanitizePlannerState(
   };
 }
 
+function buildLanguageInstruction(lang: Lang) {
+  switch (lang) {
+    case "nl":
+      return "Write EVERYTHING in natural, sharp Dutch. No mixing languages. No translated leftovers.";
+    case "de":
+      return "Write EVERYTHING in natural, sharp German. No mixing languages. No translated leftovers.";
+    case "es":
+      return "Write EVERYTHING in natural, sharp Spanish. No mixing languages. No translated leftovers.";
+    case "it":
+      return "Write EVERYTHING in natural, sharp Italian. No mixing languages. No translated leftovers.";
+    case "fr":
+      return "Write EVERYTHING in natural, sharp French. No mixing languages. No translated leftovers.";
+    case "en":
+    default:
+      return "Write EVERYTHING in natural, sharp English. No mixing languages. No translated leftovers.";
+  }
+}
+
 function buildGeneratePrompt(lang: Lang) {
+  const languageInstruction = buildLanguageInstruction(lang);
+
   return `
 You generate a high-quality football Player Development Plan patch.
 
@@ -508,11 +537,11 @@ If the user does not speak in schema language, translate the intent into footbal
 
 Examples:
 - "he always has an excuse" can become:
-  "neemt verantwoordelijkheid te weinig zelf"
+  "takes too little ownership himself"
 - "he does enough but never more than asked" can become:
-  "toont te weinig proactief topsportgedrag"
+  "shows too little proactive elite-sport behaviour"
 - "he has mourning moments" can become:
-  "pauzeert na balverlies voordat hij verdedigend herpakt"
+  "pauses after ball loss before defensive re-engagement"
 
 If the issue is behavioural, relational or habit-based rather than one clear match action:
 - still build a football development plan
@@ -520,21 +549,7 @@ If the issue is behavioural, relational or habit-based rather than one clear mat
 - do not force fake tactical specificity
 
 LANGUAGE HARD RULE
-Write EVERYTHING in ${lang === "nl" ? "natural, sharp Dutch" : "natural, sharp English"}.
-No mixing languages.
-No translated leftovers.
-No headings or labels in another language.
-
-For Dutch:
-- avoid stiff AI Dutch
-- avoid consultant Dutch
-- avoid over-formal wording
-- write like strong football staff language
-
-For English:
-- avoid generic performance jargon
-- avoid consultant English
-- write like real football staff language
+${languageInstruction}
 
 QUALITY CHECK BEFORE OUTPUT
 Before finalising, check:
@@ -568,16 +583,19 @@ export async function POST(req: Request) {
     const body = (await req.json()) as ApiInput;
     const messages = Array.isArray(body.messages) ? body.messages : [];
     const draftPlan = body.draftPlan || {};
-    const lang: Lang = body.lang === "en" ? "en" : "nl";
+    const lang = normalizeLang(body.lang);
 
     if (!client) {
       return NextResponse.json(
         {
-          message: localMessage(
-            lang,
-            "OPENAI_API_KEY ontbreekt in je lokale environment.",
-            "OPENAI_API_KEY is missing in your local environment."
-          ),
+          message: localMessage(lang, {
+            nl: "OPENAI_API_KEY ontbreekt in je lokale environment.",
+            en: "OPENAI_API_KEY is missing in your local environment.",
+            de: "OPENAI_API_KEY fehlt in deiner lokalen Umgebung.",
+            es: "Falta OPENAI_API_KEY en tu entorno local.",
+            it: "OPENAI_API_KEY manca nel tuo ambiente locale.",
+            fr: "OPENAI_API_KEY est absent de votre environnement local.",
+          }),
         },
         { status: 500 }
       );
@@ -587,11 +605,14 @@ export async function POST(req: Request) {
       const planner = buildPlannerState(draftPlan);
 
       return NextResponse.json({
-        message: localMessage(
-          lang,
-          "Er is nog te weinig gesprekinput om het plan op te bouwen.",
-          "There is not enough conversation input yet to build the plan."
-        ),
+        message: localMessage(lang, {
+          nl: "Er is nog te weinig gesprekinput om het plan op te bouwen.",
+          en: "There is not enough conversation input yet to build the plan.",
+          de: "Es gibt noch zu wenig Gesprächsinput, um den Plan aufzubauen.",
+          es: "Todavía no hay suficiente conversación para construir el plan.",
+          it: "Non c'è ancora abbastanza input nella conversazione per costruire il piano.",
+          fr: "Il n’y a pas encore assez d’éléments dans l’échange pour construire le plan.",
+        }),
         plan: draftPlan,
         derived: {
           planner,
@@ -682,11 +703,14 @@ Rules:
 
     if (!text) {
       throw new Error(
-        localMessage(
-          lang,
-          "Geen output ontvangen uit de generate route.",
-          "No output returned from the generate route."
-        )
+        localMessage(lang, {
+          nl: "Geen output ontvangen uit de generate route.",
+          en: "No output returned from the generate route.",
+          de: "Keine Ausgabe aus der Generate-Route erhalten.",
+          es: "No se recibió salida desde la ruta generate.",
+          it: "Nessun output ricevuto dalla route generate.",
+          fr: "Aucune sortie reçue depuis la route generate.",
+        })
       );
     }
 
@@ -704,11 +728,14 @@ Rules:
     return NextResponse.json({
       message:
         parsed.message ||
-        localMessage(
-          lang,
-          "Ik heb het plan op basis van het gesprek opgebouwd en aangescherpt.",
-          "I built and sharpened the plan based on the conversation."
-        ),
+        localMessage(lang, {
+          nl: "Ik heb het plan op basis van het gesprek opgebouwd en aangescherpt.",
+          en: "I built and sharpened the plan based on the conversation.",
+          de: "Ich habe den Plan auf Basis des Gesprächs aufgebaut und geschärft.",
+          es: "He construido y afinado el plan a partir de la conversación.",
+          it: "Ho costruito e affinato il piano sulla base della conversazione.",
+          fr: "J’ai construit et affiné le plan à partir de l’échange.",
+        }),
       plan: mergedPlan,
       derived: {
         planner: updatedPlanner,
@@ -721,11 +748,14 @@ Rules:
       {
         message:
           error?.message ||
-          localMessage(
-            "nl",
-            "Er ging iets mis tijdens het opbouwen van het plan.",
-            "Something went wrong while building the plan."
-          ),
+          localMessage("nl", {
+            nl: "Er ging iets mis tijdens het opbouwen van het plan.",
+            en: "Something went wrong while building the plan.",
+            de: "Beim Aufbau des Plans ist etwas schiefgelaufen.",
+            es: "Se produjo un error al construir el plan.",
+            it: "Si è verificato un errore durante la costruzione del piano.",
+            fr: "Une erreur s’est produite pendant la construction du plan.",
+          }),
       },
       { status: 500 }
     );

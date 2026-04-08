@@ -1,5 +1,7 @@
 import type {
   DevelopmentPlanV1,
+  Lang,
+  PlanVersion,
   Slide2Agreement,
   Slide3Baseline,
   Slide3Diagnosis,
@@ -14,12 +16,10 @@ import {
   pageDiagnosis,
   pageDevelopmentRoute,
   pageSuccess,
-  type Lang,
+  type Lang as PageLang,
   type Slide3VideoSlot,
 } from "./pages";
 import { pageCoverLocked } from "./pages.cover";
-
-type PlanVersion = "staff" | "player";
 
 function asArray(v: unknown): string[] {
   return Array.isArray(v)
@@ -38,8 +38,17 @@ function upperClean(s: string) {
   return (s || "").trim().replace(/\s+/g, " ").toUpperCase();
 }
 
-function t(lang: Lang, nl: string, en: string) {
-  return lang === "nl" ? nl : en;
+function localText(lang: Lang, values: Record<Lang, string>) {
+  return values[lang] || values.en;
+}
+
+/**
+ * Tijdelijke brug:
+ * als ./pages nog alleen nl/en ondersteunt, vallen de overige talen terug op en.
+ * Zodra ./pages ook 6-talig is, kan deze helper weg.
+ */
+function toPageLang(lang: Lang): PageLang {
+  return lang === "nl" ? "nl" : "en";
 }
 
 function parseDateLoose(s: string): Date | null {
@@ -82,7 +91,16 @@ function formatDateByLang(d: Date, lang: Lang) {
     return `${dd}-${mm}-${yyyy}`;
   }
 
-  return new Intl.DateTimeFormat("en-GB", {
+  const localeMap: Record<Lang, string> = {
+    nl: "nl-NL",
+    en: "en-GB",
+    de: "de-DE",
+    es: "es-ES",
+    it: "it-IT",
+    fr: "fr-FR",
+  };
+
+  return new Intl.DateTimeFormat(localeMap[lang], {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -122,7 +140,10 @@ function normalizeCompareText(input: string) {
     .replace(/[’']/g, "")
     .replace(/&/g, " and ")
     .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\b(the|a|an|to|of|and|or|in|on|at|for|with|without|after|before|under|over|into|from|via|through|his|her|their)\b/g, " ")
+    .replace(
+      /\b(the|a|an|to|of|and|or|in|on|at|for|with|without|after|before|under|over|into|from|via|through|his|her|their)\b/g,
+      " "
+    )
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -261,8 +282,22 @@ function normalizeVideoSlots(
           : undefined,
       url: resolvedUrl || null,
       thumbnail_url: resolvedThumb || null,
-      pendingTitle: t(lang, "Video pending", "Video pending"),
-      pendingSub: t(lang, "Observatie loopt", "Observation in progress"),
+      pendingTitle: localText(lang, {
+        nl: "Video pending",
+        en: "Video pending",
+        de: "Video ausstehend",
+        es: "Vídeo pendiente",
+        it: "Video in sospeso",
+        fr: "Vidéo en attente",
+      }),
+      pendingSub: localText(lang, {
+        nl: "Observatie loopt",
+        en: "Observation in progress",
+        de: "Beobachtung läuft",
+        es: "Observación en curso",
+        it: "Osservazione in corso",
+        fr: "Observation en cours",
+      }),
     };
   });
 }
@@ -307,9 +342,19 @@ export function renderPdpHtmlPro(
   plan: DevelopmentPlanV1,
   opts?: { version?: PlanVersion; lang?: Lang; baseUrl?: string }
 ) {
+  const inferredLang = plan?.meta?.lang;
   const lang: Lang =
-    opts?.lang || ((plan?.meta?.lang === "en" ? "en" : "nl") as Lang);
+    opts?.lang ||
+    (inferredLang === "nl" ||
+    inferredLang === "en" ||
+    inferredLang === "de" ||
+    inferredLang === "es" ||
+    inferredLang === "it" ||
+    inferredLang === "fr"
+      ? inferredLang
+      : "nl");
 
+  const pageLang = toPageLang(lang);
   const baseUrl = stripTrailingSlash(opts?.baseUrl || "https://www.ftbll.ai");
 
   const theme = buildTheme({
@@ -324,10 +369,19 @@ export function renderPdpHtmlPro(
     safeStr(plan.player?.headshotUrl, ""),
     baseUrl
   );
+
   const playerName = safeStr(
     plan.player?.name,
-    lang === "nl" ? "Speler" : "Player"
+    localText(lang, {
+      nl: "Speler",
+      en: "Player",
+      de: "Spieler",
+      es: "Jugador",
+      it: "Giocatore",
+      fr: "Joueur",
+    })
   );
+
   const accentHex = plan?.brand?.primaryColor || "#111111";
 
   const headline = upperClean(safeStr((plan as any)?.cover?.headline, ""));
@@ -339,8 +393,14 @@ export function renderPdpHtmlPro(
     ? Math.max(1, Math.min(52, weeks))
     : 8;
 
-  const durationWeeksLabel =
-    lang === "nl" ? `${safeWeeks} WEKEN` : `${safeWeeks} WEEKS`;
+  const durationWeeksLabel = localText(lang, {
+    nl: `${safeWeeks} WEKEN`,
+    en: `${safeWeeks} WEEKS`,
+    de: `${safeWeeks} WOCHEN`,
+    es: `${safeWeeks} SEMANAS`,
+    it: `${safeWeeks} SETTIMANE`,
+    fr: `${safeWeeks} SEMAINES`,
+  });
 
   const rawStart =
     safeStr(s2.startDate, "") ||
@@ -358,9 +418,6 @@ export function renderPdpHtmlPro(
   const startDateLabel = formatDateByLang(startDate, lang);
   const endDateLabel = formatDateByLang(endDate, lang);
 
-  /**
-   * Slide 2 - Agreement / Core line
-   */
   const focusBehaviour = safeStr(s2.focusBehaviour, "");
   const targetBehaviour = safeStr(s2.developmentGoal, "");
   const matchSituation =
@@ -375,9 +432,6 @@ export function renderPdpHtmlPro(
     safeStr(s2.teamContext, ""),
   ]);
 
-  /**
-   * Slide 3 - Context
-   */
   const slideContext = plan.slideContext || {};
 
   const contextGameMomentsRaw = asArray(slideContext.gameMoments).slice(0, 3);
@@ -398,15 +452,6 @@ export function renderPdpHtmlPro(
     against: [...slide2Refs, ...contextGameMoments],
   });
 
-  const contextRefs = collectReferenceStrings([
-    contextGameMoments,
-    contextZones,
-    contextPrinciples,
-  ]);
-
-  /**
-   * Slide 4 - Reality / Baseline
-   */
   const preferred = deriveBaselineFromPreferred(
     plan.slide3Baseline,
     lang,
@@ -446,9 +491,6 @@ export function renderPdpHtmlPro(
     baselineEffectItems,
   ]);
 
-  /**
-   * Slide 5 - Approach
-   */
   const s4: Slide4DevelopmentRoute = plan.slide4DevelopmentRoute || {};
   const route = s4.developmentRoute || {};
   const responsibilities = s4.responsibilities || {};
@@ -477,7 +519,6 @@ export function renderPdpHtmlPro(
     against: [...slide2Refs, ...baselineRefs],
   });
 
-  // Preserve slot order as much as possible, but avoid echo
   const routePool = [...dedupedRouteTexts];
   const orderedOriginals = [trainingText, matchText, videoText, offFieldText];
 
@@ -513,9 +554,6 @@ export function renderPdpHtmlPro(
     staffText,
   ]);
 
-  /**
-   * Slide 6 - Success definition
-   */
   const s6: Slide6SuccessDefinition = plan.slide6SuccessDefinition || {};
 
   const successInGameRaw = asArray(s6.inGame).slice(0, 3);
@@ -537,37 +575,48 @@ export function renderPdpHtmlPro(
     against: [...slide2Refs, ...routeRefs, ...successBehaviour, ...successInGame],
   });
 
-  /**
-   * Pages
-   */
   const pages = [
     pageCoverLocked({
-      lang,
+      lang: pageLang,
       clubName,
       logoUrl,
       accentHex,
       playerName,
       headshotUrl,
       headline,
-      systemLine: "PERFORMANCE DEVELOPMENT SYSTEM",
+      systemLine: localText(lang, {
+        nl: "PERFORMANCE DEVELOPMENT SYSTEM",
+        en: "PERFORMANCE DEVELOPMENT SYSTEM",
+        de: "PERFORMANCE DEVELOPMENT SYSTEM",
+        es: "PERFORMANCE DEVELOPMENT SYSTEM",
+        it: "PERFORMANCE DEVELOPMENT SYSTEM",
+        fr: "PERFORMANCE DEVELOPMENT SYSTEM",
+      }),
     }),
 
     pageAgreementContract({
-      lang,
+      lang: pageLang,
       accentHex,
       clubName,
       logoUrl,
       startDateLabel,
       endDateLabel,
       durationWeeksLabel,
-      evalLabel: lang === "nl" ? "EVALUATIE" : "EVALUATION",
+      evalLabel: localText(lang, {
+        nl: "EVALUATIE",
+        en: "EVALUATION",
+        de: "BEWERTUNG",
+        es: "EVALUACIÓN",
+        it: "VALUTAZIONE",
+        fr: "ÉVALUATION",
+      }),
       focusBehaviour,
       targetBehaviour,
       matchSituation,
     }),
 
     pageContext({
-      lang,
+      lang: pageLang,
       accentHex,
       clubName,
       logoUrl,
@@ -577,7 +626,7 @@ export function renderPdpHtmlPro(
     }),
 
     pageDiagnosis({
-      lang,
+      lang: pageLang,
       accentHex,
       clubName,
       logoUrl,
@@ -599,7 +648,7 @@ export function renderPdpHtmlPro(
     }),
 
     pageDevelopmentRoute({
-      lang,
+      lang: pageLang,
       accentHex,
       clubName,
       logoUrl,
@@ -617,7 +666,7 @@ export function renderPdpHtmlPro(
     }),
 
     pageSuccess({
-      lang,
+      lang: pageLang,
       accentHex,
       clubName,
       logoUrl,
@@ -632,9 +681,14 @@ export function renderPdpHtmlPro(
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${
-    lang === "nl" ? "Persoonlijk Ontwikkelplan" : "Player Development Plan"
-  }</title>
+  <title>${localText(lang, {
+    nl: "Persoonlijk Ontwikkelplan",
+    en: "Player Development Plan",
+    de: "Persönlicher Entwicklungsplan",
+    es: "Plan Personal de Desarrollo",
+    it: "Piano Personale di Sviluppo",
+    fr: "Plan Personnel de Développement",
+  })}</title>
   <style>
     @page {
       size: A4;

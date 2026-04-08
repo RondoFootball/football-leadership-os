@@ -1,5 +1,7 @@
 // src/app/development/player-development-plan/ui/lib/pdp/pages.cover.ts
 
+import type { Lang } from "./pages";
+
 function esc(input: unknown) {
   const s = String(input ?? "");
   return s
@@ -9,8 +11,8 @@ function esc(input: unknown) {
     .replace(/"/g, "&quot;");
 }
 
-function t(lang: "nl" | "en", nl: string, en: string) {
-  return lang === "nl" ? nl : en;
+function tx(lang: Lang, values: Record<Lang, string>) {
+  return values[lang] || values.en;
 }
 
 function safeText(v?: string) {
@@ -18,7 +20,7 @@ function safeText(v?: string) {
 }
 
 export function pageCoverLocked(args: {
-  lang: "nl" | "en";
+  lang: Lang;
   clubName: string;
   logoUrl?: string;
   accentHex: string;
@@ -41,20 +43,44 @@ export function pageCoverLocked(args: {
   } = args;
 
   const safeClub = safeText(clubName) || "Club";
-  const safePlayer = safeText(playerName) || t(lang, "Speler", "Player");
+  const safePlayer =
+    safeText(playerName) ||
+    tx(lang, {
+      nl: "Speler",
+      en: "Player",
+      de: "Spieler",
+      es: "Jugador",
+      it: "Giocatore",
+      fr: "Joueur",
+    });
+
   const safeLogo = safeText(logoUrl);
   const safePhoto = safeText(headshotUrl);
   const safeAccent = safeText(accentHex) || "#1D4ED8";
 
   const safeHeadline =
     safeText(headline) ||
-    t(lang, "PERSOONLIJK ONTWIKKELPLAN", "PERSONAL DEVELOPMENT PLAN");
+    tx(lang, {
+      nl: "PERSOONLIJK ONTWIKKELPLAN",
+      en: "PERSONAL DEVELOPMENT PLAN",
+      de: "PERSÖNLICHER ENTWICKLUNGSPLAN",
+      es: "PLAN DE DESARROLLO PERSONAL",
+      it: "PIANO DI SVILUPPO PERSONALE",
+      fr: "PLAN DE DÉVELOPPEMENT PERSONNEL",
+    });
 
   const safeSubject =
     safeText(subjectLine) ||
-    t(lang, "Player Development Plan", "Player Development Plan");
+    tx(lang, {
+      nl: "Player Development Plan",
+      en: "Player Development Plan",
+      de: "Spieler-Entwicklungsplan",
+      es: "Plan de Desarrollo del Jugador",
+      it: "Piano di Sviluppo del Giocatore",
+      fr: "Plan de Développement du Joueur",
+    });
 
-  const safeSystem = safeClub;
+  const safeSystem = safeText(systemLine) || safeClub;
 
   const photoHtml = safePhoto
     ? `<img class="coverX__photo" src="${esc(safePhoto)}" alt="${esc(
@@ -83,19 +109,16 @@ export function pageCoverLocked(args: {
   <div class="coverX__frame"></div>
   <div class="coverX__rail"></div>
 
-  <!-- ✅ LOGO (gefixte positie) -->
   <div class="coverX__logoBox">
     ${logoHtml}
   </div>
 
-  <!-- HERO -->
   <div class="coverX__hero">
     <div class="coverX__headline">${esc(safeHeadline)}</div>
     <div class="coverX__name">${esc(safePlayer)}</div>
     <div class="coverX__heroRule"></div>
   </div>
 
-  <!-- FOOTER -->
   <div class="coverX__footer">
     <div class="coverX__system">${esc(safeSystem)}</div>
     <div class="coverX__footerRule"></div>
@@ -234,7 +257,6 @@ export function pageCoverLocked(args: {
       z-index:6;
     }
 
-    /* ✅ LOGO verder naar hoek */
     .coverX__logoBox{
       position:absolute;
       top:12mm;
@@ -294,18 +316,18 @@ export function pageCoverLocked(args: {
     }
 
     .coverX__name{
-  margin-top:6mm;
-  max-width:94%;
-  min-height:20mm;
-  font-size:48pt;
-  line-height:.94;
-  letter-spacing:-.07em;
-  font-weight:840;
-  color:#FFFFFF;
-  word-break:normal;
-  overflow-wrap:break-word;
-  text-wrap:pretty;
-}
+      margin-top:6mm;
+      max-width:94%;
+      min-height:20mm;
+      font-size:48pt;
+      line-height:.94;
+      letter-spacing:-.07em;
+      font-weight:840;
+      color:#FFFFFF;
+      word-break:normal;
+      overflow-wrap:break-word;
+      text-wrap:pretty;
+    }
 
     .coverX__heroRule{
       width:32mm;
@@ -319,7 +341,6 @@ export function pageCoverLocked(args: {
       );
     }
 
-    /* ✅ PERFECTE ALIGNMENT MET LOGO */
     .coverX__footer{
       position:absolute;
       left:26mm;
@@ -330,6 +351,7 @@ export function pageCoverLocked(args: {
       display:flex;
       align-items:center;
       justify-content:space-between;
+      gap:10mm;
     }
 
     .coverX__system{

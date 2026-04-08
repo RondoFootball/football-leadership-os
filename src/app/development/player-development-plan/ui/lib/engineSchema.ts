@@ -11,7 +11,7 @@ export type ExecutionLayer = "understanding" | "skill" | "stability";
 
 export type PlanVersion = "staff" | "player";
 
-export type Lang = "nl" | "en";
+export type Lang = "nl" | "en" | "de" | "es" | "it" | "fr";
 
 export type FocusItemV1 = {
   id: string;
@@ -71,16 +71,18 @@ export type Slide3Context = {
   principles?: string[];
 };
 
+export type Slide3BaselinePrimaryMetric = {
+  name?: string;
+  definition?: string;
+  currentValue?: string;
+  targetValue?: string;
+};
+
 export type Slide3Baseline = {
   title?: string;
   subtitle?: string;
   intro?: string;
-  primaryMetric?: {
-    name?: string;
-    definition?: string;
-    currentValue?: string;
-    targetValue?: string;
-  };
+  primaryMetric?: Slide3BaselinePrimaryMetric;
   moments?: string[];
   observations?: string[];
   matchEffects?: string[];
@@ -90,12 +92,32 @@ export type Slide3Baseline = {
 export type Slide3Diagnosis = {
   title?: string;
   subtitle?: string;
-  moment: { items: string[] };
-  what_we_see: { items: string[] };
+  moment: {
+    items: string[];
+  };
+  what_we_see: {
+    items: string[];
+  };
   numbers: Slide3NumberMetric[];
   reference: Slide3ReferenceMetric[];
-  effect_on_match: { items: string[] };
+  effect_on_match: {
+    items: string[];
+  };
   video_clips?: Slide3VideoClip[];
+};
+
+export type Slide4DevelopmentRouteBlock = {
+  training?: string;
+  match?: string;
+  video?: string;
+  off_field?: string;
+};
+
+export type Slide4Responsibilities = {
+  player?: string;
+  coach?: string;
+  analyst?: string;
+  staff?: string;
 };
 
 export type Slide4DevelopmentRoute = {
@@ -103,24 +125,21 @@ export type Slide4DevelopmentRoute = {
   subtitle?: string;
   developmentGoal?: string;
   playerOwnText?: string;
-  developmentRoute?: {
-    training?: string;
-    match?: string;
-    video?: string;
-    off_field?: string;
-  };
-  responsibilities?: {
-    player?: string;
-    coach?: string;
-    analyst?: string;
-    staff?: string;
-  };
+  developmentRoute?: Slide4DevelopmentRouteBlock;
+  responsibilities?: Slide4Responsibilities;
 };
 
 export type Slide6SuccessDefinition = {
   inGame?: string[];
   behaviour?: string[];
   signals?: string[];
+};
+
+export type GovernanceCheckpoint = {
+  week: number;
+  moment: string;
+  who: string;
+  whatToObserve: string;
 };
 
 export type DevelopmentPlanV1 = {
@@ -136,8 +155,9 @@ export type DevelopmentPlanV1 = {
     clubName: string;
     primaryColor: string;
     secondaryColor?: string;
-    colorBalance?: number; // 0..100 = aandeel primary
+    colorBalance?: number;
     logoUrl?: string;
+    tertiaryColor?: string;
   };
 
   player: {
@@ -146,6 +166,8 @@ export type DevelopmentPlanV1 = {
     team: string;
     phase: DevelopmentPhase;
     headshotUrl?: string;
+    teamType?: "academy" | "first_team";
+    academyAgeCategory?: string;
   };
 
   clubModel: {
@@ -194,12 +216,7 @@ export type DevelopmentPlanV1 = {
 
   governance?: {
     horizonWeeks: number;
-    checkpoints: Array<{
-      week: number;
-      moment: string;
-      who: string;
-      whatToObserve: string;
-    }>;
+    checkpoints: GovernanceCheckpoint[];
   };
 
   expectedShift?: {
@@ -250,30 +267,39 @@ function clampPercent(v: unknown, fallback = 75) {
 export function defaultDevelopmentPlan(): DevelopmentPlanV1 {
   return {
     meta: {
-  club: "",
-  team: "",
-  createdAtISO: "",
-  blockLengthWeeks: 8,
-  lang: "nl",
-},
-brand: {
-  clubName: "",
-  primaryColor: "#111111",
-  secondaryColor: "#FFFFFF",
-  colorBalance: 75,
-},
+      club: "",
+      team: "",
+      createdAtISO: "",
+      blockLengthWeeks: 8,
+      lang: "nl",
+    },
+
+    brand: {
+      clubName: "",
+      primaryColor: "#111111",
+      secondaryColor: "#FFFFFF",
+      tertiaryColor: "",
+      colorBalance: 75,
+      logoUrl: "",
+    },
+
     player: {
-  name: "",
-  role: "",
-  team: "",
-  phase: "stabilisation",
-},
+      name: "",
+      role: "",
+      team: "",
+      phase: "stabilisation",
+      headshotUrl: "",
+      teamType: undefined,
+      academyAgeCategory: "",
+    },
+
     clubModel: {
       dominantGameModel: "",
       roleInModel: "",
       criticalPhase: "",
       nonNegotiables: "",
     },
+
     diagnosis: {
       initialIntent: "",
       executionLayer: "stability",
@@ -282,16 +308,20 @@ brand: {
       dominantDevelopmentObject: "",
       developmentPhase: "stabilisation",
     },
+
     priority: {
       title: "",
       whyNow: "",
       observableShift: "",
     },
+
     focus: [],
+
     notNow: {
       reasoning: "",
       excludedFocus: [],
     },
+
     context: {
       selectedMatchMoment: "",
       typicalTriggers: [],
@@ -300,29 +330,41 @@ brand: {
       roleSummary: "",
       constraints: [],
     },
+
     stakeholders: {
       staff: [],
       playerSupport: [],
       owner: "",
     },
+
     governance: {
       horizonWeeks: 8,
       checkpoints: [],
     },
+
     expectedShift: {
       staffSignals: [],
       playerSignals: [],
     },
+
     evaluation: {
       shortTermMarker: "",
       midTermMarker: "",
       reviewMoment: "",
       decisionCriteria: "",
     },
+
     versions: {
-      staff: { summary: "", keyMessages: [] },
-      player: { summary: "", keyMessages: [] },
+      staff: {
+        summary: "",
+        keyMessages: [],
+      },
+      player: {
+        summary: "",
+        keyMessages: [],
+      },
     },
+
     slide2: {
       startDate: "",
       endDate: "",
@@ -335,11 +377,13 @@ brand: {
       zoneKey: "",
       teamContext: "",
     },
+
     slideContext: {
       gameMoments: [],
       zones: [],
       principles: [],
     },
+
     slide3: {
       title: "",
       subtitle: "",
@@ -350,6 +394,7 @@ brand: {
       effect_on_match: { items: [] },
       video_clips: [],
     },
+
     slide3Baseline: {
       title: "",
       subtitle: "",
@@ -365,6 +410,7 @@ brand: {
       matchEffects: [],
       videoClips: [],
     },
+
     slide4DevelopmentRoute: {
       title: "",
       subtitle: "",
@@ -383,6 +429,7 @@ brand: {
         staff: "",
       },
     },
+
     slide6SuccessDefinition: {
       inGame: [],
       behaviour: [],
@@ -393,6 +440,7 @@ brand: {
 
 export function clampBrand(plan: DevelopmentPlanV1): DevelopmentPlanV1 {
   const next: DevelopmentPlanV1 = structuredClone(plan);
+
   next.brand = next.brand || {
     clubName: "Club",
     primaryColor: "#111111",
@@ -400,7 +448,14 @@ export function clampBrand(plan: DevelopmentPlanV1): DevelopmentPlanV1 {
 
   next.brand.primaryColor = clampHex(next.brand.primaryColor || "#111111");
   next.brand.secondaryColor = clampHex(next.brand.secondaryColor || "#FFFFFF");
+  next.brand.tertiaryColor = next.brand.tertiaryColor
+    ? clampHex(next.brand.tertiaryColor)
+    : "";
   next.brand.colorBalance = clampPercent(next.brand.colorBalance, 75);
+
+  if (!next.meta.lang) {
+    next.meta.lang = "nl";
+  }
 
   return next;
 }

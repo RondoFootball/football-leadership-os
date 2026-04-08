@@ -5,9 +5,13 @@ import type {
   DevelopmentPlanV1,
   Lang,
 } from "@/app/development/player-development-plan/ui/lib/engineSchema";
+import { slideLabel } from "@/app/development/player-development-plan/ui/lib/pdp/pdpLabels";
 import { composeKnowledgeContext } from "../core/knowledgeComposer";
-import { buildPlannerState, getSlotMeta, type PlannerState } from "./chatPlanner";
-
+import {
+  buildPlannerState,
+  getSlotMeta,
+  type PlannerState,
+} from "./chatPlanner";
 import { buildPdpSystemPrompt } from "./systemPrompt";
 
 const apiKey = process.env.OPENAI_API_KEY;
@@ -73,6 +77,12 @@ type ParsedModelResponse = {
   planPatch?: Partial<DevelopmentPlanV1>;
 };
 
+const SUPPORTED_LANGS: Lang[] = ["nl", "en", "de", "es", "it", "fr"];
+
+function normalizeLang(lang?: unknown): Lang {
+  return SUPPORTED_LANGS.includes(lang as Lang) ? (lang as Lang) : "nl";
+}
+
 function deepMergePlan(
   base: Partial<DevelopmentPlanV1>,
   patch: Partial<DevelopmentPlanV1>
@@ -100,8 +110,15 @@ function deepMergePlan(
   return merge(out, patch || {});
 }
 
-function localMessage(lang: Lang, nl: string, en: string) {
-  return lang === "nl" ? nl : en;
+function localMessage(lang: Lang, messages: Record<Lang, string>) {
+  return messages[lang] || messages.nl;
+}
+
+function getSlotQuestionPrompt(meta: ReturnType<typeof getSlotMeta>, lang: Lang) {
+  if (!meta) return "";
+
+  if (lang === "nl") return meta.questionPromptNl;
+  return meta.questionPromptEn;
 }
 
 function hasMeaningfulUserInput(messages: ChatMsg[]) {
@@ -217,7 +234,7 @@ function sanitizePlannerState(
   };
 }
 
-function getSlideLabel(
+function getPlanSlideLabel(
   lang: Lang,
   slide?:
     | "agreement"
@@ -226,35 +243,26 @@ function getSlideLabel(
     | "approach"
     | "success"
 ) {
-  if (!slide) return lang === "nl" ? "Plan" : "Plan";
-
-  const labels = {
-    agreement: { nl: "Afspraak", en: "agreement" },
-    role_context: { nl: "Rolcontext", en: "Role context" },
-    reality: { nl: "Realiteit", en: "Reality" },
-    approach: { nl: "Aanpak", en: "Approach" },
-    success: { nl: "Succes", en: "Success" },
-  } as const;
-
-  return labels[slide][lang];
+  return slide ? slideLabel(slide, lang) : "Plan";
 }
 
 function buildFallbackQuestion(lang: Lang, planner: PlannerState) {
   const slot = planner.nextPrioritySlot;
   const meta = getSlotMeta(slot);
-  const slideLabel = getSlideLabel(lang, planner.currentSlide);
+  const currentSlideLabel = getPlanSlideLabel(lang, planner.currentSlide);
 
   if (meta) {
-    return `${slideLabel} — ${
-      lang === "nl" ? meta.questionPromptNl : meta.questionPromptEn
-    }`;
+    return `${currentSlideLabel} — ${getSlotQuestionPrompt(meta, lang)}`;
   }
 
-  return localMessage(
-    lang,
-    "Afspraak — Ik hoor de richting, maar wil het nog scherper maken. Wat zie je concreet gebeuren op het veld?",
-    "Agreement — I hear the direction, but I want to sharpen it further. What do you concretely see happening on the pitch?"
-  );
+  return localMessage(lang, {
+    nl: "Afspraak — Ik hoor de richting, maar wil het nog scherper maken. Wat zie je concreet gebeuren op het veld?",
+    en: "Agreement — I hear the direction, but I want to sharpen it further. What do you concretely see happening on the pitch?",
+    de: "Vereinbarung — Ich höre die Richtung, aber ich möchte sie noch schärfer machen. Was siehst du konkret auf dem Feld passieren?",
+    es: "Acuerdo — Entiendo la dirección, pero quiero afinarla más. ¿Qué ves concretamente que ocurre en el campo?",
+    it: "Accordo — Capisco la direzione, ma voglio renderla ancora più precisa. Cosa vedi concretamente succedere in campo?",
+    fr: "Accord — Je vois la direction, mais je veux encore l’affiner. Que vois-tu concrètement se passer sur le terrain ?",
+  });
 }
 
 function buildRoutingInstruction(
@@ -264,66 +272,132 @@ function buildRoutingInstruction(
 ) {
   const nextSlotMeta = getSlotMeta(planner.nextPrioritySlot);
 
-  const currentSlideLine = localMessage(
-    lang,
-    `Huidig zichtbaar planonderdeel: ${getSlideLabel(lang, planner.currentSlide)}.`,
-    `Current visible plan section: ${getSlideLabel(lang, planner.currentSlide)}.`
-  );
+  const currentSlideLine = localMessage(lang, {
+    nl: `Huidig zichtbaar planonderdeel: ${getPlanSlideLabel(
+      lang,
+      planner.currentSlide
+    )}.`,
+    en: `Current visible plan section: ${getPlanSlideLabel(
+      lang,
+      planner.currentSlide
+    )}.`,
+    de: `Aktuell sichtbarer Planbereich: ${getPlanSlideLabel(
+      lang,
+      planner.currentSlide
+    )}.`,
+    es: `Sección visible actual del plan: ${getPlanSlideLabel(
+      lang,
+      planner.currentSlide
+    )}.`,
+    it: `Sezione attualmente visibile del piano: ${getPlanSlideLabel(
+      lang,
+      planner.currentSlide
+    )}.`,
+    fr: `Section actuellement visible du plan : ${getPlanSlideLabel(
+      lang,
+      planner.currentSlide
+    )}.`,
+  });
 
-  const nextSlideLine = localMessage(
-    lang,
-    `Volgend beoogd planonderdeel: ${getSlideLabel(
+  const nextSlideLine = localMessage(lang, {
+    nl: `Volgend beoogd planonderdeel: ${getPlanSlideLabel(
       lang,
       planner.nextPrioritySlide
     )}.`,
-    `Next intended plan section: ${getSlideLabel(
+    en: `Next intended plan section: ${getPlanSlideLabel(
       lang,
       planner.nextPrioritySlide
-    )}.`
-  );
+    )}.`,
+    de: `Nächster vorgesehener Planbereich: ${getPlanSlideLabel(
+      lang,
+      planner.nextPrioritySlide
+    )}.`,
+    es: `Siguiente sección prevista del plan: ${getPlanSlideLabel(
+      lang,
+      planner.nextPrioritySlide
+    )}.`,
+    it: `Prossima sezione prevista del piano: ${getPlanSlideLabel(
+      lang,
+      planner.nextPrioritySlide
+    )}.`,
+    fr: `Prochaine section visée du plan : ${getPlanSlideLabel(
+      lang,
+      planner.nextPrioritySlide
+    )}.`,
+  });
 
   const slotLine = nextSlotMeta
-    ? localMessage(
-        lang,
-        `Volgende prioriteit: ${nextSlotMeta.key} (${nextSlotMeta.label}) op ${getSlideLabel(
+    ? localMessage(lang, {
+        nl: `Volgende prioriteit: ${nextSlotMeta.key} (${nextSlotMeta.label}) op ${getPlanSlideLabel(
           lang,
           nextSlotMeta.slide
         )}.`,
-        `Next priority: ${nextSlotMeta.key} (${nextSlotMeta.label}) on ${getSlideLabel(
+        en: `Next priority: ${nextSlotMeta.key} (${nextSlotMeta.label}) on ${getPlanSlideLabel(
           lang,
           nextSlotMeta.slide
-        )}.`
-      )
-    : localMessage(
-        lang,
-        "Er is geen duidelijke volgende prioriteitsslot gevonden.",
-        "No clear next priority slot was found."
-      );
+        )}.`,
+        de: `Nächste Priorität: ${nextSlotMeta.key} (${nextSlotMeta.label}) in ${getPlanSlideLabel(
+          lang,
+          nextSlotMeta.slide
+        )}.`,
+        es: `Siguiente prioridad: ${nextSlotMeta.key} (${nextSlotMeta.label}) en ${getPlanSlideLabel(
+          lang,
+          nextSlotMeta.slide
+        )}.`,
+        it: `Priorità successiva: ${nextSlotMeta.key} (${nextSlotMeta.label}) in ${getPlanSlideLabel(
+          lang,
+          nextSlotMeta.slide
+        )}.`,
+        fr: `Prochaine priorité : ${nextSlotMeta.key} (${nextSlotMeta.label}) dans ${getPlanSlideLabel(
+          lang,
+          nextSlotMeta.slide
+        )}.`,
+      })
+    : localMessage(lang, {
+        nl: "Er is geen duidelijke volgende prioriteitsslot gevonden.",
+        en: "No clear next priority slot was found.",
+        de: "Es wurde kein klarer nächster Prioritätsslot gefunden.",
+        es: "No se encontró un siguiente slot de prioridad claro.",
+        it: "Non è stato trovato uno slot di priorità successivo chiaro.",
+        fr: "Aucun slot de priorité suivant clair n’a été trouvé.",
+      });
 
   const intensityLine =
     planner.intent === "strong_plan_ready"
-      ? localMessage(
-          lang,
-          "Het plan is inhoudelijk al sterk. Bouw gericht verder en voorkom herhaling.",
-          "The plan is already strong. Build forward selectively and avoid repetition."
-        )
+      ? localMessage(lang, {
+          nl: "Het plan is inhoudelijk al sterk. Bouw gericht verder en voorkom herhaling.",
+          en: "The plan is already strong. Build forward selectively and avoid repetition.",
+          de: "Der Plan ist inhaltlich bereits stark. Baue gezielt weiter und vermeide Wiederholung.",
+          es: "El plan ya es sólido en contenido. Avanza de forma selectiva y evita repeticiones.",
+          it: "Il piano è già solido nei contenuti. Procedi in modo mirato ed evita ripetizioni.",
+          fr: "Le plan est déjà solide sur le fond. Avance de manière ciblée et évite les répétitions.",
+        })
       : planner.intent === "backbone_ready"
-      ? localMessage(
-          lang,
-          "De basis staat. Ga door naar de volgende planlagen in plaats van de kern opnieuw te openen.",
-          "The backbone is there. Move into the next plan layers instead of reopening the core."
-        )
-      : localMessage(
-          lang,
-          "De kern is nog niet scherp genoeg. Zet de grootste inhoudelijke stap vooruit met minimale frictie.",
-          "The core is not sharp enough yet. Create the biggest content gain with minimal friction."
-        );
+        ? localMessage(lang, {
+            nl: "De basis staat. Ga door naar de volgende planlagen in plaats van de kern opnieuw te openen.",
+            en: "The backbone is there. Move into the next plan layers instead of reopening the core.",
+            de: "Die Basis steht. Gehe zu den nächsten Planungsebenen über, statt den Kern erneut zu öffnen.",
+            es: "La base ya está. Avanza hacia las siguientes capas del plan en lugar de reabrir el núcleo.",
+            it: "La base è presente. Passa ai livelli successivi del piano invece di riaprire il nucleo.",
+            fr: "La base est en place. Passe aux couches suivantes du plan au lieu de rouvrir le noyau.",
+          })
+        : localMessage(lang, {
+            nl: "De kern is nog niet scherp genoeg. Zet de grootste inhoudelijke stap vooruit met minimale frictie.",
+            en: "The core is not sharp enough yet. Create the biggest content gain with minimal friction.",
+            de: "Der Kern ist noch nicht scharf genug. Mache den größten inhaltlichen Schritt mit minimaler Reibung.",
+            es: "El núcleo aún no es lo bastante claro. Da el mayor paso de contenido con la menor fricción posible.",
+            it: "Il nucleo non è ancora abbastanza chiaro. Fai il più grande passo in avanti con il minimo attrito.",
+            fr: "Le noyau n’est pas encore assez précis. Fais le plus grand pas de contenu avec un minimum de friction.",
+          });
 
-  const progressLine = localMessage(
-    lang,
-    `Live progress: ${planner.liveProgress}%. Basis: ${planner.backboneProgress}%. Sterk plan: ${planner.strongPlanProgress}%.`,
-    `Live progress: ${planner.liveProgress}%. Backbone: ${planner.backboneProgress}%. Strong plan: ${planner.strongPlanProgress}%.`
-  );
+  const progressLine = localMessage(lang, {
+    nl: `Live progress: ${planner.liveProgress}%. Basis: ${planner.backboneProgress}%. Sterk plan: ${planner.strongPlanProgress}%.`,
+    en: `Live progress: ${planner.liveProgress}%. Backbone: ${planner.backboneProgress}%. Strong plan: ${planner.strongPlanProgress}%.`,
+    de: `Live-Fortschritt: ${planner.liveProgress}%. Basis: ${planner.backboneProgress}%. Starker Plan: ${planner.strongPlanProgress}%.`,
+    es: `Progreso en vivo: ${planner.liveProgress}%. Base: ${planner.backboneProgress}%. Plan sólido: ${planner.strongPlanProgress}%.`,
+    it: `Avanzamento live: ${planner.liveProgress}%. Base: ${planner.backboneProgress}%. Piano solido: ${planner.strongPlanProgress}%.`,
+    fr: `Progression en direct : ${planner.liveProgress}%. Base : ${planner.backboneProgress}%. Plan solide : ${planner.strongPlanProgress}%.`,
+  });
 
   const planSignal = JSON.stringify(
     {
@@ -367,17 +441,20 @@ export async function POST(req: Request) {
 
     const messages = Array.isArray(body.messages) ? body.messages : [];
     const draftPlan = body.draftPlan || {};
-    const lang: Lang = body.lang === "en" ? "en" : "nl";
+    const lang = normalizeLang(body.lang);
 
     if (!client) {
       return NextResponse.json(
         {
           type: "error",
-          message: localMessage(
-            lang,
-            "OPENAI_API_KEY ontbreekt in je lokale environment.",
-            "OPENAI_API_KEY is missing in your local environment."
-          ),
+          message: localMessage(lang, {
+            nl: "OPENAI_API_KEY ontbreekt in je lokale environment.",
+            en: "OPENAI_API_KEY is missing in your local environment.",
+            de: "OPENAI_API_KEY fehlt in deiner lokalen Umgebung.",
+            es: "Falta OPENAI_API_KEY en tu entorno local.",
+            it: "OPENAI_API_KEY manca nel tuo ambiente locale.",
+            fr: "OPENAI_API_KEY est absent de votre environnement local.",
+          }),
           done: false,
         },
         { status: 500 }
@@ -527,11 +604,14 @@ Output rules:
         type: "error",
         message:
           error?.message ||
-          localMessage(
-            "nl",
-            "Er ging iets mis tijdens het verwerken van het gesprek.",
-            "Something went wrong while processing the conversation."
-          ),
+          localMessage("nl", {
+            nl: "Er ging iets mis tijdens het verwerken van het gesprek.",
+            en: "Something went wrong while processing the conversation.",
+            de: "Beim Verarbeiten des Gesprächs ist etwas schiefgelaufen.",
+            es: "Se produjo un error al procesar la conversación.",
+            it: "Si è verificato un errore durante l’elaborazione della conversazione.",
+            fr: "Une erreur s’est produite lors du traitement de l’échange.",
+          }),
         done: false,
       },
       { status: 500 }

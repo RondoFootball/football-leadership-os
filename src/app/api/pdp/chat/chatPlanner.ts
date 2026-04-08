@@ -24,7 +24,7 @@ export type PlannerSlide =
 export type SlotStatus = {
   key: ChatSlotKey;
   quality: SlotQuality;
-  progress: number; // 0..100
+  progress: number;
   slide: PlannerSlide;
 };
 

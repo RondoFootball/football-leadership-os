@@ -1,7 +1,7 @@
 // src/app/development/player-development-plan/ui/lib/pdp/pages.ts
 import { slideLabel, sectionLabel } from "./pdpLabels";
 
-export type Lang = "nl" | "en";
+export type Lang = "nl" | "en" | "de" | "es" | "it" | "fr";
 
 export type Slide3VideoSlot = {
   status: "active" | "pending";
@@ -24,8 +24,8 @@ function esc(input: unknown) {
     .replace(/"/g, "&quot;");
 }
 
-function t(lang: Lang, nl: string, en: string) {
-  return lang === "nl" ? nl : en;
+function tx(lang: Lang, values: Record<Lang, string>) {
+  return values[lang] || values.en;
 }
 
 function safeText(input: unknown) {
@@ -72,23 +72,32 @@ export function pageAgreementContract(args: {
   const safeFocus = safeText(focusBehaviour);
   const safeTarget = safeText(targetBehaviour);
 
-  const fallbackFocus = t(
-    lang,
-    "Nog geen ontwikkelpunt geformuleerd",
-    "No development point defined yet"
-  );
+  const fallbackFocus = tx(lang, {
+    nl: "Nog geen ontwikkelpunt geformuleerd",
+    en: "No development point defined yet",
+    de: "Noch kein Entwicklungspunkt formuliert",
+    es: "Aún no se ha definido un punto de desarrollo",
+    it: "Nessun punto di sviluppo ancora definito",
+    fr: "Aucun point de développement encore défini",
+  });
 
-  const fallbackTarget = t(
-    lang,
-    "Nog geen gewenst gedrag toegevoegd",
-    "No target behaviour added yet"
-  );
+  const fallbackTarget = tx(lang, {
+    nl: "Nog geen gewenst gedrag toegevoegd",
+    en: "No target behaviour added yet",
+    de: "Noch kein Zielverhalten hinzugefügt",
+    es: "Aún no se ha añadido la conducta objetivo",
+    it: "Nessun comportamento obiettivo ancora aggiunto",
+    fr: "Aucun comportement cible encore ajouté",
+  });
 
-  const fallbackMoment = t(
-    lang,
-    "Nog geen wedstrijdmoment toegevoegd",
-    "No match moment added yet"
-  );
+  const fallbackMoment = tx(lang, {
+    nl: "Nog geen wedstrijdmoment toegevoegd",
+    en: "No match moment added yet",
+    de: "Noch kein Spielmoment hinzugefügt",
+    es: "Aún no se ha añadido un momento de partido",
+    it: "Nessun momento di partita ancora aggiunto",
+    fr: "Aucun moment de match encore ajouté",
+  });
 
   const safeStart = safeText(startDateLabel) || "—";
   const safeEnd = safeText(endDateLabel) || "—";
@@ -116,11 +125,14 @@ export function pageAgreementContract(args: {
   const heroSub =
     matchMoments[0] ||
     safeTarget ||
-    t(
-      lang,
-      "Maak scherp wat de speler anders moet gaan doen.",
-      "Clarify what the player needs to start doing differently."
-    );
+    tx(lang, {
+      nl: "Maak scherp wat de speler anders moet gaan doen.",
+      en: "Clarify what the player needs to start doing differently.",
+      de: "Mache klar, was der Spieler anders machen muss.",
+      es: "Aclara qué debe empezar a hacer diferente el jugador.",
+      it: "Chiarisci che cosa il giocatore deve iniziare a fare diversamente.",
+      fr: "Clarifie ce que le joueur doit commencer à faire différemment.",
+    });
 
   const wmHtml = safeLogo
     ? `
@@ -203,13 +215,27 @@ export function pageAgreementContract(args: {
 
     <div class="agreeS2__timelineGrid">
       <div class="agreeS2__timelineCol agreeS2__timelineCol--left">
-        <div class="agreeS2__timelineLabel">${esc(t(lang, "START", "START"))}</div>
+        <div class="agreeS2__timelineLabel">${esc(tx(lang, {
+          nl: "START",
+          en: "START",
+          de: "START",
+          es: "INICIO",
+          it: "INIZIO",
+          fr: "DÉBUT",
+        }))}</div>
         <div class="agreeS2__timelineValue">${esc(safeStart)}</div>
       </div>
 
       <div class="agreeS2__timelineCol agreeS2__timelineCol--center">
         <div class="agreeS2__timelineLabel">${esc(
-          t(lang, "FOCUSPERIODE", "FOCUS PERIOD")
+          tx(lang, {
+            nl: "FOCUSPERIODE",
+            en: "FOCUS PERIOD",
+            de: "FOKUSPHASE",
+            es: "PERIODO DE FOCO",
+            it: "PERIODO DI FOCUS",
+            fr: "PÉRIODE DE FOCUS",
+          })
         )}</div>
         <div class="agreeS2__timelineValue agreeS2__timelineValue--strong">
           ${esc(safeDuration)}
@@ -625,35 +651,50 @@ export function pageContext(args: {
   const zoneItems = notEmpty(zones).slice(0, 3);
   const principleItems = notEmpty(principles).slice(0, 6);
 
-  const fallbackHero = t(
-    lang,
-    "Wat de rol in deze context vraagt",
-    "What the role requires in this context"
-  );
+  const fallbackHero = tx(lang, {
+    nl: "Wat de rol in deze context vraagt",
+    en: "What the role requires in this context",
+    de: "Was die Rolle in diesem Kontext verlangt",
+    es: "Lo que exige el rol en este contexto",
+    it: "Ciò che il ruolo richiede in questo contesto",
+    fr: "Ce que le rôle exige dans ce contexte",
+  });
 
-  const fallbackSub = t(
-    lang,
-    "Maak zichtbaar in welke spelmomenten, ruimtes en principes dit ontwikkelpunt betekenis krijgt.",
-    "Clarify in which moments, spaces and principles this development point becomes meaningful."
-  );
+  const fallbackSub = tx(lang, {
+    nl: "Maak zichtbaar in welke spelmomenten, ruimtes en principes dit ontwikkelpunt betekenis krijgt.",
+    en: "Clarify in which moments, spaces and principles this development point becomes meaningful.",
+    de: "Mache sichtbar, in welchen Spielmomenten, Räumen und Prinzipien dieser Entwicklungspunkt Bedeutung bekommt.",
+    es: "Aclara en qué momentos, espacios y principios este punto de desarrollo adquiere sentido.",
+    it: "Rendi chiaro in quali momenti, spazi e principi questo punto di sviluppo acquista significato.",
+    fr: "Clarifie dans quels moments, espaces et principes ce point de développement prend du sens.",
+  });
 
-  const fallbackMoment = t(
-    lang,
-    "Nog geen spelmoment toegevoegd",
-    "No game moment added yet"
-  );
+  const fallbackMoment = tx(lang, {
+    nl: "Nog geen spelmoment toegevoegd",
+    en: "No game moment added yet",
+    de: "Noch kein Spielmoment hinzugefügt",
+    es: "Aún no se ha añadido un momento de juego",
+    it: "Nessun momento di gioco ancora aggiunto",
+    fr: "Aucun moment de jeu encore ajouté",
+  });
 
-  const fallbackZone = t(
-    lang,
-    "Nog geen zone of context toegevoegd",
-    "No zone or context added yet"
-  );
+  const fallbackZone = tx(lang, {
+    nl: "Nog geen zone of context toegevoegd",
+    en: "No zone or context added yet",
+    de: "Noch keine Zone oder kein Kontext hinzugefügt",
+    es: "Aún no se ha añadido una zona o contexto",
+    it: "Nessuna zona o contesto ancora aggiunto",
+    fr: "Aucune zone ou contexte encore ajouté",
+  });
 
-  const fallbackPrinciple = t(
-    lang,
-    "Nog geen principe toegevoegd",
-    "No principle added yet"
-  );
+  const fallbackPrinciple = tx(lang, {
+    nl: "Nog geen principe toegevoegd",
+    en: "No principle added yet",
+    de: "Noch kein Prinzip hinzugefügt",
+    es: "Aún no se ha añadido un principio",
+    it: "Nessun principio ancora aggiunto",
+    fr: "Aucun principe encore ajouté",
+  });
 
   const heroPrimary = principleItems[0] || roleItems[0] || fallbackHero;
   const heroSecondary = zoneItems[0] || fallbackSub;
@@ -762,11 +803,14 @@ export function pageContext(args: {
     <div class="contextS3__footerLine"></div>
     <div class="contextS3__footerText">
       ${esc(
-        t(
-          lang,
-          "Deze slide maakt duidelijk binnen welke rolcontext dit ontwikkelpunt betekenis krijgt.",
-          "This slide clarifies the role context in which this development point becomes meaningful."
-        )
+        tx(lang, {
+          nl: "Deze slide maakt duidelijk binnen welke rolcontext dit ontwikkelpunt betekenis krijgt.",
+          en: "This slide clarifies the role context in which this development point becomes meaningful.",
+          de: "Diese Folie macht deutlich, in welchem Rollenkontext dieser Entwicklungspunkt Bedeutung bekommt.",
+          es: "Esta diapositiva aclara en qué contexto de rol este punto de desarrollo adquiere significado.",
+          it: "Questa slide chiarisce in quale contesto di ruolo questo punto di sviluppo acquista significato.",
+          fr: "Cette diapositive clarifie dans quel contexte de rôle ce point de développement prend du sens.",
+        })
       )}
     </div>
   </div>
@@ -1126,21 +1170,32 @@ export function pageDiagnosis(args: {
   const contexts = notEmpty(momentItems).slice(0, 3);
   const effects = notEmpty(effectItems).slice(0, 3);
 
-  const fallbackObservation = t(
-    lang,
-    "Nog geen observatie toegevoegd",
-    "No observation added yet"
-  );
-  const fallbackContext = t(
-    lang,
-    "Nog geen context toegevoegd",
-    "No context added yet"
-  );
-  const fallbackEffect = t(
-    lang,
-    "Nog geen effect toegevoegd",
-    "No effect added yet"
-  );
+  const fallbackObservation = tx(lang, {
+    nl: "Nog geen observatie toegevoegd",
+    en: "No observation added yet",
+    de: "Noch keine Beobachtung hinzugefügt",
+    es: "Aún no se ha añadido una observación",
+    it: "Nessuna osservazione ancora aggiunta",
+    fr: "Aucune observation encore ajoutée",
+  });
+
+  const fallbackContext = tx(lang, {
+    nl: "Nog geen context toegevoegd",
+    en: "No context added yet",
+    de: "Noch kein Kontext hinzugefügt",
+    es: "Aún no se ha añadido un contexto",
+    it: "Nessun contesto ancora aggiunto",
+    fr: "Aucun contexte encore ajouté",
+  });
+
+  const fallbackEffect = tx(lang, {
+    nl: "Nog geen effect toegevoegd",
+    en: "No effect added yet",
+    de: "Noch kein Effekt hinzugefügt",
+    es: "Aún no se ha añadido un efecto",
+    it: "Nessun effetto ancora aggiunto",
+    fr: "Aucun effet encore ajouté",
+  });
 
   const heroPrimary = observations[0] || fallbackObservation;
   const heroSecondary = effects[0] || fallbackEffect;
@@ -1205,13 +1260,27 @@ export function pageDiagnosis(args: {
   const videoCard = (slot: Slide3VideoSlot, variant: "hero" | "small") => {
     const title =
       slot.status === "active"
-        ? slot.title || t(lang, "Video", "Video")
+        ? slot.title || tx(lang, {
+            nl: "Video",
+            en: "Video",
+            de: "Video",
+            es: "Vídeo",
+            it: "Video",
+            fr: "Vidéo",
+          })
         : "";
 
     const sub =
       slot.status === "active"
         ? videoMetaLine(slot)
-        : t(lang, "Bewijs volgt", "Evidence pending");
+        : tx(lang, {
+            nl: "Bewijs volgt",
+            en: "Evidence pending",
+            de: "Nachweis folgt",
+            es: "Evidencia pendiente",
+            it: "Evidenza in arrivo",
+            fr: "Preuve en attente",
+          });
 
     return `
       <div class="truthS4__videoCard truthS4__videoCard--${variant} ${
@@ -1278,7 +1347,7 @@ export function pageDiagnosis(args: {
   <div class="truthS4__secondary">
     <div class="truthS4__secondaryBlock truthS4__secondaryBlock--context">
       <div class="truthS4__sectionLabel">${esc(
-        t(lang, "WAAR DIT ZICHTBAAR WORDT", "WHERE THIS BECOMES VISIBLE")
+        sectionLabel("contextVisible", lang)
       )}</div>
       ${renderMiniList(contexts, fallbackContext, "context")}
     </div>
@@ -1835,34 +1904,70 @@ export function pageDevelopmentRoute(args: {
   const videoList = normalizeItems(videoItems, videoText);
   const offFieldList = normalizeItems(offFieldItems, offFieldText);
 
-  const fallbackTitle =
-    lang === "nl"
-      ? "Nog geen aanpak gedefinieerd"
-      : "No approach defined yet";
+  const fallbackTitle = tx(lang, {
+    nl: "Nog geen aanpak gedefinieerd",
+    en: "No approach defined yet",
+    de: "Noch kein Ansatz definiert",
+    es: "Aún no se ha definido un enfoque",
+    it: "Nessun approccio ancora definito",
+    fr: "Aucune approche encore définie",
+  });
 
-  const fallbackSubtitle =
-    lang === "nl"
-      ? "Nog geen toelichting toegevoegd"
-      : "No explanation added yet";
+  const fallbackSubtitle = tx(lang, {
+    nl: "Nog geen toelichting toegevoegd",
+    en: "No explanation added yet",
+    de: "Noch keine Erläuterung hinzugefügt",
+    es: "Aún no se ha añadido una explicación",
+    it: "Nessuna spiegazione ancora aggiunta",
+    fr: "Aucune explication encore ajoutée",
+  });
 
   const safeTitle = clean(title) || fallbackTitle;
   const safeSubtitle = clean(subtitle) || fallbackSubtitle;
 
   const alignmentItems = [
     {
-      label: lang === "nl" ? "SPELER" : "PLAYER",
+      label: tx(lang, {
+        nl: "SPELER",
+        en: "PLAYER",
+        de: "SPIELER",
+        es: "JUGADOR",
+        it: "GIOCATORE",
+        fr: "JOUEUR",
+      }),
       text: clean(playerText || playerOwnText),
     },
     {
-      label: lang === "nl" ? "COACH" : "COACH",
+      label: tx(lang, {
+        nl: "COACH",
+        en: "COACH",
+        de: "TRAINER",
+        es: "ENTRENADOR",
+        it: "ALLENATORE",
+        fr: "COACH",
+      }),
       text: clean(coachText),
     },
     {
-      label: lang === "nl" ? "ANALIST" : "ANALYST",
+      label: tx(lang, {
+        nl: "ANALIST",
+        en: "ANALYST",
+        de: "ANALYST",
+        es: "ANALISTA",
+        it: "ANALISTA",
+        fr: "ANALYSTE",
+      }),
       text: clean(analystText),
     },
     {
-      label: lang === "nl" ? "STAFF" : "STAFF",
+      label: tx(lang, {
+        nl: "STAFF",
+        en: "STAFF",
+        de: "STAFF",
+        es: "STAFF",
+        it: "STAFF",
+        fr: "STAFF",
+      }),
       text: clean(staffText),
     },
   ].filter((item) => item.text);
@@ -1941,9 +2046,14 @@ export function pageDevelopmentRoute(args: {
       <div class="routeS5__list">
         ${renderList(
           trainingList,
-          lang === "nl"
-            ? "Nog geen trainingsactie toegevoegd"
-            : "No training action added yet"
+          tx(lang, {
+            nl: "Nog geen trainingsactie toegevoegd",
+            en: "No training action added yet",
+            de: "Noch keine Trainingsaktion hinzugefügt",
+            es: "Aún no se ha añadido una acción de entrenamiento",
+            it: "Nessuna azione di allenamento ancora aggiunta",
+            fr: "Aucune action d’entraînement encore ajoutée",
+          })
         )}
       </div>
     </div>
@@ -1953,9 +2063,14 @@ export function pageDevelopmentRoute(args: {
       <div class="routeS5__list">
         ${renderList(
           matchList,
-          lang === "nl"
-            ? "Nog geen wedstrijdactie toegevoegd"
-            : "No match action added yet"
+          tx(lang, {
+            nl: "Nog geen wedstrijdactie toegevoegd",
+            en: "No match action added yet",
+            de: "Noch keine Spielaktion hinzugefügt",
+            es: "Aún no se ha añadido una acción de partido",
+            it: "Nessuna azione di partita ancora aggiunta",
+            fr: "Aucune action de match encore ajoutée",
+          })
         )}
       </div>
     </div>
@@ -1965,9 +2080,14 @@ export function pageDevelopmentRoute(args: {
       <div class="routeS5__list">
         ${renderList(
           videoList,
-          lang === "nl"
-            ? "Nog geen videoactie toegevoegd"
-            : "No video action added yet"
+          tx(lang, {
+            nl: "Nog geen videoactie toegevoegd",
+            en: "No video action added yet",
+            de: "Noch keine Videoaktion hinzugefügt",
+            es: "Aún no se ha añadido una acción de vídeo",
+            it: "Nessuna azione video ancora aggiunta",
+            fr: "Aucune action vidéo encore ajoutée",
+          })
         )}
       </div>
     </div>
@@ -1977,9 +2097,14 @@ export function pageDevelopmentRoute(args: {
       <div class="routeS5__list">
         ${renderList(
           offFieldList,
-          lang === "nl"
-            ? "Nog geen off-field actie toegevoegd"
-            : "No off-field action added yet"
+          tx(lang, {
+            nl: "Nog geen off-field actie toegevoegd",
+            en: "No off-field action added yet",
+            de: "Noch keine Off-Field-Aktion hinzugefügt",
+            es: "Aún no se ha añadido una acción fuera del campo",
+            it: "Nessuna azione fuori dal campo ancora aggiunta",
+            fr: "Aucune action hors terrain encore ajoutée",
+          })
         )}
       </div>
     </div>
@@ -2305,13 +2430,32 @@ export function pageSuccess(args: {
   const behaviourItems = notEmpty(behaviour).slice(0, 4);
   const signalItems = notEmpty(signals).slice(0, 3);
 
-  const emptyLine = t(lang, "Nog niet ingevuld", "Not yet defined");
-  const emptyHero = t(lang, "Wanneer het plan zichtbaar gelukt is", "When the plan has visibly landed");
-  const emptySub = t(
-    lang,
-    "Succes wordt zichtbaar in gedrag, uitvoering en wedstrijdeffect.",
-    "Success becomes visible in behaviour, execution and match impact."
-  );
+  const emptyLine = tx(lang, {
+    nl: "Nog niet ingevuld",
+    en: "Not yet defined",
+    de: "Noch nicht ausgefüllt",
+    es: "Aún no definido",
+    it: "Non ancora definito",
+    fr: "Pas encore défini",
+  });
+
+  const emptyHero = tx(lang, {
+    nl: "Wanneer het plan zichtbaar gelukt is",
+    en: "When the plan has visibly landed",
+    de: "Wenn der Plan sichtbar greift",
+    es: "Cuando el plan empieza a verse claramente",
+    it: "Quando il piano diventa visibilmente efficace",
+    fr: "Quand le plan devient visiblement concret",
+  });
+
+  const emptySub = tx(lang, {
+    nl: "Succes wordt zichtbaar in gedrag, uitvoering en wedstrijdeffect.",
+    en: "Success becomes visible in behaviour, execution and match impact.",
+    de: "Erfolg wird sichtbar in Verhalten, Ausführung und Spieleffekt.",
+    es: "El éxito se hace visible en la conducta, la ejecución y el impacto en el juego.",
+    it: "Il successo diventa visibile nel comportamento, nell’esecuzione e nell’impatto sulla partita.",
+    fr: "La réussite devient visible dans le comportement, l’exécution et l’impact sur le match.",
+  });
 
   const heroPrimary = behaviourItems[0] || emptyHero;
   const heroSecondary = gameItems[0] || signalItems[0] || emptySub;
@@ -2381,7 +2525,14 @@ export function pageSuccess(args: {
 
   <div class="successS6__primary">
     <div class="successS6__sectionLabel">${esc(
-      t(lang, "WANNEER HET GELUKT IS", "WHEN THE PLAN HAS LANDED")
+      tx(lang, {
+        nl: "WANNEER HET GELUKT IS",
+        en: "WHEN THE PLAN HAS LANDED",
+        de: "WANN DER PLAN GREIFT",
+        es: "CUANDO EL PLAN SE HACE VISIBLE",
+        it: "QUANDO IL PIANO PRENDE FORMA",
+        fr: "QUAND LE PLAN DEVIENT VISIBLE",
+      })
     )}</div>
 
     <div class="successS6__behaviour">
@@ -2392,7 +2543,7 @@ export function pageSuccess(args: {
   <div class="successS6__secondary">
     <div class="successS6__secondaryBlock successS6__secondaryBlock--game">
       <div class="successS6__sectionLabel">${esc(
-        slideLabel("success", lang)
+        sectionLabel("inGame", lang)
       )}</div>
       ${renderMiniList(gameItems, "game")}
     </div>
@@ -2409,11 +2560,14 @@ export function pageSuccess(args: {
     <div class="successS6__footerLine"></div>
     <div class="successS6__footerText">
       ${esc(
-        t(
-          lang,
-          "Deze slide laat zien wanneer ontwikkeling niet alleen besproken, maar ook zichtbaar is geworden.",
-          "This slide shows when development is no longer discussed only, but becomes visible."
-        )
+        tx(lang, {
+          nl: "Deze slide laat zien wanneer ontwikkeling niet alleen besproken, maar ook zichtbaar is geworden.",
+          en: "This slide shows when development is no longer discussed only, but becomes visible.",
+          de: "Diese Folie zeigt, wann Entwicklung nicht nur besprochen wird, sondern auch sichtbar geworden ist.",
+          es: "Esta diapositiva muestra cuándo el desarrollo deja de ser solo una conversación y se vuelve visible.",
+          it: "Questa slide mostra quando lo sviluppo non viene solo discusso, ma diventa anche visibile.",
+          fr: "Cette diapositive montre quand le développement n’est plus seulement discuté, mais devient visible.",
+        })
       )}
     </div>
   </div>

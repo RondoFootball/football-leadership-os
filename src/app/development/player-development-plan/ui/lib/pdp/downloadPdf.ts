@@ -1,33 +1,97 @@
 // src/app/development/player-development-plan/ui/lib/pdp/downloadPdf.ts
 
-import type { DevelopmentPlanV1 } from "@/app/development/player-development-plan/ui/lib/engineSchema";
+import type {
+  DevelopmentPlanV1,
+  Lang,
+} from "@/app/development/player-development-plan/ui/lib/engineSchema";
 
-export type Lang = "nl" | "en";
 export type PlanVersion = "staff" | "player";
 
-function inferLang(plan: any, fallback: Lang = "nl"): Lang {
-  return plan?.meta?.lang === "en" ? "en" : fallback;
+function isSupportedLang(value: unknown): value is Lang {
+  return (
+    value === "nl" ||
+    value === "en" ||
+    value === "de" ||
+    value === "es" ||
+    value === "it" ||
+    value === "fr"
+  );
+}
+
+function inferLang(
+  plan: DevelopmentPlanV1 | null | undefined,
+  fallback: Lang = "nl"
+): Lang {
+  const metaLang = plan?.meta?.lang;
+  return isSupportedLang(metaLang) ? metaLang : fallback;
+}
+
+function localNoPlanMessage(lang: Lang) {
+  switch (lang) {
+    case "de":
+      return "Kein Plan verfügbar. Starte zuerst das Gespräch und generiere den Plan.";
+    case "es":
+      return "No hay ningún plan disponible. Inicia primero la conversación y genera el plan.";
+    case "it":
+      return "Nessun piano disponibile. Avvia prima la conversazione e genera il piano.";
+    case "fr":
+      return "Aucun plan disponible. Commence d’abord la conversation et génère le plan.";
+    case "en":
+      return "No plan available. Start the conversation first and generate the plan.";
+    case "nl":
+    default:
+      return "Geen plan beschikbaar. Start eerst het gesprek en genereer het plan.";
+  }
+}
+
+function fallbackFilename(lang: Lang, version: PlanVersion) {
+  const versionByLang: Record<Lang, Record<PlanVersion, string>> = {
+    nl: {
+      player: "spelerplan",
+      staff: "staffplan",
+    },
+    en: {
+      player: "player-plan",
+      staff: "staff-plan",
+    },
+    de: {
+      player: "spielerplan",
+      staff: "mitarbeiterplan",
+    },
+    es: {
+      player: "plan-jugador",
+      staff: "plan-staff",
+    },
+    it: {
+      player: "piano-giocatore",
+      staff: "piano-staff",
+    },
+    fr: {
+      player: "plan-joueur",
+      staff: "plan-staff",
+    },
+  };
+
+  return `${versionByLang[lang][version]}.pdf`;
 }
 
 function filenameFromContentDisposition(cd: string): string | null {
   const header = cd || "";
 
-  // Prefer RFC5987 filename*
-  // Example: filename*=UTF-8''Player%20Development%20Plan%20-%20Staff%20-%20...
   const star = /filename\*\s*=\s*([^;]+)/i.exec(header);
   if (star?.[1]) {
-    const v = star[1].trim();
-    const m = /^UTF-8''(.+)$/i.exec(v);
-    if (m?.[1]) {
+    const value = star[1].trim();
+    const utf8Match = /^UTF-8''(.+)$/i.exec(value);
+
+    if (utf8Match?.[1]) {
       try {
-        return decodeURIComponent(m[1]);
+        return decodeURIComponent(utf8Match[1]);
       } catch {
-        // ignore
+        // ignore malformed header encoding
       }
     }
   }
 
-  // Fallback: filename="..."
   const normal = /filename\s*=\s*"([^"]+)"/i.exec(header);
   if (normal?.[1]) return normal[1];
 
@@ -44,56 +108,61 @@ export async function downloadPdpPdf(args: {
   lang?: Lang;
   filename?: string;
 }) {
-  const { plan, version } = args;
+  const requestedLang = args.lang ?? inferLang(args.plan, "nl");
+  const { plan, version, filename } = args;
 
-  // Hard gate: no plan = no request (prevents 400)
   if (!plan) {
-    throw new Error("Geen plan beschikbaar. Start eerst het gesprek en genereer het plan.");
+    throw new Error(localNoPlanMessage(requestedLang));
   }
 
   const lang = args.lang ?? inferLang(plan, "nl");
-  const filename = args.filename;
 
   const res = await fetch("/api/pdp/pdf", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ plan, version, lang, filename }),
+    body: JSON.stringify({
+      plan,
+      version,
+      lang,
+      filename,
+    }),
   });
 
   if (!res.ok) {
-    // Best-effort: try JSON, else try text
-    let msg = `PDF download failed (HTTP ${res.status}).`;
+    let message = `PDF download failed (HTTP ${res.status}).`;
+
     try {
-      const j = await res.json();
-      msg = j?.message || j?.error || msg;
+      const json = await res.json();
+      message = json?.message || json?.error || message;
     } catch {
       try {
-        const t = await res.text();
-        if (t?.trim()) msg = `${msg}\n\n${t.slice(0, 1200)}`;
+        const text = await res.text();
+        if (text?.trim()) {
+          message = `${message}\n\n${text.slice(0, 1200)}`;
+        }
       } catch {
-        // ignore
+        // ignore secondary parsing errors
       }
     }
-    throw new Error(msg);
+
+    throw new Error(message);
   }
 
   const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
+  const objectUrl = URL.createObjectURL(blob);
 
-  // Filename priority:
-  // 1) explicit arg.filename
-  // 2) header Content-Disposition (filename* or filename)
-  // 3) fallback
-  const cd = res.headers.get("content-disposition") || "";
-  const headerName = filenameFromContentDisposition(cd);
-  const dlName = filename || headerName || `pdp-${version}.pdf`;
+  const contentDisposition = res.headers.get("content-disposition") || "";
+  const headerFilename = filenameFromContentDisposition(contentDisposition);
+  const downloadName =
+    filename || headerFilename || fallbackFilename(lang, version);
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = dlName;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
+  const anchor = document.createElement("a");
+  anchor.href = objectUrl;
+  anchor.download = downloadName;
 
-  URL.revokeObjectURL(url);
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+
+  URL.revokeObjectURL(objectUrl);
 }

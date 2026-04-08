@@ -1,8 +1,9 @@
 import type { Lang } from "@/app/development/player-development-plan/ui/lib/engineSchema";
+import { slideLabel } from "@/app/development/player-development-plan/ui/lib/pdp/pdpLabels";
 import type { PlannerState } from "./chatPlanner";
 import { getSlotMeta } from "./chatPlanner";
 
-function getSlideLabel(
+function getPlanSlideLabel(
   lang: Lang,
   slide?:
     | "agreement"
@@ -11,17 +12,41 @@ function getSlideLabel(
     | "approach"
     | "success"
 ) {
-  if (!slide) return lang === "nl" ? "Plan" : "Plan";
+  return slide ? slideLabel(slide, lang) : "Plan";
+}
 
-  const labels = {
-    agreement: { nl: "Afspraak", en: "agreement" },
-    role_context: { nl: "Rolcontext", en: "Role context" },
-    reality: { nl: "Realiteit", en: "Reality" },
-    approach: { nl: "Aanpak", en: "Approach" },
-    success: { nl: "Succes", en: "Success" },
-  } as const;
+function getLanguageName(lang: Lang) {
+  switch (lang) {
+    case "nl":
+      return "Dutch";
+    case "de":
+      return "German";
+    case "es":
+      return "Spanish";
+    case "it":
+      return "Italian";
+    case "fr":
+      return "French";
+    case "en":
+    default:
+      return "English";
+  }
+}
 
-  return labels[slide][lang];
+function getSlotQuestionPrompt(
+  lang: Lang,
+  slotMeta: ReturnType<typeof getSlotMeta>
+) {
+  if (!slotMeta) return "";
+  return slotMeta.questionPrompt[lang] || slotMeta.questionPrompt.en;
+}
+
+function getSlotSharpenPrompt(
+  lang: Lang,
+  slotMeta: ReturnType<typeof getSlotMeta>
+) {
+  if (!slotMeta) return "";
+  return slotMeta.sharpenPrompt[lang] || slotMeta.sharpenPrompt.en;
 }
 
 export function buildPdpSystemPrompt(args: {
@@ -30,14 +55,21 @@ export function buildPdpSystemPrompt(args: {
 }) {
   const { lang, planner } = args;
 
-  const languageInstruction =
-    lang === "nl"
-      ? "Respond fully in Dutch."
-      : "Respond fully in English.";
+  const languageInstructionByLang: Record<Lang, string> = {
+    nl: "Respond fully in Dutch.",
+    en: "Respond fully in English.",
+    de: "Respond fully in German.",
+    es: "Respond fully in Spanish.",
+    it: "Respond fully in Italian.",
+    fr: "Respond fully in French.",
+  };
+
+  const languageInstruction = languageInstructionByLang[lang];
+  const languageName = getLanguageName(lang);
 
   const nextSlotMeta = getSlotMeta(planner.nextPrioritySlot);
-  const currentSlideLabel = getSlideLabel(lang, planner.currentSlide);
-  const nextSlideLabel = getSlideLabel(lang, planner.nextPrioritySlide);
+  const currentSlideLabel = getPlanSlideLabel(lang, planner.currentSlide);
+  const nextSlideLabel = getPlanSlideLabel(lang, planner.nextPrioritySlide);
 
   return `
 You are the conversation engine inside a high-end football Player Development Plan workflow.
@@ -530,10 +562,10 @@ Current slot focus guidance:
 - slot key: ${nextSlotMeta.key}
 - slot label: ${nextSlotMeta.label}
 - slot description: ${nextSlotMeta.description}
-- if you ask: prefer this question family in ${lang === "nl" ? "Dutch" : "English"}:
-  ${lang === "nl" ? nextSlotMeta.questionPromptNl : nextSlotMeta.questionPromptEn}
+- if you ask: prefer this question family in ${languageName}:
+  ${getSlotQuestionPrompt(lang, nextSlotMeta)}
 - if the slot is already partially present: prefer this sharpen family:
-  ${lang === "nl" ? nextSlotMeta.sharpenPromptNl : nextSlotMeta.sharpenPromptEn}
+  ${getSlotSharpenPrompt(lang, nextSlotMeta)}
 `
     : ""
 }

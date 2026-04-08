@@ -1,3 +1,4 @@
+import type { Lang } from "@/app/development/player-development-plan/ui/lib/engineSchema";
 import { clubPrinciples } from "../knowledge/principles";
 import {
   footballLanguageSystem,
@@ -7,8 +8,6 @@ import {
   roleProfiles,
   type RoleProfile as ImportedRoleProfile,
 } from "../knowledge/profiles";
-
-type Lang = "nl" | "en";
 
 type ChatMsg = {
   role: "user" | "assistant";
@@ -162,6 +161,10 @@ function safeArray(value: unknown): string[] {
   return value.map((item) => safeString(item)).filter(Boolean);
 }
 
+function isDutch(lang: Lang) {
+  return lang === "nl";
+}
+
 function toTitleCase(value: string) {
   if (!value) return value;
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -182,10 +185,9 @@ function compactLines(
   lines: readonly string[],
   max = MAX_BULLETS_PER_SECTION
 ) {
-  return Array.from(new Set(lines.map((line) => line.trim()).filter(Boolean))).slice(
-    0,
-    max
-  );
+  return Array.from(
+    new Set(lines.map((line) => line.trim()).filter(Boolean))
+  ).slice(0, max);
 }
 
 function getLastUserMessage(messages: ChatMsg[] = []) {
@@ -403,7 +405,9 @@ function scoreRoleMatch(
   }
 
   if (
-    (n === "10" || n.includes("number 10") || n.includes("attacking midfielder")) &&
+    (n === "10" ||
+      n.includes("number 10") ||
+      n.includes("attacking midfielder")) &&
     aliases.some((a) =>
       ["10", "number-10", "attacking-midfielder", "playmaker"].includes(a)
     )
@@ -412,7 +416,9 @@ function scoreRoleMatch(
   }
 
   if (
-    (n.includes("left winger") || n.includes("right winger") || n === "winger") &&
+    (n.includes("left winger") ||
+      n.includes("right winger") ||
+      n === "winger") &&
     aliases.some((a) =>
       ["winger", "left-winger", "right-winger", "wide-forward"].includes(a)
     )
@@ -430,7 +436,9 @@ function scoreRoleMatch(
   }
 
   if (
-    (n.includes("centre back") || n.includes("center back") || n.includes("central defender")) &&
+    (n.includes("centre back") ||
+      n.includes("center back") ||
+      n.includes("central defender")) &&
     aliases.some((a) =>
       ["centre-back", "center-back", "central-defender"].includes(a)
     )
@@ -466,7 +474,8 @@ function findBestRoleProfile(roleInput: string): {
     };
   }
 
-  let best: { key: string; profile: ComposerRoleProfile; score: number } | null = null;
+  let best: { key: string; profile: ComposerRoleProfile; score: number } | null =
+    null;
 
   for (const [key, rawProfile] of entries) {
     const profile = toComposerRoleProfile(rawProfile);
@@ -553,7 +562,9 @@ function getUniversalPrinciplesByFocus(focus: KnowledgeFocus): string[] {
 function getContextPrinciples(context: KnowledgeContext): string[] {
   const adaptation = clubPrinciples.contextAdaptations?.[context];
   if (!adaptation || typeof adaptation !== "object") return [];
-  return compactLines(safeArray((adaptation as { principles?: unknown }).principles));
+  return compactLines(
+    safeArray((adaptation as { principles?: unknown }).principles)
+  );
 }
 
 function getMetaRules(focus: KnowledgeFocus): string[] {
@@ -578,6 +589,8 @@ function getMetaRules(focus: KnowledgeFocus): string[] {
 }
 
 function getLanguageGuidance(focus: KnowledgeFocus, lang: Lang): string[] {
+  const dutch = isDutch(lang);
+
   const principles = compactLines(
     footballLanguageSystem.principles.map((item) => item.description)
   );
@@ -589,14 +602,23 @@ function getLanguageGuidance(focus: KnowledgeFocus, lang: Lang): string[] {
   const replacements = footballLanguageSystem.replacements
     .slice(0, MAX_LANGUAGE_REPLACEMENTS)
     .map((item) =>
-      lang === "nl"
+      dutch
         ? `Vermijd: "${item.weak}" → Scherper: "${item.stronger}"`
         : `Avoid: "${item.weak}" → Sharper: "${item.stronger}"`
     );
 
-  const observationFrames = compactLines(footballLanguageSystem.observationFrames, 3);
-  const diagnosisFrames = compactLines(footballLanguageSystem.diagnosisFrames, 3);
-  const interventionFrames = compactLines(footballLanguageSystem.interventionFrames, 3);
+  const observationFrames = compactLines(
+    footballLanguageSystem.observationFrames,
+    3
+  );
+  const diagnosisFrames = compactLines(
+    footballLanguageSystem.diagnosisFrames,
+    3
+  );
+  const interventionFrames = compactLines(
+    footballLanguageSystem.interventionFrames,
+    3
+  );
   const successFrames = compactLines(footballLanguageSystem.successFrames, 3);
 
   const promptPatterns = getLanguagePromptPatterns(
@@ -611,10 +633,16 @@ function getLanguageGuidance(focus: KnowledgeFocus, lang: Lang): string[] {
       : "observation"
   )
     .slice(0, MAX_QUESTION_PATTERNS)
-    .map((item) => (lang === "nl" ? item.promptNl : item.promptEn));
+    .map((item) => (dutch ? item.promptNl : item.promptEn));
 
-  const wordingRules = compactLines(footballLanguageSystem.styleDirectives.wordingRules, 5);
-  const structureRules = compactLines(footballLanguageSystem.styleDirectives.structureRules, 5);
+  const wordingRules = compactLines(
+    footballLanguageSystem.styleDirectives.wordingRules,
+    5
+  );
+  const structureRules = compactLines(
+    footballLanguageSystem.styleDirectives.structureRules,
+    5
+  );
 
   const selectedFrames =
     focus === "observation"
@@ -695,7 +723,8 @@ function getProfileGuidance(
 ): string[] {
   if (!profile) return [];
 
-  const roleDescription = safeString(profile.shortDescription) || safeString(profile.description);
+  const roleDescription =
+    safeString(profile.shortDescription) || safeString(profile.description);
 
   const base = compactLines([
     roleDescription,
@@ -807,22 +836,21 @@ function buildKnowledgeText(args: {
     metaRules,
   } = args;
 
-  const intro =
-    lang === "nl"
-      ? [
-          "Gebruik onderstaande knowledge als intern denkkader voor het gesprek en de planbouw.",
-          `Context: ${selectedContext}.`,
-          `Gespreksfocus: ${selectedFocus}.`,
-          selectedRoleLabel ? `Rolfocus: ${selectedRoleLabel}.` : "",
-          "Gebruik deze knowledge selectief: scherp gedrag aan, vermijd encyclopedische uitleg en blijf dicht bij het spel.",
-        ]
-      : [
-          "Use the knowledge below as an internal thinking frame for the conversation and plan construction.",
-          `Context: ${selectedContext}.`,
-          `Conversation focus: ${selectedFocus}.`,
-          selectedRoleLabel ? `Role focus: ${selectedRoleLabel}.` : "",
-          "Use this knowledge selectively: sharpen behaviour, avoid encyclopaedic explanation and stay close to the game.",
-        ];
+  const intro = isDutch(lang)
+    ? [
+        "Gebruik onderstaande knowledge als intern denkkader voor het gesprek en de planbouw.",
+        `Context: ${selectedContext}.`,
+        `Gespreksfocus: ${selectedFocus}.`,
+        selectedRoleLabel ? `Rolfocus: ${selectedRoleLabel}.` : "",
+        "Gebruik deze knowledge selectief: scherp gedrag aan, vermijd encyclopedische uitleg en blijf dicht bij het spel.",
+      ]
+    : [
+        "Use the knowledge below as an internal thinking frame for the conversation and plan construction.",
+        `Context: ${selectedContext}.`,
+        `Conversation focus: ${selectedFocus}.`,
+        selectedRoleLabel ? `Role focus: ${selectedRoleLabel}.` : "",
+        "Use this knowledge selectively: sharpen behaviour, avoid encyclopaedic explanation and stay close to the game.",
+      ];
 
   const sections = [
     formatSection("Universal principles", universalPrinciples),

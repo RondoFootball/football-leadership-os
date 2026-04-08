@@ -48,7 +48,7 @@ const SLIDE_LABELS = {
   approach: {
     nl: "AANPAK",
     en: "APPROACH",
-    de: "AUSFÜHRUNG",
+    de: "ANSATZ",
     es: "ENFOQUE",
     it: "APPROCCIO",
     fr: "APPROCHE",
@@ -74,19 +74,21 @@ const SECTION_LABELS = {
   targetBehaviour: {
     nl: "GEWENST GEDRAG",
     en: "TARGET BEHAVIOUR",
-    de: "GEWÜNSCHTES VERHALTEN",
+    de: "ZIELVERHALTEN",
     es: "CONDUCTA OBJETIVO",
     it: "COMPORTAMENTO OBIETTIVO",
     fr: "COMPORTEMENT CIBLE",
   },
+
   whereVisible: {
     nl: "WAAR DIT ZICHTBAAR MOET WORDEN",
     en: "WHERE THIS SHOULD BECOME VISIBLE",
-    de: "WO DAS SICHTBAR WERDEN MUSS",
-    es: "DÓNDE DEBE VERSE ESTO",
-    it: "DOVE QUESTO DEVE VEDERSI",
-    fr: "OÙ CELA DOIT SE VOIR",
+    de: "WO DIES SICHTBAR WERDEN SOLL",
+    es: "DÓNDE ESTO DEBE HACERSE VISIBLE",
+    it: "DOVE QUESTO DEVE DIVENTARE VISIBILE",
+    fr: "OÙ CELA DOIT DEVENIR VISIBLE",
   },
+
   focusPeriod: {
     nl: "FOCUSPERIODE",
     en: "FOCUS PERIOD",
@@ -95,6 +97,7 @@ const SECTION_LABELS = {
     it: "PERIODO DI FOCUS",
     fr: "PÉRIODE DE FOCUS",
   },
+
   evaluation: {
     nl: "EVALUATIE",
     en: "EVALUATION",
@@ -103,6 +106,7 @@ const SECTION_LABELS = {
     it: "VALUTAZIONE",
     fr: "ÉVALUATION",
   },
+
   start: {
     nl: "START",
     en: "START",
@@ -120,6 +124,7 @@ const SECTION_LABELS = {
     it: "MOMENTI DI GIOCO",
     fr: "MOMENTS DE JEU",
   },
+
   zones: {
     nl: "ZONES / CONTEXT",
     en: "ZONES / CONTEXT",
@@ -128,6 +133,7 @@ const SECTION_LABELS = {
     it: "ZONE / CONTESTO",
     fr: "ZONES / CONTEXTE",
   },
+
   principles: {
     nl: "PRINCIPES",
     en: "PRINCIPLES",
@@ -143,16 +149,18 @@ const SECTION_LABELS = {
     de: "WAS WIR JETZT SEHEN",
     es: "LO QUE VEMOS AHORA",
     it: "COSA VEDIAMO ORA",
-    fr: "CE QUE L’ON VOIT MAINTENANT",
+    fr: "CE QUE NOUS VOYONS MAINTENANT",
   },
+
   contextVisible: {
     nl: "WAAR DIT ZICHTBAAR WORDT",
     en: "WHERE THIS BECOMES VISIBLE",
-    de: "WO DAS SICHTBAR WIRD",
-    es: "DÓNDE SE VE ESTO",
-    it: "DOVE QUESTO SI VEDE",
+    de: "WO DIES SICHTBAR WIRD",
+    es: "DÓNDE ESTO SE HACE VISIBLE",
+    it: "DOVE QUESTO DIVENTA VISIBILE",
     fr: "OÙ CELA DEVIENT VISIBLE",
   },
+
   effect: {
     nl: "GEVOLG VOOR HET SPEL",
     en: "EFFECT ON THE GAME",
@@ -161,6 +169,7 @@ const SECTION_LABELS = {
     it: "EFFETTO SUL GIOCO",
     fr: "EFFET SUR LE JEU",
   },
+
   evidence: {
     nl: "BEWIJS / VIDEO",
     en: "EVIDENCE / VIDEO",
@@ -178,6 +187,7 @@ const SECTION_LABELS = {
     it: "ALLENAMENTO",
     fr: "ENTRAÎNEMENT",
   },
+
   match: {
     nl: "WEDSTRIJD",
     en: "MATCH",
@@ -186,6 +196,7 @@ const SECTION_LABELS = {
     it: "PARTITA",
     fr: "MATCH",
   },
+
   video: {
     nl: "VIDEO",
     en: "VIDEO",
@@ -194,6 +205,7 @@ const SECTION_LABELS = {
     it: "VIDEO",
     fr: "VIDÉO",
   },
+
   offField: {
     nl: "BUITEN HET VELD",
     en: "OFF FIELD",
@@ -202,6 +214,7 @@ const SECTION_LABELS = {
     it: "FUORI DAL CAMPO",
     fr: "HORS TERRAIN",
   },
+
   alignment: {
     nl: "AFSTEMMING",
     en: "ALIGNMENT",
@@ -219,6 +232,7 @@ const SECTION_LABELS = {
     it: "VISIBILE NEL GIOCO",
     fr: "VISIBLE DANS LE JEU",
   },
+
   behaviour: {
     nl: "GEDRAG",
     en: "BEHAVIOUR",
@@ -227,6 +241,7 @@ const SECTION_LABELS = {
     it: "COMPORTAMENTO",
     fr: "COMPORTEMENT",
   },
+
   signals: {
     nl: "EERSTE SIGNALEN",
     en: "EARLY SIGNALS",
@@ -252,12 +267,13 @@ const UI_LABELS = {
     it: "Spazio di lavoro",
     fr: "Espace de travail",
   },
+
   workspaceBody: {
     nl: "Van observatie naar plan. Bouw eerst het gesprek of ontwikkelpunt, voeg daarna onderbouwing toe.",
     en: "From observation to plan. Build the conversation or development point first, then add supporting evidence.",
     de: "Von der Beobachtung zum Plan. Baue zuerst das Gespräch oder den Entwicklungspunkt auf und füge danach Belege hinzu.",
-    es: "De la observación al plan. Primero construye la conversación o el punto de desarrollo y después añade evidencia.",
-    it: "Dall’osservazione al piano. Costruisci prima la conversazione o il punto di sviluppo e poi aggiungi supporto.",
+    es: "De la observación al plan. Primero construye la conversación o el punto de desarrollo y después añade evidencia de apoyo.",
+    it: "Dall’osservazione al piano. Costruisci prima la conversazione o il punto di sviluppo e poi aggiungi elementi di supporto.",
     fr: "De l’observation au plan. Construis d’abord l’échange ou le point de développement, puis ajoute des éléments d’appui.",
   },
 
@@ -269,6 +285,7 @@ const UI_LABELS = {
     it: "Stato del piano",
     fr: "État du plan",
   },
+
   playerIdentity: {
     nl: "Spelersprofiel",
     en: "Player identity",
@@ -286,6 +303,7 @@ const UI_LABELS = {
     it: "Evidenza",
     fr: "Éléments d’appui",
   },
+
   evidenceBody: {
     nl: "Voeg onderbouwing toe wanneer dat helpt om observatie, context en opvolging scherper te maken.",
     en: "Add evidence when it helps sharpen observation, context and follow-up.",
@@ -303,12 +321,13 @@ const UI_LABELS = {
     it: "Video",
     fr: "Vidéo",
   },
+
   videoBody: {
     nl: "Voeg clips toe als visueel bewijs voor het ontwikkelpunt. Houd het concreet en relevant.",
     en: "Add clips as visual evidence for the development point. Keep it concrete and relevant.",
-    de: "Füge Clips als visuellen Beleg für den Entwicklungspunkt hinzu. Halte es konkret und passend.",
-    es: "Añade clips como evidencia visual del punto de desarrollo. Que sea concreto y relevante.",
-    it: "Aggiungi clip come evidenza visiva del punto di sviluppo. Tienilo concreto e pertinente.",
+    de: "Füge Clips als visuellen Beleg für den Entwicklungspunkt hinzu. Halte es konkret und relevant.",
+    es: "Añade clips como evidencia visual del punto de desarrollo. Mantenlo concreto y relevante.",
+    it: "Aggiungi clip come evidenza visiva del punto di sviluppo. Mantienilo concreto e pertinente.",
     fr: "Ajoute des clips comme preuve visuelle du point de développement. Garde cela concret et pertinent.",
   },
 
@@ -320,6 +339,7 @@ const UI_LABELS = {
     it: "Dati",
     fr: "Données",
   },
+
   dataBody: {
     nl: "Koppel later databronnen en indicatoren aan het plan.",
     en: "Later you can connect data sources and indicators to the plan.",
@@ -337,6 +357,7 @@ const UI_LABELS = {
     it: "Note",
     fr: "Notes",
   },
+
   insights: {
     nl: "Inzichten",
     en: "Insights",
@@ -354,6 +375,7 @@ const UI_LABELS = {
     it: "Avanzamento",
     fr: "Progression",
   },
+
   planProgress: {
     nl: "Planvoortgang",
     en: "Plan progress",
@@ -371,6 +393,7 @@ const UI_LABELS = {
     it: "Sezione",
     fr: "Section",
   },
+
   sections: {
     nl: "Onderdelen",
     en: "Sections",
@@ -388,6 +411,7 @@ const UI_LABELS = {
     it: "Stato",
     fr: "Statut",
   },
+
   live: {
     nl: "Live",
     en: "Live",
@@ -396,6 +420,7 @@ const UI_LABELS = {
     it: "Live",
     fr: "En direct",
   },
+
   synced: {
     nl: "Plan bijgewerkt",
     en: "Plan synced",
@@ -413,6 +438,7 @@ const UI_LABELS = {
     it: "Aperto",
     fr: "Ouvert",
   },
+
   availableOther: {
     nl: "Ook beschikbaar in een andere taal",
     en: "Also available in another language",
@@ -421,6 +447,7 @@ const UI_LABELS = {
     it: "Disponibile anche in un’altra lingua",
     fr: "Disponible aussi dans une autre langue",
   },
+
   pdfReady: {
     nl: "Klaar voor PDF",
     en: "PDF ready",
@@ -429,6 +456,7 @@ const UI_LABELS = {
     it: "Pronto per PDF",
     fr: "Prêt pour le PDF",
   },
+
   clubContext: {
     nl: "Clubcontext",
     en: "Club context",
@@ -437,6 +465,7 @@ const UI_LABELS = {
     it: "Contesto del club",
     fr: "Contexte du club",
   },
+
   completion: {
     nl: "Compleet",
     en: "Completion",
@@ -445,6 +474,7 @@ const UI_LABELS = {
     it: "Completamento",
     fr: "Avancement",
   },
+
   completed: {
     nl: "Voltooid",
     en: "Completed",
@@ -453,6 +483,7 @@ const UI_LABELS = {
     it: "Completato",
     fr: "Terminé",
   },
+
   notYetAvailable: {
     nl: "Nog niet beschikbaar",
     en: "Not yet available",
@@ -478,6 +509,7 @@ const CHAT_LABELS = {
     it: "Che cosa vedi concretamente succedere con questo giocatore?",
     fr: "Que vois-tu concrètement chez ce joueur ?",
   },
+
   layerLabel: {
     nl: "Plangesprek",
     en: "Plan conversation",
@@ -486,6 +518,7 @@ const CHAT_LABELS = {
     it: "Conversazione del piano",
     fr: "Échange sur le plan",
   },
+
   title: {
     nl: "Bouw het plan vanuit wat je concreet ziet.",
     en: "Build the plan from what you concretely see.",
@@ -494,14 +527,16 @@ const CHAT_LABELS = {
     it: "Costruisci il piano da quello che vedi in modo concreto.",
     fr: "Construis le plan à partir de ce que tu vois concrètement.",
   },
+
   body: {
     nl: "Werk snel van observatie naar ontwikkelpunt, context, aanpak en succesdefinitie.",
     en: "Move quickly from observation to development point, context, approach and success definition.",
-    de: "Gehe schnell von der Beobachtung zum Entwicklungspunkt, Kontext, Vorgehen und Erfolgsbild.",
+    de: "Gehe schnell von der Beobachtung zum Entwicklungspunkt, Kontext, Ansatz und Erfolgsdefinition.",
     es: "Pasa rápido de la observación al punto de desarrollo, contexto, enfoque y definición de éxito.",
-    it: "Passa in fretta dall’osservazione al punto di sviluppo, al contesto, all’approccio e alla definizione di successo.",
-    fr: "Passe vite de l’observation au point de développement, au contexte, à l’approche et à la définition de la réussite.",
+    it: "Passa rapidamente dall’osservazione al punto di sviluppo, al contesto, all’approccio e alla definizione del successo.",
+    fr: "Passe rapidement de l’observation au point de développement, au contexte, à l’approche et à la définition de la réussite.",
   },
+
   thinking: {
     nl: "Denkt…",
     en: "Thinking…",
@@ -510,6 +545,7 @@ const CHAT_LABELS = {
     it: "Sta pensando…",
     fr: "Réflexion…",
   },
+
   building: {
     nl: "Werkt plan bij…",
     en: "Updating plan…",
@@ -518,6 +554,7 @@ const CHAT_LABELS = {
     it: "Aggiornamento del piano…",
     fr: "Mise à jour du plan…",
   },
+
   placeholder: {
     nl: "Beschrijf concreet wat je ziet of kies hieronder een richting…",
     en: "Describe concretely what you see or choose a direction below…",
@@ -526,6 +563,7 @@ const CHAT_LABELS = {
     it: "Descrivi in modo concreto quello che vedi oppure scegli sotto una direzione…",
     fr: "Décris concrètement ce que tu vois ou choisis une direction ci-dessous…",
   },
+
   send: {
     nl: "Verstuur",
     en: "Send",
@@ -534,6 +572,7 @@ const CHAT_LABELS = {
     it: "Invia",
     fr: "Envoyer",
   },
+
   sendHint: {
     nl: "CMD/CTRL + ENTER",
     en: "CMD/CTRL + ENTER",
@@ -542,6 +581,7 @@ const CHAT_LABELS = {
     it: "CMD/CTRL + ENTER",
     fr: "CMD/CTRL + ENTER",
   },
+
   errorChat: {
     nl: "Er ging iets mis in de chat.",
     en: "Something went wrong in the chat.",
@@ -550,6 +590,7 @@ const CHAT_LABELS = {
     it: "Qualcosa è andato storto nella chat.",
     fr: "Quelque chose n’a pas fonctionné dans le chat.",
   },
+
   errorGenerate: {
     nl: "Er ging iets mis bij het bijwerken van het plan.",
     en: "Something went wrong while updating the plan.",
@@ -567,6 +608,7 @@ const CHAT_LABELS = {
     it: "Descrivi il comportamento sotto pressione",
     fr: "Décris le comportement sous pression",
   },
+
   quickPromptMatchSituation: {
     nl: "Beschrijf de spelsituatie",
     en: "Describe the match situation",
@@ -575,6 +617,7 @@ const CHAT_LABELS = {
     it: "Descrivi la situazione di gioco",
     fr: "Décris la situation de jeu",
   },
+
   quickPromptTeamEffect: {
     nl: "Beschrijf het effect op het team",
     en: "Describe the effect on the team",
@@ -592,14 +635,16 @@ const CHAT_LABELS = {
     it: "Descrivi il problema principale",
     fr: "Décris le problème principal",
   },
+
   guidedAgreementTarget: {
     nl: "Beschrijf het gewenste gedrag",
     en: "Describe the target behaviour",
-    de: "Beschreibe das gewünschte Verhalten",
+    de: "Beschreibe das Zielverhalten",
     es: "Describe la conducta objetivo",
     it: "Descrivi il comportamento obiettivo",
     fr: "Décris le comportement cible",
   },
+
   guidedAgreementMoment: {
     nl: "Beschrijf de wedstrijdsituatie",
     en: "Describe the match situation",
@@ -617,6 +662,7 @@ const CHAT_LABELS = {
     it: "Che cosa richiede qui il ruolo?",
     fr: "Qu’est-ce que le rôle demande ici ?",
   },
+
   guidedContextPhase: {
     nl: "In welke fase wordt dit beslissend?",
     en: "In which phase is this decisive?",
@@ -625,6 +671,7 @@ const CHAT_LABELS = {
     it: "In quale fase questo diventa decisivo?",
     fr: "Dans quelle phase cela devient-il décisif ?",
   },
+
   guidedContextLoss: {
     nl: "Wat verliest het team hier?",
     en: "What does the team lose here?",
@@ -642,14 +689,16 @@ const CHAT_LABELS = {
     it: "Qual è la prima cosa che vedi succedere?",
     fr: "Qu’est-ce que tu vois d’abord ?",
   },
+
   guidedRealityWhen: {
     nl: "Wanneer gebeurt dit het meest?",
     en: "When does this happen most clearly?",
     de: "Wann passiert das am deutlichsten?",
     es: "¿Cuándo pasa esto con más claridad?",
     it: "Quando succede questo in modo più chiaro?",
-    fr: "Quand est-ce que cela se voit le plus ?",
+    fr: "Quand cela se voit-il le plus clairement ?",
   },
+
   guidedRealityEffect: {
     nl: "Wat is het directe effect?",
     en: "What is the direct effect?",
@@ -667,6 +716,7 @@ const CHAT_LABELS = {
     it: "Che cosa deve fare il giocatore in modo diverso da subito?",
     fr: "Que doit faire le joueur différemment tout de suite ?",
   },
+
   guidedApproachCoach: {
     nl: "Wat pakt de coach op?",
     en: "What should the coach own?",
@@ -675,6 +725,7 @@ const CHAT_LABELS = {
     it: "Di cosa si occupa l’allenatore?",
     fr: "Qu’est-ce que le coach prend en charge ?",
   },
+
   guidedApproachVideo: {
     nl: "Wat voeg je toe via video?",
     en: "What do you add through video?",
@@ -692,6 +743,7 @@ const CHAT_LABELS = {
     it: "Da cosa lo vedi in partita?",
     fr: "À quoi vois-tu cela dans le match ?",
   },
+
   guidedSuccessBehaviour: {
     nl: "Welk gedrag moet veranderen?",
     en: "What behaviour should change?",
@@ -700,6 +752,7 @@ const CHAT_LABELS = {
     it: "Quale comportamento deve cambiare?",
     fr: "Quel comportement doit changer ?",
   },
+
   guidedSuccessSignal: {
     nl: "Wat is een vroeg signaal?",
     en: "What is an early signal?",
@@ -720,11 +773,12 @@ const PLANNER_LABELS = {
   currentFocus: {
     nl: "Nu bezig met",
     en: "Now working on",
-    de: "Nu bezig met",
+    de: "Gerade im Fokus",
     es: "Ahora trabajando en",
     it: "Ora al lavoro su",
-    fr: "En train de travailler sur",
+    fr: "En cours sur",
   },
+
   nextFocus: {
     nl: "Nu bezig met",
     en: "Now working on",
@@ -733,6 +787,7 @@ const PLANNER_LABELS = {
     it: "Ora al lavoro su",
     fr: "En cours sur",
   },
+
   progress: {
     nl: "Voortgang",
     en: "Progress",
@@ -741,6 +796,7 @@ const PLANNER_LABELS = {
     it: "Avanzamento",
     fr: "Progression",
   },
+
   planProgress: {
     nl: "Planvoortgang",
     en: "Plan progress",
@@ -749,6 +805,7 @@ const PLANNER_LABELS = {
     it: "Avanzamento del piano",
     fr: "Progression du plan",
   },
+
   missing: {
     nl: "Open",
     en: "Open",
@@ -757,6 +814,7 @@ const PLANNER_LABELS = {
     it: "Aperto",
     fr: "Ouvert",
   },
+
   section: {
     nl: "Onderdeel",
     en: "Section",
@@ -765,6 +823,7 @@ const PLANNER_LABELS = {
     it: "Sezione",
     fr: "Section",
   },
+
   sections: {
     nl: "Onderdelen",
     en: "Sections",
@@ -790,6 +849,7 @@ const ACTION_LABELS = {
     it: "Aggiorna piano",
     fr: "Mettre à jour le plan",
   },
+
   viewPlan: {
     nl: "Bekijk plan",
     en: "View plan",
@@ -798,6 +858,7 @@ const ACTION_LABELS = {
     it: "Vedi piano",
     fr: "Voir le plan",
   },
+
   downloadPlan: {
     nl: "Download plan",
     en: "Download plan",
@@ -806,6 +867,7 @@ const ACTION_LABELS = {
     it: "Scarica piano",
     fr: "Télécharger le plan",
   },
+
   downloadPlayerPlan: {
     nl: "Download spelerplan",
     en: "Download player plan",
@@ -814,6 +876,7 @@ const ACTION_LABELS = {
     it: "Scarica piano del giocatore",
     fr: "Télécharger le plan du joueur",
   },
+
   generate: {
     nl: "Genereer",
     en: "Generate",
@@ -822,6 +885,7 @@ const ACTION_LABELS = {
     it: "Genera",
     fr: "Générer",
   },
+
   save: {
     nl: "Opslaan",
     en: "Save",
@@ -830,6 +894,7 @@ const ACTION_LABELS = {
     it: "Salva",
     fr: "Enregistrer",
   },
+
   close: {
     nl: "Sluiten",
     en: "Close",
@@ -838,6 +903,7 @@ const ACTION_LABELS = {
     it: "Chiudi",
     fr: "Fermer",
   },
+
   open: {
     nl: "Openen",
     en: "Open",
@@ -863,6 +929,7 @@ const STATUS_LABELS = {
     it: "Vuoto",
     fr: "Vide",
   },
+
   draft: {
     nl: "Concept",
     en: "Draft",
@@ -871,6 +938,7 @@ const STATUS_LABELS = {
     it: "Bozza",
     fr: "Brouillon",
   },
+
   usable: {
     nl: "Bruikbaar",
     en: "Usable",
@@ -879,6 +947,7 @@ const STATUS_LABELS = {
     it: "Utilizzabile",
     fr: "Utilisable",
   },
+
   strong: {
     nl: "Sterk",
     en: "Strong",
@@ -904,6 +973,7 @@ const PDF_LABELS = {
     it: "Piano di Sviluppo del Giocatore",
     fr: "Plan de Développement du Joueur",
   },
+
   generatedOn: {
     nl: "Gegenereerd op",
     en: "Generated on",
@@ -912,6 +982,7 @@ const PDF_LABELS = {
     it: "Generato il",
     fr: "Généré le",
   },
+
   summary: {
     nl: "Samenvatting",
     en: "Summary",
@@ -920,6 +991,7 @@ const PDF_LABELS = {
     it: "Sintesi",
     fr: "Résumé",
   },
+
   conclusions: {
     nl: "Conclusies",
     en: "Conclusions",
@@ -928,6 +1000,7 @@ const PDF_LABELS = {
     it: "Conclusioni",
     fr: "Conclusions",
   },
+
   systemLine: {
     nl: "PERSOONLIJK ONTWIKKELPLAN",
     en: "PERSONAL DEVELOPMENT PLAN",
@@ -953,6 +1026,7 @@ const FALLBACK_LABELS = {
     it: "Non ancora definito",
     fr: "Pas encore défini",
   },
+
   notAddedYet: {
     nl: "Nog niet toegevoegd",
     en: "Not added yet",
@@ -961,6 +1035,7 @@ const FALLBACK_LABELS = {
     it: "Non ancora aggiunto",
     fr: "Pas encore ajouté",
   },
+
   noVideoYet: {
     nl: "Nog geen video toegevoegd",
     en: "No video added yet",
@@ -969,6 +1044,7 @@ const FALLBACK_LABELS = {
     it: "Nessun video ancora aggiunto",
     fr: "Aucune vidéo ajoutée pour le moment",
   },
+
   noDataYet: {
     nl: "Nog geen data toegevoegd",
     en: "No data added yet",
@@ -991,13 +1067,22 @@ function resolveLabel<T extends LabelMap>(
   lang: Lang,
   fallback = ""
 ) {
-  const value = map[key]?.[lang];
+  const labelSet = map[key];
+
+  if (!labelSet) {
+    if (fallback === "") {
+      console.warn(`[pdpLabels] Unknown label key "${String(key)}"`);
+    }
+    return fallback;
+  }
+
+  const value = labelSet[lang] ?? labelSet.en ?? fallback;
 
   if (!value && fallback === "") {
     console.warn(`[pdpLabels] Missing label for "${String(key)}" in "${lang}"`);
   }
 
-  return value ?? fallback;
+  return value;
 }
 
 /**

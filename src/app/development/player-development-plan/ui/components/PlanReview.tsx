@@ -1,12 +1,40 @@
-import { DevelopmentPlanV1 } from "../lib/engineSchema";
-
-/* ---------------- TYPES ---------------- */
-
-type Lang = "nl" | "en";
+import React from "react";
+import type { DevelopmentPlanV1, Lang } from "../lib/engineSchema";
 
 /* ---------------- UI ---------------- */
 
-const UI = {
+const UI: Record<
+  Lang,
+  {
+    agreement: string;
+    context: string;
+    reality: string;
+    approach: string;
+    success: string;
+
+    focus: string;
+    behaviour: string;
+    moments: string;
+
+    gameMoments: string;
+    zones: string;
+    principles: string;
+
+    intro: string;
+    what: string;
+    when: string;
+    effect: string;
+
+    training: string;
+    match: string;
+    video: string;
+    offField: string;
+
+    inGame: string;
+    behaviourShort: string;
+    signals: string;
+  }
+> = {
   nl: {
     agreement: "Afspraak",
     context: "Context",
@@ -38,7 +66,7 @@ const UI = {
   },
 
   en: {
-    agreement: "agreement",
+    agreement: "Agreement",
     context: "Context",
     reality: "Reality",
     approach: "Approach",
@@ -66,7 +94,153 @@ const UI = {
     behaviourShort: "In behaviour",
     signals: "Signals",
   },
+
+  de: {
+    agreement: "Vereinbarung",
+    context: "Kontext",
+    reality: "Realität",
+    approach: "Ansatz",
+    success: "Erfolgsdefinition",
+
+    focus: "Entwicklungspunkt",
+    behaviour: "Zielverhalten",
+    moments: "Spielmomente",
+
+    gameMoments: "Wann im Spiel",
+    zones: "Wo auf dem Feld",
+    principles: "Was das Team verlangt",
+
+    intro: "Kontext",
+    what: "Was wir sehen",
+    when: "Wann wir das sehen",
+    effect: "Auswirkung auf das Spiel",
+
+    training: "Training",
+    match: "Spiel",
+    video: "Video",
+    offField: "Außerhalb des Feldes",
+
+    inGame: "Im Spiel",
+    behaviourShort: "Im Verhalten",
+    signals: "Signale",
+  },
+
+  es: {
+    agreement: "Acuerdo",
+    context: "Contexto",
+    reality: "Realidad",
+    approach: "Enfoque",
+    success: "Definición de éxito",
+
+    focus: "Punto de desarrollo",
+    behaviour: "Conducta objetivo",
+    moments: "Momentos de partido",
+
+    gameMoments: "Cuándo en el juego",
+    zones: "Dónde en el campo",
+    principles: "Qué exige el equipo",
+
+    intro: "Contexto",
+    what: "Qué vemos",
+    when: "Cuándo vemos esto",
+    effect: "Efecto en el juego",
+
+    training: "Entrenamiento",
+    match: "Partido",
+    video: "Vídeo",
+    offField: "Fuera del campo",
+
+    inGame: "En el juego",
+    behaviourShort: "En la conducta",
+    signals: "Señales",
+  },
+
+  it: {
+    agreement: "Accordo",
+    context: "Contesto",
+    reality: "Realtà",
+    approach: "Approccio",
+    success: "Definizione del successo",
+
+    focus: "Punto di sviluppo",
+    behaviour: "Comportamento obiettivo",
+    moments: "Momenti di partita",
+
+    gameMoments: "Quando nel gioco",
+    zones: "Dove in campo",
+    principles: "Cosa richiede la squadra",
+
+    intro: "Contesto",
+    what: "Cosa vediamo",
+    when: "Quando lo vediamo",
+    effect: "Effetto sul gioco",
+
+    training: "Allenamento",
+    match: "Partita",
+    video: "Video",
+    offField: "Fuori dal campo",
+
+    inGame: "Nel gioco",
+    behaviourShort: "Nel comportamento",
+    signals: "Segnali",
+  },
+
+  fr: {
+    agreement: "Accord",
+    context: "Contexte",
+    reality: "Réalité",
+    approach: "Approche",
+    success: "Définition de la réussite",
+
+    focus: "Point de développement",
+    behaviour: "Comportement cible",
+    moments: "Moments de match",
+
+    gameMoments: "Quand dans le jeu",
+    zones: "Où sur le terrain",
+    principles: "Ce que l’équipe demande",
+
+    intro: "Contexte",
+    what: "Ce que l’on voit",
+    when: "Quand on voit cela",
+    effect: "Effet sur le jeu",
+
+    training: "Entraînement",
+    match: "Match",
+    video: "Vidéo",
+    offField: "Hors terrain",
+
+    inGame: "Dans le jeu",
+    behaviourShort: "Dans le comportement",
+    signals: "Signaux",
+  },
 };
+
+/* ---------------- HELPERS ---------------- */
+
+function isSupportedLang(value: unknown): value is Lang {
+  return (
+    value === "nl" ||
+    value === "en" ||
+    value === "de" ||
+    value === "es" ||
+    value === "it" ||
+    value === "fr"
+  );
+}
+
+function normalizeList(items?: string[] | string): string[] {
+  if (Array.isArray(items)) {
+    return items.map((item) => String(item || "").trim()).filter(Boolean);
+  }
+
+  if (typeof items === "string") {
+    const value = items.trim();
+    return value ? [value] : [];
+  }
+
+  return [];
+}
 
 /* ---------------- MAIN ---------------- */
 
@@ -77,28 +251,21 @@ export function PlanReview({
   plan: DevelopmentPlanV1;
   lang?: Lang;
 }) {
-  const t = UI[lang];
+  const safeLang: Lang = isSupportedLang(lang) ? lang : "nl";
+  const t = UI[safeLang];
 
   return (
     <div className="space-y-6">
-
-      {/* ---------- SLIDE 2 ---------- */}
       <Slide title={t.agreement} accent>
-
-        <BigText>
-          {plan.slide2?.focusBehaviour}
-        </BigText>
+        <BigText>{plan.slide2?.focusBehaviour}</BigText>
 
         <Divider />
 
-        <Item label={t.behaviour}>
-          {plan.slide2?.developmentGoal}
-        </Item>
+        <Item label={t.behaviour}>{plan.slide2?.developmentGoal}</Item>
 
         <List label={t.moments} items={plan.slide2?.matchSituation} />
       </Slide>
 
-      {/* ---------- SLIDE 3 ---------- */}
       <Slide title={t.context}>
         <Grid2>
           <List label={t.gameMoments} items={plan.slideContext?.gameMoments} />
@@ -110,11 +277,8 @@ export function PlanReview({
         <List label={t.principles} items={plan.slideContext?.principles} />
       </Slide>
 
-      {/* ---------- SLIDE 4 ---------- */}
       <Slide title={t.reality}>
-        <BigText small>
-          {plan.slide3Baseline?.intro}
-        </BigText>
+        <BigText small>{plan.slide3Baseline?.intro}</BigText>
 
         <Grid2>
           <List label={t.what} items={plan.slide3?.what_we_see?.items} />
@@ -126,7 +290,6 @@ export function PlanReview({
         <List label={t.effect} items={plan.slide3?.effect_on_match?.items} />
       </Slide>
 
-      {/* ---------- SLIDE 5 ---------- */}
       <Slide title={t.approach}>
         <Grid2>
           <Item label={t.training}>
@@ -147,11 +310,16 @@ export function PlanReview({
         </Grid2>
       </Slide>
 
-      {/* ---------- SLIDE 6 ---------- */}
       <Slide title={t.success}>
         <Grid2>
-          <List label={t.inGame} items={plan.slide6SuccessDefinition?.inGame} />
-          <List label={t.behaviourShort} items={plan.slide6SuccessDefinition?.behaviour} />
+          <List
+            label={t.inGame}
+            items={plan.slide6SuccessDefinition?.inGame}
+          />
+          <List
+            label={t.behaviourShort}
+            items={plan.slide6SuccessDefinition?.behaviour}
+          />
         </Grid2>
 
         <Divider />
@@ -174,11 +342,12 @@ function Slide({
   accent?: boolean;
 }) {
   return (
-    <div className="border border-white/10 rounded-2xl p-5 bg-white/5 space-y-4">
+    <div className="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-5">
       <div className="flex items-center gap-3">
-        {accent && (
-          <div className="w-1.5 h-5 bg-white rounded-full opacity-80" />
-        )}
+        {accent ? (
+          <div className="h-5 w-1.5 rounded-full bg-white opacity-80" />
+        ) : null}
+
         <div className="text-sm font-semibold tracking-wide opacity-80">
           {title}
         </div>
@@ -190,11 +359,7 @@ function Slide({
 }
 
 function Grid2({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="grid sm:grid-cols-2 gap-4">
-      {children}
-    </div>
-  );
+  return <div className="grid gap-4 sm:grid-cols-2">{children}</div>;
 }
 
 function BigText({
@@ -205,11 +370,7 @@ function BigText({
   small?: boolean;
 }) {
   return (
-    <div
-      className={`${
-        small ? "text-base" : "text-lg"
-      } font-medium leading-snug`}
-    >
+    <div className={`${small ? "text-base" : "text-lg"} font-medium leading-snug`}>
       {children || "—"}
     </div>
   );
@@ -228,12 +389,10 @@ function Item({
 }) {
   return (
     <div>
-      <div className="text-xs uppercase tracking-wide opacity-40 mb-1">
+      <div className="mb-1 text-xs uppercase tracking-wide opacity-40">
         {label}
       </div>
-      <div className="text-sm leading-relaxed">
-        {children || "—"}
-      </div>
+      <div className="text-sm leading-relaxed">{children || "—"}</div>
     </div>
   );
 }
@@ -245,24 +404,20 @@ function List({
   label: string;
   items?: string[] | string;
 }) {
-  const arr = Array.isArray(items)
-    ? items
-    : typeof items === "string"
-    ? [items]
-    : [];
+  const normalizedItems = normalizeList(items);
 
   return (
     <div>
-      <div className="text-xs uppercase tracking-wide opacity-40 mb-1">
+      <div className="mb-1 text-xs uppercase tracking-wide opacity-40">
         {label}
       </div>
 
       <div className="space-y-1 text-sm">
-        {arr.length ? (
-          arr.map((x, i) => (
-            <div key={i} className="flex gap-2">
+        {normalizedItems.length ? (
+          normalizedItems.map((item, index) => (
+            <div key={`${label}-${index}`} className="flex gap-2">
               <span className="opacity-40">•</span>
-              <span>{x}</span>
+              <span>{item}</span>
             </div>
           ))
         ) : (
