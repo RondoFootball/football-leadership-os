@@ -114,11 +114,44 @@ function localMessage(lang: Lang, messages: Record<Lang, string>) {
   return messages[lang] || messages.nl;
 }
 
+function readLocalizedValue(
+  value: unknown,
+  lang: Lang,
+  fallbackOrder: Lang[] = ["nl", "en", "de", "es", "it", "fr"]
+): string {
+  if (typeof value === "string") {
+    return value.trim();
+  }
+
+  if (!value || typeof value !== "object") {
+    return "";
+  }
+
+  const record = value as Partial<Record<Lang, string>>;
+
+  const direct = record[lang];
+  if (typeof direct === "string" && direct.trim()) {
+    return direct.trim();
+  }
+
+  for (const key of fallbackOrder) {
+    const candidate = record[key];
+    if (typeof candidate === "string" && candidate.trim()) {
+      return candidate.trim();
+    }
+  }
+
+  return "";
+}
+
 function getSlotQuestionPrompt(meta: ReturnType<typeof getSlotMeta>, lang: Lang) {
   if (!meta) return "";
+  return readLocalizedValue((meta as any).questionPrompt, lang);
+}
 
-  if (lang === "nl") return meta.questionPromptNl;
-  return meta.questionPromptEn;
+function getSlotSharpenPrompt(meta: ReturnType<typeof getSlotMeta>, lang: Lang) {
+  if (!meta) return "";
+  return readLocalizedValue((meta as any).sharpenPrompt, lang);
 }
 
 function hasMeaningfulUserInput(messages: ChatMsg[]) {
@@ -252,7 +285,10 @@ function buildFallbackQuestion(lang: Lang, planner: PlannerState) {
   const currentSlideLabel = getPlanSlideLabel(lang, planner.currentSlide);
 
   if (meta) {
-    return `${currentSlideLabel} — ${getSlotQuestionPrompt(meta, lang)}`;
+    const prompt = getSlotQuestionPrompt(meta, lang);
+    if (prompt) {
+      return `${currentSlideLabel} — ${prompt}`;
+    }
   }
 
   return localMessage(lang, {
@@ -399,6 +435,13 @@ function buildRoutingInstruction(
     fr: `Progression en direct : ${planner.liveProgress}%. Base : ${planner.backboneProgress}%. Plan solide : ${planner.strongPlanProgress}%.`,
   });
 
+  const questionFamily = nextSlotMeta
+    ? getSlotQuestionPrompt(nextSlotMeta, lang)
+    : "";
+  const sharpenFamily = nextSlotMeta
+    ? getSlotSharpenPrompt(nextSlotMeta, lang)
+    : "";
+
   const planSignal = JSON.stringify(
     {
       slide2: draftPlan.slide2,
@@ -421,6 +464,16 @@ ${progressLine}
 
 Current plan signal:
 ${planSignal}
+
+${
+  nextSlotMeta
+    ? `Current slot guidance:
+- slot key: ${nextSlotMeta.key}
+- slot label: ${nextSlotMeta.label}
+- question family: ${questionFamily || "n/a"}
+- sharpen family: ${sharpenFamily || "n/a"}`
+    : ""
+}
 
 Decision rules:
 - Keep the visible section label aligned with the actual content of the turn
